@@ -1,0 +1,331 @@
+<mvc:View
+		controllerName="ps.uiRepMercado.controller.DetalhesTema"
+		xmlns="sap.m"
+		xmlns:mvc="sap.ui.core.mvc"
+		xmlns:l="sap.ui.layout" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Page showHeader="true" title="{i18n>registro_de_temas_txt}" showFooter="true" showNavButton="true" enableScrolling="false" navButtonPress="_onPageNavButtonPress">
+		<content>
+			<!--dynamic ini-->
+			<l:DynamicSideContent id="DynamicSideContent" 
+					breakpointChanged="updateToggleButtonState"
+					sideContentPosition="End" class="sapUiContentPadding">
+				<l:mainContent>	
+					<VBox>
+						<form:Form  editable="true">
+							<form:title>
+								<core:Title text="" level="Auto"/>
+							</form:title>
+							<form:layout>
+								<form:ResponsiveGridLayout 	labelSpanXL="4"
+										labelSpanL="4"
+										labelSpanM="12"
+										labelSpanS="12"
+										adjustLabelSpan="false"
+										emptySpanXL="0"
+										emptySpanL="0"
+										emptySpanM="0"
+										emptySpanS="0"
+										columnsXL="2"
+										columnsL="2"
+										columnsM="2"
+										singleContainerFullSize="false"/>
+							</form:layout>
+							<form:formContainers>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>tema_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<Input type="Text" value="{EditTemaModel>/descricao}" showValueHelp="false" enabled="true" width="auto" valueHelpOnly="false"  valueStateText="Invalid entry" maxLength="0"/>
+											</form:fields>
+										</form:FormElement>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>detalhamento_discussao_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<TextArea value="{EditTemaModel>/detalheDiscussao}"  rows="4" cols="20" maxLength="0" wrapping="None" enabled="true"/>
+											</form:fields>
+										</form:FormElement>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>principais_impactos_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<TextArea value="{EditTemaModel>/principaisImpactos}" rows="4" cols="20" maxLength="0" wrapping="None" enabled="true"  valueStateText="Invalid entry"/>
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>status_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<ComboBox selectedKey="{EditTemaModel>/status_ID}" items="{path:'/Status', templateShareable:true}" editable="true" enabled="true" >
+													<items>
+														<core:Item key="{ID}" text="{descricao}"/>													
+													</items>
+												</ComboBox>
+											</form:fields>
+										</form:FormElement>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>criticidade_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<ComboBox selectedKey="{EditTemaModel>/criticidade_ID}" items="{path:'/Criticidades', templateShareable:true}" editable="true" enabled="true" >
+													<items>
+														<core:Item key="{ID}" text="{descricao}"/>													
+													</items>
+												</ComboBox>
+											</form:fields>
+										</form:FormElement>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>regulador_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<ComboBox selectedKey="{EditTemaModel>/regulador_ID}" items="{path:'/Reguladores', templateShareable:true}" editable="true" enabled="true" >
+													<items>
+														<core:Item key="{ID}" text="{descricao}"/>													
+													</items>
+												</ComboBox>
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>											
+							</form:formContainers>									
+						</form:Form>
+					</VBox>
+					<VBox>
+						<form:Form  editable="true">
+							<form:title>
+								<core:Title text=""/>
+							</form:title>
+							<form:layout>
+								<form:ResponsiveGridLayout 	labelSpanXL="4"
+										labelSpanL="4"
+										labelSpanM="12"
+										labelSpanS="12"
+										adjustLabelSpan="false"
+										emptySpanXL="0"
+										emptySpanL="0"
+										emptySpanM="0"
+										emptySpanS="0"
+										columnsXL="3"
+										columnsL="3"
+										columnsM="3"
+										singleContainerFullSize="false"/>
+							</form:layout>
+							<form:formContainers>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>primeiro_registro_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<DatePicker id="dtPrimeiroReg" displayFormat="dd/MM/yyyy" value="{path: 'EditTemaModel>/primeiroRegistro', formatter: '.formatter.formatDateShow'}"  enabled="false"  />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>data_ultima_reuniao_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<DatePicker id="dtUltimaReuniao" displayFormat="dd/MM/yyyy" value="{path: 'EditTemaModel>/dataUltimaReuniao', formatter: '.formatter.formatDateShow'}"  enabled="true" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>ultimo_registro_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<DatePicker id="dtUltimoRegistro" displayFormat="dd/MM/yyyy" value="{path: 'EditTemaModel>/ultimoRegistro', formatter: '.formatter.formatDateShow'}"  enabled="false" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+							</form:formContainers>
+						</form:Form>
+					</VBox>
+					<VBox>
+						<form:Form  editable="true">
+							<form:title>
+								<core:Title text=""/>
+							</form:title>
+							<form:layout>
+								<form:ResponsiveGridLayout 	labelSpanXL="4"
+										labelSpanL="4"
+										labelSpanM="12"
+										labelSpanS="12"
+										adjustLabelSpan="false"
+										emptySpanXL="0"
+										emptySpanL="0"
+										emptySpanM="0"
+										emptySpanS="0"
+										columnsXL="3"
+										columnsL="3"
+										columnsM="3"
+										singleContainerFullSize="false"/>
+							</form:layout>
+							<form:formContainers>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>representante_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<Input type="Text"
+														valueHelpRequest="openDialogRepresentante" valueHelpOnly="true" showValueHelp="true"
+														value="{EditTemaModel>/representante/nome}"  enabled="true" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>cargo_porto_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<Input type="Text" value="{EditTemaModel>/representante/cargo}"  enabled="true" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>contato_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<Input type="Text" value="{EditTemaModel>/representante/telefone}"  enabled="true" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>comissao_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<Input type="Text" value="{EditTemaModel>/comissao/descricao}"
+														valueHelpOnly="true"  valueHelpRequest="openDialogComissao" showValueHelp="true"
+														enabled="true" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+
+
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>diretor_geral_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<Input type="Text" value="{EditTemaModel>/diretorGeral}"  enabled="true" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+
+								<form:FormContainer>
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>diretor_executivo_txt}" design="Standard" width="100%"   />
+											</form:label>
+											<form:fields>
+												<Input type="Text" value="{EditTemaModel>/diretorExecutivo}"  enabled="true" />
+											</form:fields>
+										</form:FormElement>
+									</form:formElements>
+									<form:title/>
+								</form:FormContainer>
+
+
+							</form:formContainers>
+						</form:Form>
+					</VBox>					
+				</l:mainContent>
+				<l:sideContent>
+					<OverflowToolbar>
+						<content>
+							<Title text="{i18n>historico_txt}" titleStyle="Auto" width="auto"  wrapping="false"/>
+							<ToolbarSpacer width=""/>
+						</content>
+					</OverflowToolbar>
+					<l:VerticalLayout width="100%">
+						<l:content>
+							<List id="lstHistorico"  backgroundDesign="Solid" growing="true" growingThreshold="20" growingScrollToLoad="true" items="{path:'/Historico', sorter:{path:'ultimoRegistro', descending: true},  parameters: {expand: 'userAlteracao,criticidade,status'}, templateShareable:true}">
+								<items>
+									<ObjectListItem
+											title="{path: 'ultimoRegistro', formatter: '.formatter.dateTime'}"
+											type="Active"
+											press="onHistListItemPress">
+										<firstStatus>
+											<ObjectStatus
+													text="{status/descricao}"
+													state="{path: 'status/ID', formatter:'.formatter.corStatus'}" />
+										</firstStatus>
+                                        <secondStatus>
+                                            <ObjectStatus
+                                                    text="{criticidade/descricao}"
+                                                    state="{path: 'criticidade/ID', formatter:'.formatter.corCriticidade'}" />
+                                        </secondStatus>
+										<ObjectAttribute title="{i18n>autor_nome_txt}" text="{userAlteracao/nome}" /> 
+										<ObjectAttribute title="{i18n>ultima_reuniao_txt}" text="{path: 'dataUltimaReuniao', formatter: '.formatter.formatDateShow'}" />          			
+									</ObjectListItem>	
+
+								</items>
+							</List>
+						</l:content>
+					</l:VerticalLayout>
+				</l:sideContent>
+			</l:DynamicSideContent>
+			<!--dynamic fim-->
+		</content>
+		<footer>
+			<OverflowToolbar width="100%">
+				<content>
+					<Button text="{i18n>historico_txt}" visible="false" type="Accept" id="toggleButton" press="onTogglePress"/>
+					<ToolbarSpacer width=""/>
+					<Button text="{i18n>registrar_btn}" type="Emphasized" press="onSave" enabled="{objectView>/isEditMode}"/>
+					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+				</content>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

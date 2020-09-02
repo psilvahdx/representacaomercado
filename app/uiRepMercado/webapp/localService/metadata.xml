@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:Reference Uri="https://wiki.scn.sap.com/wiki/download/attachments/448470974/Common.xml?api=v2">
+    <edmx:Include Alias="Common" Namespace="com.sap.vocabularies.Common.v1"/>
+  </edmx:Reference>
+  <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+    <edmx:Include Alias="Core" Namespace="Org.OData.Core.V1"/>
+  </edmx:Reference>
+  <edmx:Reference Uri="https://wiki.scn.sap.com/wiki/download/attachments/448470968/UI.xml?api=v2">
+    <edmx:Include Alias="UI" Namespace="com.sap.vocabularies.UI.v1"/>
+  </edmx:Reference>
+  <edmx:DataServices>
+    <Schema Namespace="FullSerice" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityContainer Name="EntityContainer">
+        <EntitySet Name="Comissoes" EntityType="FullSerice.Comissoes"/>
+        <EntitySet Name="Criticidades" EntityType="FullSerice.Criticidades"/>
+        <EntitySet Name="Reguladores" EntityType="FullSerice.Reguladores"/>
+        <EntitySet Name="Status" EntityType="FullSerice.Status"/>
+        <EntitySet Name="Temas" EntityType="FullSerice.Temas"/>
+        <EntitySet Name="Usuarios" EntityType="FullSerice.Usuarios">
+          <NavigationPropertyBinding Path="SiblingEntity" Target="Usuarios"/>
+        </EntitySet>
+      </EntityContainer>
+      <EntityType Name="Comissoes">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="descricao" Type="Edm.String"/>
+      </EntityType>
+      <EntityType Name="Criticidades">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="descricao" Type="Edm.String"/>
+      </EntityType>
+      <EntityType Name="DraftAdministrativeData">
+        <Key>
+          <PropertyRef Name="DraftUUID"/>
+        </Key>
+        <Property Name="DraftUUID" Type="Edm.Guid" Nullable="false"/>
+        <Property Name="CreationDateTime" Type="Edm.DateTimeOffset" Precision="7"/>
+        <Property Name="CreatedByUser" Type="Edm.String" MaxLength="256"/>
+        <Property Name="DraftIsCreatedByMe" Type="Edm.Boolean"/>
+        <Property Name="LastChangeDateTime" Type="Edm.DateTimeOffset" Precision="7"/>
+        <Property Name="LastChangedByUser" Type="Edm.String" MaxLength="256"/>
+        <Property Name="InProcessByUser" Type="Edm.String" MaxLength="256"/>
+        <Property Name="DraftIsProcessedByMe" Type="Edm.Boolean"/>
+      </EntityType>
+      <EntityType Name="Reguladores">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="descricao" Type="Edm.String"/>
+      </EntityType>
+      <EntityType Name="Status">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="descricao" Type="Edm.String"/>
+      </EntityType>
+      <EntityType Name="Temas">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="descricao" Type="Edm.String"/>
+        <Property Name="idStatus" Type="Edm.Int32"/>
+        <Property Name="idCriticidade" Type="Edm.Int32"/>
+        <Property Name="idRegulador" Type="Edm.Int32"/>
+        <Property Name="detalheDiscussao" Type="Edm.String"/>
+        <Property Name="principaisImpactos" Type="Edm.String"/>
+        <Property Name="primeiroRegistro" Type="Edm.DateTimeOffset"/>
+        <Property Name="ultimoRegistro" Type="Edm.DateTimeOffset"/>
+        <Property Name="dataUltimaReuniao" Type="Edm.DateTimeOffset"/>
+        <Property Name="idRepresentante" Type="Edm.Int32"/>
+        <Property Name="idComissao" Type="Edm.Int32"/>
+        <Property Name="diretorGeral" Type="Edm.String"/>
+        <Property Name="diretorExecutivo" Type="Edm.String"/>
+      </EntityType>
+      <EntityType Name="Usuarios">
+        <Key>
+          <PropertyRef Name="ID"/>
+          <PropertyRef Name="IsActiveEntity"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="matricula" Type="Edm.String"/>
+        <Property Name="nome" Type="Edm.String"/>
+        <Property Name="telefone" Type="Edm.String"/>
+        <Property Name="cargo" Type="Edm.String"/>
+        <Property Name="idPerfil" Type="Edm.Int32"/>
+        <Property Name="IsActiveEntity" Type="Edm.Boolean" Nullable="false"/>
+        <Property Name="HasActiveEntity" Type="Edm.Boolean" Nullable="false"/>
+        <Property Name="HasDraftEntity" Type="Edm.Boolean" Nullable="false"/>
+        <NavigationProperty Name="DraftAdministrativeData" Type="FullSerice.DraftAdministrativeData" ContainsTarget="true"/>
+        <NavigationProperty Name="SiblingEntity" Type="FullSerice.Usuarios"/>
+      </EntityType>
+      <Action Name="draftPrepare" IsBound="true" EntitySetPath="in">
+        <Parameter Name="in" Type="FullSerice.Usuarios"/>
+        <Parameter Name="SideEffectsQualifier" Type="Edm.String"/>
+        <ReturnType Type="FullSerice.Usuarios"/>
+      </Action>
+      <Action Name="draftActivate" IsBound="true" EntitySetPath="in">
+        <Parameter Name="in" Type="FullSerice.Usuarios"/>
+        <ReturnType Type="FullSerice.Usuarios"/>
+      </Action>
+      <Action Name="draftEdit" IsBound="true" EntitySetPath="in">
+        <Parameter Name="in" Type="FullSerice.Usuarios"/>
+        <Parameter Name="PreserveChanges" Type="Edm.Boolean"/>
+        <ReturnType Type="FullSerice.Usuarios"/>
+      </Action>
+      <Annotations Target="FullSerice.Usuarios">
+        <Annotation Term="UI.Facets">
+          <Collection>
+            <Record Type="UI.ReferenceFacet">
+              <PropertyValue Property="Label" String="Dados Usuário"/>
+              <PropertyValue Property="Target" AnnotationPath="@UI.FieldGroup#General"/>
+            </Record>
+          </Collection>
+        </Annotation>
+        <Annotation Term="UI.FieldGroup" Qualifier="General">
+          <Record Type="UI.FieldGroupType">
+            <PropertyValue Property="Data">
+              <Collection>
+                <Record Type="UI.DataField">
+                  <PropertyValue Property="Value" Path="nome"/>
+                  <PropertyValue Property="Label" String="Nome"/>
+                </Record>
+                <Record Type="UI.DataField">
+                  <PropertyValue Property="Value" Path="perfil"/>
+                  <PropertyValue Property="Label" String="Perfil"/>
+                </Record>
+                <Record Type="UI.DataField">
+                  <PropertyValue Property="Value" Path="cargo"/>
+                  <PropertyValue Property="Label" String="Cargo"/>
+                </Record>
+                <Record Type="UI.DataField">
+                  <PropertyValue Property="Value" Path="telefone"/>
+                  <PropertyValue Property="Label" String="Telefone"/>
+                </Record>
+              </Collection>
+            </PropertyValue>
+          </Record>
+        </Annotation>
+        <Annotation Term="UI.LineItem">
+          <Collection>
+            <Record Type="UI.DataField">
+              <PropertyValue Property="Value" Path="nome"/>
+              <PropertyValue Property="Label" String="Nome"/>
+            </Record>
+            <Record Type="UI.DataField">
+              <PropertyValue Property="Value" Path="perfil"/>
+              <PropertyValue Property="Label" String="Perfil"/>
+            </Record>
+            <Record Type="UI.DataField">
+              <PropertyValue Property="Value" Path="telefone"/>
+              <PropertyValue Property="Label" String="Telefone"/>
+            </Record>
+            <Record Type="UI.DataField">
+              <PropertyValue Property="Value" Path="cargo"/>
+              <PropertyValue Property="Label" String="Cargo"/>
+            </Record>
+          </Collection>
+        </Annotation>
+        <Annotation Term="UI.SelectionFields">
+          <Collection>
+            <PropertyPath>ID</PropertyPath>
+            <PropertyPath>nome</PropertyPath>
+          </Collection>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="FullSerice.EntityContainer/Usuarios">
+        <Annotation Term="Common.DraftRoot">
+          <Record Type="Common.DraftRootType">
+            <PropertyValue Property="ActivationAction" String="FullSerice.draftActivate"/>
+            <PropertyValue Property="EditAction" String="FullSerice.draftEdit"/>
+            <PropertyValue Property="PreparationAction" String="FullSerice.draftPrepare"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="FullSerice.Usuarios/IsActiveEntity">
+        <Annotation Term="UI.Hidden" Bool="true"/>
+      </Annotations>
+      <Annotations Target="FullSerice.Usuarios/HasActiveEntity">
+        <Annotation Term="UI.Hidden" Bool="true"/>
+      </Annotations>
+      <Annotations Target="FullSerice.Usuarios/HasDraftEntity">
+        <Annotation Term="UI.Hidden" Bool="true"/>
+      </Annotations>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>
