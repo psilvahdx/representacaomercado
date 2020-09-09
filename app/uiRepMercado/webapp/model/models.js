@@ -28,8 +28,22 @@ sap.ui.define([
 			return new JSONModel({
 				temas: {
 					tema: "",
-					status: []
-				}
+                    status: [],
+                    comissoes: []
+				},
+                usuarios:{
+                    ID:"",
+                    matricula:"",
+                    nome:"",
+                    perfil: [],
+                    comissoes: []
+                }
+            });
+        },
+
+        createUserModel: function(){
+            return new JSONModel({
+				userLog: {}
             });
         }
 

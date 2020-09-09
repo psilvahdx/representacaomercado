@@ -1,16 +1,16 @@
 {
-    "welcomeFile": "/cp.portal",
+    "welcomeFile": "/psuiRepMercado/index.html",
     "authenticationMethod": "route",
     "routes": [
-         {
-      "authenticationType": "xsuaa",
-      "csrfProtection": false,
-      "source": "^/srv_api/(.*)$",
-      "destination": "srv_api",
-      "target": "$1"
-    },
         {
-            "source": "^(.*)$",
+            "authenticationType": "xsuaa",
+            "csrfProtection": false,
+            "source": "^/srv_api/(.*)$",
+            "destination": "srv_api",
+            "target": "$1"
+        },
+        {
+            "source": "^(/.*)$",
             "target": "$1",
             "service": "html5-apps-repo-rt",
             "authenticationType": "xsuaa"

@@ -32,6 +32,8 @@ sap.ui.define([
             this.setModel(models.createFLPModel(), "FLP");
             // set Filter Model
             this.setModel(models.createFilterModel(), "filterModel");
+            // set Usuário logado
+            this.setModel(models.createUserModel(), "userLogModel");
            
 			// create the views based on the url/hash
 			this.getRouter().initialize();

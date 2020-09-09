@@ -18,7 +18,7 @@
             </ColumnListItem>
         </items>
         <columns>
-            <Column hAlign="Begin" width="10%">
+            <Column hAlign="Begin">
                 <header>
                     <Text text="{i18n>matricula_txt}" />
                 </header>

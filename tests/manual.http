@@ -1,0 +1,9 @@
+## send post action
+POST http://localhost:4004/v2/services/compliance/ComissoesRepresentante
+Authorization: Basic P0646683:1234
+Content-Type: application/json
+
+[
+{"usuario_ID": "P0646683","comissao_ID": 26},
+{"usuario_ID": "P0646683","comissao_ID": 18}
+]

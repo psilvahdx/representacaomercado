@@ -13,7 +13,7 @@
     "resources": "resources.json",
     "dataSources": {
       "mainService": {
-        "uri": "/srv_api/v2/services/compliance/",
+        "uri": "/v2/services/compliance/",
         "type": "OData",
         "settings": {
           "odataVersion": "2.0",
@@ -136,6 +136,20 @@
           "target": [
             "detalheTema"
           ]
+        },
+         {
+          "pattern": "Usuarios",
+          "name": "cadUserApp",
+          "target": [
+            "cadUserApp"
+          ]
+        },
+         {
+          "pattern": "Usuarios/{idUser}",
+          "name": "detalheUsuario",
+          "target": [
+            "detalheUsuario"
+          ]
         }
       ],
       "targets": {
@@ -150,6 +164,16 @@
           "viewId": "detalheTema",
           "viewLevel": 2,
           "title": "{i18n>objectViewTitle}"
+        },
+        "cadUserApp": {
+          "viewName": "UsuariosList",
+          "viewId": "cadUserApp",
+          "viewLevel": 3
+        },
+        "detalheUsuario": {
+          "viewName": "DetalhesUsuario",
+          "viewId": "detalheUsuario",
+          "viewLevel": 4
         },
         "objectNotFound": {
           "viewName": "ObjectNotFound",

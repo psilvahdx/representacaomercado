@@ -11,8 +11,9 @@
     "@sap/hana-client": "^2.4.177",
     "@sap/xsenv": "^3.0.0",
     "@sap/xssec": "^2.2.5",
-    "express": "^4",
-    "passport": "^0.4.1"
+    "passport": "^0.4.1",
+    "qs": "^6.9.4",
+    "sap-cf-axios": "^0.2.19"
   },
   "scripts": {
     "start": "npx cds run"
@@ -20,10 +21,16 @@
   "cds": {
     "requires": {
       "db": {
-        "kind": "hana"
+        "kind": "sql"
       },
       "uaa": {
         "kind": "xsuaa"
+      },
+      "hierarquia_dest": {
+        "kind": "rest",
+        "credentials": {
+          "destination": "hierarquia_dest"
+        }
       }
     },
     "hana": {

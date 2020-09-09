@@ -1,0 +1,126 @@
+<mvc:View
+		controllerName="ps.uiRepMercado.controller.DetalhesUsuario"
+		xmlns="sap.m"
+		xmlns:mvc="sap.ui.core.mvc"
+		xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Page showHeader="true" title="{i18n>cadastro_usuario_title}" showFooter="true" showNavButton="true" 
+    enableScrolling="true" navButtonPress="_onPageNavButtonPress" busy="{detUserView>/busy}">
+		<content>
+
+            <VBox class="sapUiSmallMargin">
+
+                <f:Form id="formCadUser"
+                    editable="true">
+                    <f:title>
+                        <core:Title text="{i18n>cadastro_usuario_title}" />
+                    </f:title>
+                    <f:layout>
+                        <f:ResponsiveGridLayout
+                            labelSpanXL="4"
+                            labelSpanL="3"
+                            labelSpanM="4"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="4"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            columnsXL="2"
+                            columnsL="1"
+                            columnsM="1"
+                            singleContainerFullSize="false" />
+                    </f:layout>
+                    <f:formContainers>
+                        <f:FormContainer title="{i18n>dados_pessoais_usuario_title}">
+                            <f:formElements>
+                                <f:FormElement label="{i18n>matricula_usuario_txt}">
+                                    <f:fields>
+                                        <Input value="{EditUsuarioModel>/ID}" id="txtIdUser" liveChange="onInputIdChange"/>
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>nome_txt}">
+                                    <f:fields>
+                                        <Input value="{EditUsuarioModel>/nome}" />                                        
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>perfil_txt}">
+                                    <f:fields>
+                                        <ComboBox selectedKey="{EditUsuarioModel>/perfil_ID}" id="cmbPerfil" items="{path:'/Perfis', templateShareable:true}">
+									        <items>
+										        <core:Item key="{ID}" text="{descricao}"/>
+									        </items>
+								        </ComboBox>
+                                    </f:fields>
+                                </f:FormElement>                                
+                            </f:formElements>
+                        </f:FormContainer>
+                        <f:FormContainer title="{i18n>dados_hierarquia_title}">
+                            <f:formElements>
+                                <f:FormElement label="{i18n>cargo_porto_txt}">
+                                    <f:fields>
+                                        <Input value="{EditUsuarioModel>/cargo}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>diretor_geral_txt}">
+                                    <f:fields>
+                                        <Input value="{EditUsuarioModel>/diretorGeral}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>diretor_executivo_txt}">
+                                    <f:fields>
+                                        <Input value="{EditUsuarioModel>/diretorExecutivo}" />
+                                    </f:fields>
+                                </f:FormElement>
+                            </f:formElements>
+                        </f:FormContainer>
+                    </f:formContainers>
+                </f:Form>
+
+                <Table id="tblComissoesRep" width="100%" growing="true" growingScrollToLoad="true" growingThreshold="25" mode="Delete" delete="onTableItemDelete" updateFinished="onUpdateFinished" 
+								items="{path:'EditUsuarioModel>/comissoes/results', sorter : {
+                                                                                             path : 'comissao/descricao',
+                                                                                             descending : false
+                                                                                        }, templateShareable:true}">
+							<headerToolbar>
+								<OverflowToolbar design="Transparent">
+									<content>
+										<Title textAlign="Begin" text="{usuariosView>/comissoesUsuarioTableTitle}"/>                                    
+										<ToolbarSpacer/>
+										<Button visible="false" id="btnAddComissoes" icon="sap-icon://add-document" type="Transparent" 												
+												text="{i18n>novo_comissao_btn}" press="onNewComissaoPress">
+										<layoutData>
+											<OverflowToolbarLayoutData moveToOverflow="true"/>
+										</layoutData>
+									</Button>
+								</content>
+							</OverflowToolbar>
+						</headerToolbar>
+						<columns>
+                            <Column demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
+								<header>
+									<Text text="{i18n>comissao_txt}" width="auto"/>
+								</header>
+							</Column>					
+						</columns>
+						<items>
+							<ColumnListItem>
+								<cells>									
+                                    <Text text="{EditUsuarioModel>comissao/descricao}" />                                    							
+								</cells>
+							</ColumnListItem>
+						</items>
+					</Table>
+	        </VBox>
+
+        </content>
+        <footer>
+			<OverflowToolbar width="100%">
+				<content>					
+					<ToolbarSpacer width=""/>
+					<Button text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editUserView>/isEditMode}"/>
+					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+				</content>
+			</OverflowToolbar>
+		</footer>
+    </Page>
+</mvc:View>

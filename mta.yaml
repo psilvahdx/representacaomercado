@@ -11,6 +11,7 @@ modules:
   requires:
   - name: representacaomercado-db
   - name: uaa_representacaomercado
+  - name: dest_representacaomercado
   provides:
   - name: srv_api
     properties:
@@ -35,7 +36,7 @@ modules:
     properties:
       forwardAuthToken: true
       name: srv_api
-      url: ~{srv-url}
+      url: ~{srv-url}     
 - name: representacaomercado_ui_deployer
   type: com.sap.application.content
   path: app

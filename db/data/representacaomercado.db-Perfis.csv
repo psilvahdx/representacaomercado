@@ -1,5 +1,5 @@
-ID;descricao
-REP;Representante
-VP_DIR;VP/Diretor
-PRES;Presidente
-ADM;Compliance/Administrador
+ID;descricao;acoes_ID
+REP;Representante;REP
+VP_DIR;VP/Diretor;VP_DIR
+PRES;Presidente;PRES
+ADM;Compliance/Administrador;ADM

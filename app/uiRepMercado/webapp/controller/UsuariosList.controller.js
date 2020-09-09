@@ -5,13 +5,12 @@ sap.ui.define([
 	"../model/formatter",
 	"sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/m/MessageBox",
-    "sap/ui/model/Sorter"
-], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, Sorter) {
+    "sap/m/MessageBox"
+], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox) {
 	"use strict";
-   
-	return BaseController.extend("ps.uiRepMercado.controller.Temas", {
-        
+
+	return BaseController.extend("ps.uiRepMercado.controller.UsuariosList", {
+
 		formatter: formatter,
 
 		/* =========================================================== */
@@ -30,18 +29,25 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle : this.getResourceBundle().getText("worklistTableTitle"),				
+				usuariosTableTitle : this.getResourceBundle().getText("usuariosTableTitle"),				
 				tableNoDataText : this.getResourceBundle().getText("tableNoDataText")
 			});
-            this.setModel(oViewModel, "temasView");
+            this.getRouter().getRoute("cadUserApp").attachPatternMatched(this._onObjectMatched, this);
+            this.setModel(oViewModel, "usuariosView"); 
 
-			// Add the worklist page to the flp routing history
-			this.addHistoryEntry({
-				title: this.getResourceBundle().getText("temasViewTitle"),
-				icon: "sap-icon://table-view",
-				intent: "#RepresentacaoMercado-display"
-			}, true);
-        
+        },
+
+        /**
+		 * Binds the view to the object path.
+		 * @function
+		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
+		 * @private
+		 */
+        _onObjectMatched: function (oEvent) {
+            //var sObjectId = oEvent.getParameter("arguments").idUser;  
+                var isValid = true;              
+
+           
         },
         
         getUserData: function(){
@@ -118,36 +124,18 @@ sap.ui.define([
 			// only update the counter if the length is final and
 			// the table is not empty
 			if (iTotalItems && oTable.getBinding("items").isLengthFinal()) {
-				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems]);
+				sTitle = this.getResourceBundle().getText("usuariosTableTitleCount", [iTotalItems]);
 			} else {
-                sTitle = this.getResourceBundle().getText("worklistTableTitle");
-                sMessage = this.getResourceBundle().getText("nenhum_registro_encontrado_cadastro");
-                var oFilterData = this.getModel("filterModel").getData();
-                if(oFilterData.temas.tema !== ""){
-                MessageBox.information(
-				sMessage,
-				{
-					actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-					onClose: function(sAction) {
-						if(sAction === MessageBox.Action.YES){
-							that.getRouter().navTo("detalheTema", {
-				                idTema: "New"
-			                }); 
-						}
-					}
-				}
-            );
-            }
-
-
+                sTitle = this.getResourceBundle().getText("usuariosTableTitle");
+                sMessage = this.getResourceBundle().getText("nenhum_registro_encontrado_cadastro");  
 			}
-            this.getModel("temasView").setProperty("/worklistTableTitle", sTitle);
+            this.getModel("usuariosView").setProperty("/usuariosTableTitle", sTitle);
             this.getUserData();
         },
         
         onCreatePress: function(oEvent){
-           this.getRouter().navTo("detalheTema", {
-				idTema: "New"
+           this.getRouter().navTo("detalheUsuario", {
+				idUser: "New"
 			}); 
         },
 
@@ -161,40 +149,44 @@ sap.ui.define([
 			oObject = this.getModel().getObject(oContext.getPath());
 
 			//this.showBusy();
-			this.getRouter().navTo("detalheTema", {
-				idTema: oObject.ID
+			this.getRouter().navTo("detalheUsuario", {
+				idUser: oObject.ID
 			});
         },
-
-        createFilter: function(key, value, operator, useToLower) {
-	        return new Filter(useToLower ? "tolower(" + key + ")" : key, operator, useToLower ? "'" + value.toLowerCase() + "'" : value)
-        },
         
-        buildFilters: function (oFilterTema) {
+        buildFilters: function (oFilterUser) {
 
             var aFilter = new Filter([]),
 			    oFilter = {};
             
-                if(oFilterTema.tema){
-                    oFilter = this.createFilter("descricao", oFilterTema.tema, FilterOperator.Contains,true);
+                if(oFilterUser.ID){
+                    oFilter = new Filter("ID", FilterOperator.EQ, oFilterUser.ID);
 				    aFilter.aFilters.push(oFilter);
                 }
-                if (oFilterTema.status) {
-                    for (let i = 0; i < oFilterTema.status.length; i++) {
-                        var status_ID = oFilterTema.status[i];
-                        oFilter = new Filter("status_ID", FilterOperator.EQ, status_ID);
+                 if(oFilterUser.nome){
+                    oFilter = new Filter("nome", FilterOperator.Contains, oFilterUser.nome);
+				    aFilter.aFilters.push(oFilter);
+                }
+                if(oFilterUser.matricula){
+                    oFilter = new Filter("matricula", FilterOperator.Contains, oFilterUser.matricula);
+				    aFilter.aFilters.push(oFilter);
+                }
+                if (oFilterUser.perfil) {
+                    for (let i = 0; i < oFilterUser.perfil.length; i++) {
+                        var perfil_ID = oFilterUser.perfil[i];
+                        oFilter = new Filter("perfil_ID", FilterOperator.EQ, perfil_ID);
 				        aFilter.aFilters.push(oFilter); 
                     }
                     
                 }
-                if (oFilterTema.comissoes) {
+                /*if (oFilterTema.comissoes) {
                     for (let i = 0; i < oFilterTema.comissoes.length; i++) {
                         var comissao_ID = oFilterTema.comissoes[i];
                         oFilter = new Filter("comissao_ID", FilterOperator.EQ, comissao_ID);
 				        aFilter.aFilters.push(oFilter); 
                     }
                     
-                }
+                }*/
 
             return aFilter;
         },
@@ -207,25 +199,24 @@ sap.ui.define([
 			} else {
                 var aTableSearchState = [],
                     filterModel = this.getModel("filterModel"),
-                    oTable = this.byId("tblTemas"),
+                    oTable = this.byId("tblUsers"),
 				    oBinding = oTable.getBinding("items"),			
-                    oFilterTemas = filterModel.getProperty("/temas"),
-                    aSelKeysStatus = this.byId("mtCBoxStatus").getSelectedKeys(),
-                    aSelKeysComis = this.byId("mtCBoxComissoes").getSelectedKeys(); 
-                    if(aSelKeysStatus && aSelKeysStatus.length > 0 ){
-                         oFilterTemas.status = aSelKeysStatus;
+                    oFilterUsuarios= filterModel.getProperty("/usuarios"),
+                    aSelKeysPerfil = this.byId("mtCBoxPerfil").getSelectedKeys();
+                    //aSelKeysComis = this.byId("mtCBoxComissoes").getSelectedKeys(); 
+                    if(aSelKeysPerfil && aSelKeysPerfil.length > 0 ){
+                         oFilterUsuarios.perfil = aSelKeysPerfil;
                     }else{
-                        oFilterTemas.status = [];
+                        oFilterUsuarios.perfil = [];
                     }  
-                    if(aSelKeysComis && aSelKeysComis.length > 0 ){
+                   /* if(aSelKeysComis && aSelKeysComis.length > 0 ){
                          oFilterTemas.comissoes = aSelKeysComis;
                     }else{
                         oFilterTemas.comissoes = [];
-                    }                      
+                    }   */                   
                    
-                aTableSearchState = this.buildFilters(oFilterTemas);
-                oBinding.filter(aTableSearchState.aFilters);
-                //this._applySearch(aTableSearchState);
+                aTableSearchState = this.buildFilters(oFilterUsuarios);
+                oBinding.filter(aTableSearchState.aFilters);               
 			}
 
         },     
@@ -236,13 +227,15 @@ sap.ui.define([
 		 * @public
 		 */
 		onRefresh : function () {
-			var oTable = this.byId("tblTemas");
+			var oTable = this.byId("tblUsers");
 			oTable.getBinding("items").refresh();
-		},
+		},       
 
-        onCadUserTilePress: function(oEvent){
-             this.getRouter().navTo("cadUserApp"); 
+		/* =========================================================== */
+		/* internal methods                                            */
+		/* =========================================================== */
+        _onPageNavButtonPress: function(oEvent){
+             history.go(-1);
         }
-
 	});
 });

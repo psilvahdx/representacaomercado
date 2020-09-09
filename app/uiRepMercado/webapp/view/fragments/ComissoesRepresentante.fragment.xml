@@ -1,16 +1,16 @@
 <core:FragmentDefinition xmlns:core="sap.ui.core"  xmlns="sap.m">
-    <TableSelectDialog noDataText="{i18n>falha_na_requisi_txt}" multiSelect="false" 
+    <TableSelectDialog noDataText="{i18n>falha_na_requisi_txt}" multiSelect="true" 
     confirm="_onDefineComissaoPress" title="{i18n>comissoes_title}" liveChange="_onSearchComissoes" items="{
-			path : 'comissoesModel>/results',
+			path : 'comissoesRepModel>/results',
             sorter : {
-				path : 'comissao/descricao',
+				path : 'descricao',
 				descending : false
 			}
 		}">
         <items>
             <ColumnListItem press="_onDefineComissaoPress">
                 <cells>
-                    <Text text="{comissoesModel>comissao/descricao}" />
+                    <Text text="{comissoesRepModel>descricao}" />
                 </cells>
             </ColumnListItem>
         </items>
