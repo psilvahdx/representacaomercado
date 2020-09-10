@@ -176,7 +176,13 @@ sap.ui.define([
 			    oFilter = {};
             
                 if(oFilterTema.tema){
-                    oFilter = this.createFilter("descricao", oFilterTema.tema, FilterOperator.Contains,true);
+                    //oFilter = this.createFilter("descricao", oFilterTema.tema, FilterOperator.Contains,true);
+                    oFilter = new Filter({
+                                path: 'descricao',
+                                operator: FilterOperator.Contains,
+                                value1: oFilterTema.tema,
+                                caseSensitive: false
+                            });
 				    aFilter.aFilters.push(oFilter);
                 }
                 if (oFilterTema.status) {

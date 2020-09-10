@@ -13,7 +13,7 @@
     "resources": "resources.json",
     "dataSources": {
       "mainService": {
-        "uri": "/v2/services/compliance/",
+        "uri": "/srv_api/v2/services/compliance/",
         "type": "OData",
         "settings": {
           "odataVersion": "2.0",
