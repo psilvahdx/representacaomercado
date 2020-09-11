@@ -8,7 +8,7 @@ const qs = require('qs');
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
     const db = await cds.connect.to("db");
-    const { Temas, Historico, Usuarios, ComissoesRepresentante, UsersExtensions, Perfis, PerfilAcoes, Comissoes, AppSettings } = service.entities;
+    const { Temas, Historico, Usuarios, ComissoesRepresentante, UsersExtensions, Perfis, PerfilAcoes, Comissoes, AppSettings, Reguladores } = service.entities;
 
 
     //Before Events
@@ -30,6 +30,26 @@ module.exports = cds.service.impl(async (service) => {
         console.debug('ID:', context.data.ID)
         console.debug('Dados usuario logado:', context.user)
 
+    });
+
+    service.before("CREATE", Reguladores, async (context) => {
+        const reguladorId = new SequenceHelper({
+            db: db,
+            sequence: "REGULADORES_ID",
+            table: "REPRESENTACAOMERCADO_DB_REGULADORES",
+            field: "ID"
+        });
+        context.data.ID = await reguladorId.getNextNumber();
+    });
+
+    service.before("CREATE", Comissoes, async (context) => {
+        const comissaoId = new SequenceHelper({
+            db: db,
+            sequence: "COMISSOES_ID",
+            table: "REPRESENTACAOMERCADO_DB_COMISSOES",
+            field: "ID"
+        });
+        context.data.ID = await comissaoId.getNextNumber();
     });
 
     service.before("CREATE", Historico, async (context) => {

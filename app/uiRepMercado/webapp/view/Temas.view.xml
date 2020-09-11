@@ -138,6 +138,18 @@
 			    <ImageContent src="sap-icon://user-edit" />
 		    </TileContent>
 	    </GenericTile>
+         <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>cadastro_reguladores_title}"
+		subheader="" press="onCadReguladoresTilePress">
+		    <TileContent footer="{i18n>cadastro_reguladores_footer}">
+			    <ImageContent src="sap-icon://write-new-document" />
+		    </TileContent>
+	    </GenericTile>
+        <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>cadastro_comissoes_title}"
+		subheader="" press="onCadComissoesTilePress">
+		    <TileContent footer="{i18n>cadastro_comissoes_footer}">
+			    <ImageContent src="sap-icon://request" />
+		    </TileContent>
+	    </GenericTile>
     </IconTabFilter>		
 </items>
 </IconTabBar>	

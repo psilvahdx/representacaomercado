@@ -21,6 +21,7 @@ mta_archives/
 .DS_Store
 *.orig
 *.log
+db/data/representacaomercado.db-AppSettings.csv
 
 *.iml
 *.flattened-pom.xml

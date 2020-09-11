@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable @sap/ui5-jsdocs/no-jsdoc */
 sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
@@ -116,7 +118,8 @@ sap.ui.define([
 				oTable = oEvent.getSource(),
 				iTotalItems = oEvent.getParameter("total");
 			// only update the counter if the length is final and
-			// the table is not empty
+            // the table is not empty
+             // @ts-ignore
 			if (iTotalItems && oTable.getBinding("items").isLengthFinal()) {
 				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems]);
 			} else {
@@ -248,6 +251,14 @@ sap.ui.define([
 
         onCadUserTilePress: function(oEvent){
              this.getRouter().navTo("cadUserApp"); 
+        },
+
+        onCadReguladoresTilePress: function(){
+            this.getRouter().navTo("cadReguladoresApp"); 
+        },
+        
+        onCadComissoesTilePress: function(){
+            this.getRouter().navTo("cadComissoesApp"); 
         }
 
 	});

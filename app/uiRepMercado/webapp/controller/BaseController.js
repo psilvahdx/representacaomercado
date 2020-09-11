@@ -1,3 +1,6 @@
+// @ts-nocheck
+/* eslint-disable no-undef */
+/* eslint-disable @sap/ui5-jsdocs/no-jsdoc */
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",

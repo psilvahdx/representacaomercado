@@ -1,0 +1,176 @@
+{
+    "ClassProcess":[
+        {
+            "text": "Atendimento ao Cliente",           
+            "description": "Processos que prestam atendimento diretamente ao cliente/segurado.",
+            "value": 15
+        },
+        {
+            "text": "Backoffice e suporte",           
+            "description": "Processos que apoiam diretamente as áreas de negócio e operação do produto.",
+            "value": 12
+        },
+        {
+            "text": "Comercial e Vendas",            
+            "description": "Processos que realizam vendas direta e indireta dos produtos da cia. Ex.: Direta: Telemarketing/ Canais Digitais",
+            "value": 12
+        },
+        {
+            "text": "Contábil e Provisão",            
+            "description": "Processos que apoiam diretamente a geração e consolidação de informações para formar dados financeiros de desempenho e obrigações (exemplo: demonstrações contábeis, necessidade de provisões e fluxo de caixa)",
+            "value": 12
+        },
+        {
+            "text": "Controle/Gestão",           
+            "description": "Processos responsáveis por realizar acompanhamento de resultados, paineis de indicadores, apoio à gestão, controle de qualidade, atendimento à orgãos reguladores, informações estatísticas e de mercado, etc.",
+            "value": 6
+        },
+        {
+            "text": "N/A",            
+            "description": "Quando não se aplica nenhuma das categorias anteriores",
+            "value": 3
+        }
+    ],
+    "ImpactoOper":[
+         {
+            "text": "Atendimento ao Cliente",           
+            "description": "Quando o assunto provocar impacto no atendimento ao cliente/segurado.",
+            "value": 10
+        },
+        {
+            "text": "Comercialização de produtos",           
+            "description": "Quando o assunto provocar impacto nas vendas diretas e indiretas dos produtos da cia. Ex.: Direta: Telemarketing/ Canais Digitais.",
+            "value": 8
+        },
+        {
+            "text": "Outras áreas da Cia",            
+            "description": "Quando o assunto provocar impactos direta ou indiretamente em 2 (duas) ou mais áreas de negócio e operação do produto (incluindo áreas corporativas).",
+            "value": 6
+        },
+        {
+            "text": "Somente a área",            
+            "description": "Quando a indisponibilidade provoca impacto direto/indireto à rotina de atividades da área.",
+            "value": 4
+        },
+        {
+            "text": "Nenhum impacto",           
+            "description": "Quando a indisponibilidade não causa nenhum impacto",
+            "value": 2
+        }
+    ],
+    "Esforco":[
+         {
+            "text": "Estrutural",           
+            "description": "Mudanças que necessitem de ajustes sistêmicos e estruturais na operação de forma que a sua falta de execução torna a operação impeditiva. Mudanças em regras e critérios de comercialização que possam inviabilizar a manutenção do negócio.",
+            "value": 10
+        },
+        {
+            "text": "Processo",           
+            "description": "Quando o assunto provocar impacto nas vendas diretas e indiretas dos produtos da cia. Ex.: Direta: Telemarketing/ Canais Digitais.",
+            "value": 8
+        },
+        {
+            "text": "Atividade",            
+            "description": "Correções em procedimentos operacionais e conceituais, sem revisões ou modificações sistêmicas que impactem a venda e comercialização de produtos. Adequações e ajustes de atividades internas para geração de dados e indicadores da operação ou reporte à órgãos reguladores de natureza operacional e não financeira.",
+            "value": 4
+        },
+        {
+            "text": "N/A",            
+            "description": "Quando não se aplica nenhuma das categorias anteriores",
+            "value": 2
+        }
+    ],
+    "TempoAdaptacao":[
+         {
+            "text": "até 30 dias",           
+            "description": "Caso seja necessário alguma adaptação em processos (sistemas ou atividade operacional), em quanto tempo será exigível esta correção? Para definição do item tempo para impacto, considerar eventuais contingências e/ou procedimentos alternativos que permitam a continuidade de execução do processo.",
+            "value": 10
+        },
+        {
+            "text": "de 30 a 90 dias",           
+            "description": "Caso seja necessário alguma adaptação em processos (sistemas ou atividade operacional), em quanto tempo será exigível esta correção? Para definição do item tempo para impacto, considerar eventuais contingências e/ou procedimentos alternativos que permitam a continuidade de execução do processo.",
+            "value": 8
+        },
+        {
+            "text": "90 a 180 dias",            
+            "description": "Caso seja necessário alguma adaptação em processos (sistemas ou atividade operacional), em quanto tempo será exigível esta correção? Para definição do item tempo para impacto, considerar eventuais contingências e/ou procedimentos alternativos que permitam a continuidade de execução do processo.",
+            "value": 6
+        },
+        {
+            "text": "acima de 180 dias",            
+            "description": "Caso seja necessário alguma adaptação em processos (sistemas ou atividade operacional), em quanto tempo será exigível esta correção? Para definição do item tempo para impacto, considerar eventuais contingências e/ou procedimentos alternativos que permitam a continuidade de execução do processo.",
+            "value": 4
+        },
+        {
+            "text": "N/A",           
+            "description": "Caso seja necessário alguma adaptação em processos (sistemas ou atividade operacional), em quanto tempo será exigível esta correção? Para definição do item tempo para impacto, considerar eventuais contingências e/ou procedimentos alternativos que permitam a continuidade de execução do processo.",
+            "value": 2
+        }
+    ],
+     "AmadurecimentoTema":[
+         {
+            "text": "Consolidado",           
+            "description": "Quando o tema é exigível no curto prazo e suas definições, conceitos e objetivos estão claramente definidos, não sendo passível de modificações ou abertura de discussões sobre a sua eficácia, aplicabilidade ou exigência.",
+            "value": 15
+        },
+        {
+            "text": "Alinhamento",           
+            "description": "Quando o tema for apresentado e se encontra em fase de entendimento a avaliação de aplicabilidade ou impactos, sendo certo que será necessário sua adoção no tempo, todavia, carecendo de definições técnicas, alinhamentos operacionais e formato de consolidação (normas publicados com vigor futuro, temas necessários de ajuste e consolidação da posição de mercado sem impacto para a sociedade, etc).",
+            "value": 12
+        },
+        {
+            "text": "Preliminar",            
+            "description": "Quando o tema for apresentado e se encontra em fase de sugestões e construção da ideia e objetivo principal, carecendo de opniões e desdobramentos técnicos, políticos ou de investimento para sua realização (exemplo: normas em audiência pública, estudo de códigos e condutas de mercado, etc).",
+            "value": 6
+        },       
+        {
+            "text": "N/A",           
+            "description": "Quando o tema for apenas uma ideia, sem qualquer evolução quanto a sua aplicação e abrangência (exemplo: desejo de mercado e objetivos futuros de melhoria ou adequação)",
+            "value": 3
+        }
+    ],
+    "IpactoFinanceiro":[
+         {
+            "text": "Acima de R$ 10 milhões ao ano",           
+            "description": "Quando o impacto provocar perda/economia financeira acima da faixa descrita no item (ao ano)",
+            "value": 5
+        },
+        {
+            "text": "Acima de R$ 2 milhões e abaixo de R$ 10 milhões ao ano",           
+            "description": "Quando o impacto provocar perda/economia financeira entre as faixas descritas no item (ao ano)",
+            "value": 4
+        },
+        {
+            "text": "Acima de R$ 500 mil e abaixo de R$ 2 milhões ao ano",            
+            "description": "Quando o impacto provocar perda/economia financeira entre as faixas descritas no item (ao ano)",
+            "value": 3
+        },
+        {
+            "text": "Acima de R$ 50 mil e abaixo de R$ 500 mil ao ano",            
+            "description": "Quando o impacto provocar perda/economia financeira entre as faixas descritas no item (ao ano)",
+            "value": 2
+        },
+        {
+            "text": "Abaixo de R$ 50 mil ao ano",           
+            "description": "Quando o impacto provocar perda/economia financeira abaixo da faixa descrita no item (ao ano)",
+            "value": 1
+        }
+    ],
+    "Origem":[
+         {
+            "text": "Regulatório",           
+            "description": "Quando afeta diretamente o atendimento à uma regulamentação.",
+            "value": 15
+        },
+        {
+            "text": "Prática de Mercado",           
+            "description": "Quando afeta diretamente o atendimento às práticas e condutas de mercado.",
+            "value": 9
+        },
+        {
+            "text": "Optativo",            
+            "description": "Quando o processo não atende diretamente nenhuma regulamentação ou alinhamentos realizados em condutas de mercado.",
+            "value": 3
+        }
+    ]
+}

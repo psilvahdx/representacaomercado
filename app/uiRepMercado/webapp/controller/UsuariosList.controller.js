@@ -1,3 +1,4 @@
+// @ts-nocheck
 sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
@@ -44,9 +45,13 @@ sap.ui.define([
 		 * @private
 		 */
         _onObjectMatched: function (oEvent) {
-            //var sObjectId = oEvent.getParameter("arguments").idUser;  
-                var isValid = true;              
-
+            
+                var oModel = this.getModel(),
+                oObject = this.getModel("userLogModel").getData();
+            
+                if(oObject.userLog.userProfile_ID !== "ADM"){
+            	    this.getRouter().navTo("temasList");
+                }              
            
         },
         

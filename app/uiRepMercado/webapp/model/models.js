@@ -45,6 +45,39 @@ sap.ui.define([
             return new JSONModel({
 				userLog: {}
             });
+        },
+
+        createAvaliacaoSelectedModel: function(){
+            return new JSONModel({
+                classifProcess:{
+                    text:"",
+                    value: ""
+                },
+                impactoOper:{
+                    text:"",
+                    value: ""
+                },
+                esforco:{
+                    text:"",
+                    value: ""
+                },
+                tempoAdaptacao:{
+                    text:"",
+                    value: ""
+                },
+                amadurecimentoTema:{
+                    text:"",
+                    value: ""
+                },
+                impactoFinanceiro:{
+                    text:"",
+                    value: ""
+                },
+                origem:{
+                    text:"",
+                    value: ""
+                }
+            });
         }
 
 	};

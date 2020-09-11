@@ -80,7 +80,8 @@
 												<Label text="{i18n>criticidade_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<ComboBox id="cmbCriticidade" selectedKey="{EditTemaModel>/criticidade_ID}" items="{path:'/Criticidades', templateShareable:true}" editable="true" enabled="true" >
+												<ComboBox id="cmbCriticidade" selectedKey="{EditTemaModel>/criticidade_ID}" 
+                                                items="{path:'/Criticidades', templateShareable:true}" editable="{userLogModel>/userLog/acoes/isCadastroVisible}" enabled="true" >
 													<items>
 														<core:Item key="{ID}" text="{descricao}"/>													
 													</items>
@@ -92,12 +93,7 @@
 												<Label text="{i18n>regulador_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-                                                <Input  value="{EditTemaModel>/regulador/descricao}" editable="false"/>
-												<!--<ComboBox selectedKey="{EditTemaModel>/regulador_ID}" items="{path:'/Reguladores', templateShareable:true}" editable="true" enabled="true" >
-													<items>
-														<core:Item key="{ID}" text="{descricao}"/>													
-													</items>
-												</ComboBox>-->
+                                                <Input  value="{EditTemaModel>/regulador/descricao}" editable="false"/>												
 											</form:fields>
 										</form:FormElement>
 									</form:formElements>
@@ -219,7 +215,7 @@
 									</form:formElements>
 									<form:title/>
 								</form:FormContainer>
-								<form:FormContainer visible="true">
+								<form:FormContainer visible="false">
 									<form:formElements>
 										<form:FormElement>
 											<form:label>
@@ -263,7 +259,7 @@
 												<Label text="{i18n>comissao_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<Input type="Text" value="{EditTemaModel>/comissao/descricao}"
+												<Input id="inpComissao" type="Text" value="{EditTemaModel>/comissao/descricao}"
 														valueHelpOnly="true"  valueHelpRequest="openDialogComissao" showValueHelp="true"
 														enabled="true" />
 											</form:fields>

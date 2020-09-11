@@ -1,0 +1,157 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"  xmlns="sap.m" xmlns:u="sap.ui.unified" xmlns:mvc="sap.ui.core.mvc">
+<Dialog stretch="true" title="{i18n>criterios_avaliacao_title}">
+	<NavContainer id="wizardNavContainer">
+			<pages>
+				<Page
+				id="wizardContentPage"
+				showHeader="false">
+					<content>
+						<Wizard id="criteriosDeAvaliacaoWizard" class="sapUiResponsivePadding--header sapUiResponsivePadding--content"
+								complete="wizardCompletedHandler">
+							<WizardStep id="ClassifProcessStep"
+										title="{i18n>classif_process_title}"
+										validated="false"
+                                        activate="itemSelectedValidation">
+								<VBox>                                
+                                    	<List id="lstClassProcess" mode="SingleSelectLeft" 
+                                        includeItemInSelection="true"
+                                        backgroundDesign="Transparent"
+                                        showSeparators="None"
+                                        selectionChange="itemSelectedValidation"
+                                        items="{AvaliacaoModel>/ClassProcess}" >
+                                            <CustomListItem>
+                                                <HBox>
+                                                    <Text text="{AvaliacaoModel>text}"/>
+                                                    <core:Icon src="sap-icon://message-information" press="handleResponsivePopoverPress" class="sapUiSmallMarginBegin" />                                                    
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                 </VBox>
+							</WizardStep>
+                            <WizardStep id="ImpactoOperStep"
+										title="{i18n>impacto_oper_title}"
+										validated="false">
+								<VBox>                                   
+                                    <List  id="lstImpactoOper" mode="SingleSelectLeft" 
+                                        includeItemInSelection="true"
+                                        backgroundDesign="Transparent"
+                                        showSeparators="None"
+                                        selectionChange="itemSelectedValidation"
+                                        items="{AvaliacaoModel>/ImpactoOper}" >
+                                            <CustomListItem>
+                                                <HBox>
+                                                    <Text text="{AvaliacaoModel>text}"/>
+                                                    <core:Icon src="sap-icon://message-information" press="handleResponsivePopoverPress" class="sapUiSmallMarginBegin" />                                                    
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                </VBox>
+							</WizardStep>	
+                             <WizardStep id="EsforcoStep"
+										title="{i18n>esforco_title}"
+										validated="false">
+								<VBox>                                   
+                                     <List id="lstEsforco" mode="SingleSelectLeft" 
+                                        includeItemInSelection="true"
+                                        backgroundDesign="Transparent"
+                                        showSeparators="None"
+                                        selectionChange="itemSelectedValidation"
+                                        items="{AvaliacaoModel>/Esforco}" >
+                                            <CustomListItem>
+                                                <HBox>
+                                                    <Text text="{AvaliacaoModel>text}"/>
+                                                    <core:Icon src="sap-icon://message-information" press="handleResponsivePopoverPress" class="sapUiSmallMarginBegin" />                                                    
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>                                    
+                                </VBox>
+							</WizardStep>	
+                            <WizardStep id="TempoAdaptacaoStep"
+										title="{i18n>tempo_adaptacao_title}"
+										validated="false">
+								<VBox>  
+                                    <List id="lstTempoAdaptacao" mode="SingleSelectLeft" 
+                                        includeItemInSelection="true"
+                                        backgroundDesign="Transparent"
+                                        showSeparators="None"
+                                        selectionChange="itemSelectedValidation"
+                                        items="{AvaliacaoModel>/TempoAdaptacao}" >
+                                            <CustomListItem>
+                                                <HBox>
+                                                    <Text text="{AvaliacaoModel>text}"/>
+                                                    <core:Icon src="sap-icon://message-information" press="handleResponsivePopoverPress" class="sapUiSmallMarginBegin" />                                                    
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>    
+                                </VBox>
+							</WizardStep>
+                             <WizardStep id="AmadurecimentoTemaStep"
+										title="{i18n>amadurecimento_tema_title}"
+										validated="false">
+								<VBox>                         
+                                      <List id="lstAmadurecimentoTema" mode="SingleSelectLeft" 
+                                        includeItemInSelection="true"
+                                        backgroundDesign="Transparent"
+                                        showSeparators="None"
+                                        selectionChange="itemSelectedValidation"
+                                        items="{AvaliacaoModel>/AmadurecimentoTema}" >
+                                            <CustomListItem>
+                                                <HBox>
+                                                    <Text text="{AvaliacaoModel>text}"/>
+                                                    <core:Icon src="sap-icon://message-information" press="handleResponsivePopoverPress" class="sapUiSmallMarginBegin" />                                                    
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                </VBox>
+							</WizardStep>
+                             <WizardStep id="ImpactoFinanceiroStep"
+										title="{i18n>impacto_financeiro_title}"
+										validated="false">
+								<VBox>                                   
+                                    <List id="lstIpactoFinanceiro" mode="SingleSelectLeft" 
+                                        includeItemInSelection="true"
+                                        backgroundDesign="Transparent"
+                                        showSeparators="None"
+                                        selectionChange="itemSelectedValidation"
+                                        items="{AvaliacaoModel>/IpactoFinanceiro}" >
+                                            <CustomListItem>
+                                                <HBox>
+                                                    <Text text="{AvaliacaoModel>text}"/>
+                                                    <core:Icon src="sap-icon://message-information" press="handleResponsivePopoverPress" class="sapUiSmallMarginBegin" />                                                    
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                </VBox>
+							</WizardStep>
+                            <WizardStep id="OrigemStep"
+										title="{i18n>origem_title}"
+										validated="false">
+								<VBox>                                  
+                                     <List id="lstOrigem" mode="SingleSelectLeft" 
+                                        includeItemInSelection="true"
+                                        backgroundDesign="Transparent"
+                                        showSeparators="None"
+                                        selectionChange="itemSelectedValidation"
+                                        items="{AvaliacaoModel>/Origem}" >
+                                            <CustomListItem>
+                                                <HBox>
+                                                    <Text text="{AvaliacaoModel>text}"/>
+                                                    <core:Icon src="sap-icon://message-information" press="handleResponsivePopoverPress" class="sapUiSmallMarginBegin" />                                                    
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                </VBox>
+							</WizardStep>											
+						</Wizard>
+					</content>
+					<footer>
+						<OverflowToolbar>
+							<ToolbarSpacer/>
+							<Button text="{i18n>cancelar_txt}" press="handleWizardCancel"/>
+						</OverflowToolbar>
+					</footer>
+				</Page>
+			</pages>
+		</NavContainer>
+</Dialog>        
+</core:FragmentDefinition>
