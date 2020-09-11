@@ -14,7 +14,9 @@ File / Folder | Purpose
 
 
 ## Next Steps...
-
+- Open a new terminal and run `npm install`
+- run `npm install @sap/cds`
+- Open App Folder and run `npm install`
 - Open a new terminal and run  `cds watch`
 - ( in VSCode simply choose _**Terminal** > Run Task > cds watch_ )
 - Start adding content, e.g. a [db/schema.cds](db/schema.cds), ...

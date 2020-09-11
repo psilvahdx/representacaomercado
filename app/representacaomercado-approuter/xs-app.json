@@ -1,5 +1,5 @@
 {
-    "welcomeFile": "/psuiRepMercado/index.html",
+    "welcomeFile": "/cp.portal",
     "authenticationMethod": "route",
     "routes": [
         {
@@ -10,7 +10,7 @@
             "target": "$1"
         },
         {
-            "source": "^(/.*)$",
+            "source": "^(.*)$",
             "target": "$1",
             "service": "html5-apps-repo-rt",
             "authenticationType": "xsuaa"

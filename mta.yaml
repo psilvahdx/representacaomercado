@@ -36,7 +36,8 @@ modules:
     properties:
       forwardAuthToken: true
       name: srv_api
-      url: ~{srv-url}     
+      url: ~{srv-url}
+  - name: portal_resources_representacaomercado
 - name: representacaomercado_ui_deployer
   type: com.sap.application.content
   path: app
@@ -60,11 +61,23 @@ modules:
     - npm install
     - npm run build
     supported-platforms: []
+- name: flp
+  type: com.sap.portal.content
+  path: flp
+  requires:
+  - name: portal_resources_representacaomercado
+  - name: representacaomercado_html_repo_host
+  - name: representacaomercado_ui_deployer
+  - name: uaa_representacaomercado
+  parameters:
+    buildpack: https://github.com/cloudfoundry/nodejs-buildpack/releases/download/v1.6.51/nodejs-buildpack-cflinuxfs3-v1.6.51.zip
+    memory: 128M
+    stack: cflinuxfs3
 resources:
 - name: representacaomercado-db
   type: com.sap.xs.hdi-container
   parameters:
-    service: hana    
+    service: hana
     service-plan: hdi-shared
   properties:
     hdi-service-name: ${service-name}
@@ -90,6 +103,11 @@ resources:
   parameters:
     service: destination
     service-plan: lite
+- name: portal_resources_representacaomercado
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: portal
+    service-plan: standard
 parameters:
   enable-parallel-deployments: true
 build-parameters:

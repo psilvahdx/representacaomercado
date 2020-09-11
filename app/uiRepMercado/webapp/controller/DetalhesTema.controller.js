@@ -558,7 +558,13 @@ sap.ui.define([
                 oFilter = {};
             
             delete oParams.ID;
-            oFilter = this.createFilter("descricao", oParams.descricao, FilterOperator.Contains, true);           
+            //oFilter = this.createFilter("descricao", oParams.descricao, FilterOperator.Contains, true);
+            oFilter = new Filter({
+                                path: 'descricao',
+                                operator: FilterOperator.Contains,
+                                value1: oParams.descricao,
+                                caseSensitive: false
+                            });           
             aFilter.aFilters.push(oFilter);
 
             oFilter = new Filter("status_ID", FilterOperator.NE, 4);//Encerrado
