@@ -1,9 +1,6 @@
 ## send post action
-POST http://localhost:4004/v2/services/compliance/ComissoesRepresentante
+POST http://localhost:4004/v2/services/compliance/Reguladores
 Authorization: Basic P0646683:1234
 Content-Type: application/json
 
-[
-{"usuario_ID": "P0646683","comissao_ID": 26},
-{"usuario_ID": "P0646683","comissao_ID": 18}
-]
+{"descricao": "Teste Reguladores"}
