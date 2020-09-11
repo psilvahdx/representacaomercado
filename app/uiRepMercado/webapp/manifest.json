@@ -150,6 +150,34 @@
           "target": [
             "detalheUsuario"
           ]
+        },
+        {
+          "pattern": "Reguladores",
+          "name": "cadReguladoresApp",
+          "target": [
+            "cadReguladoresApp"
+          ]
+        },
+        {
+          "pattern": "DetalhesRegulador-{idRegulador}",
+          "name": "detalhesRegulador",
+          "target": [
+            "detalhesRegulador"
+          ]
+        },
+        {
+          "pattern": "Comissoes",
+          "name": "cadComissoesApp",
+          "target": [
+            "cadComissoesApp"
+          ]
+        },
+        {
+          "pattern": "DetalhesComissao-{idComissao}",
+          "name": "detalhesComissao",
+          "target": [
+            "detalhesComissao"
+          ]
         }
       ],
       "targets": {
@@ -173,6 +201,26 @@
         "detalheUsuario": {
           "viewName": "DetalhesUsuario",
           "viewId": "detalheUsuario",
+          "viewLevel": 4
+        },
+        "cadReguladoresApp": {
+          "viewName": "ReguladoresList",
+          "viewId": "cadReguladoresApp",
+          "viewLevel": 3
+        },
+        "detalhesRegulador": {
+          "viewName": "DetalhesRegulador",
+          "viewId": "detalhesRegulador",
+          "viewLevel": 4
+        },
+        "cadComissoesApp": {
+          "viewName": "ComissoesList",
+          "viewId": "cadComissoesApp",
+          "viewLevel": 3
+        },
+        "detalhesComissao": {
+          "viewName": "DetalhesComissao",
+          "viewId": "detalhesComissao",
           "viewLevel": 4
         },
         "objectNotFound": {

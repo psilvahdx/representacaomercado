@@ -242,6 +242,14 @@ sap.ui.define([
 
         onCadUserTilePress: function(oEvent){
              this.getRouter().navTo("cadUserApp"); 
+        },
+
+        onCadReguladoresTilePress: function(){
+            this.getRouter().navTo("cadReguladoresApp"); 
+        },
+        
+        onCadComissoesTilePress: function(){
+            this.getRouter().navTo("cadComissoesApp"); 
         }
 
 	});

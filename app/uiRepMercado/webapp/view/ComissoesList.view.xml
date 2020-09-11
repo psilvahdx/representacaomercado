@@ -1,0 +1,71 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc"
+		controllerName="ps.uiRepMercado.controller.ComissoesList"
+		xmlns:f="sap.f" xmlns:variants="sap.ui.comp.variants" xmlns="sap.m" xmlns:filterbar="sap.ui.comp.filterbar" xmlns:core="sap.ui.core">
+	<Page id="page" showHeader="true" title="{i18n>cadastro_comissoes_title}" showFooter="false" showNavButton="true" navButtonPress="onPageNavButtonPress">
+		<!--FILTERBAR-->
+		<filterbar:FilterBar id="comissoesListFilterBar" useToolbar="false" showGoOnFB="true" searchEnabled="true" search="onSearch"> 
+            <filterbar:filterItems>
+                <filterbar:FilterItem label="{i18n>descricao}" name="fltDesc">
+                    <filterbar:control>                                                                                       
+                        <Input type="Text" id="filterDesc" placeholder="{i18n>descPlaceholder}" value="{comissoesView>/descricaoFilter}" />
+                    </filterbar:control>
+                </filterbar:FilterItem>
+                <filterbar:FilterItem label="{i18n>regulador}" name="fltReg">
+                    <filterbar:control>    
+                        <Input placeholder="{i18n>reguladorPlaceholder}" value="{comissoesView>/reguladorFilter}" id="filterRegulador" 
+                            showValueHelp="true" valueHelpOnly="true" valueHelpRequest="showReguladorValueHelp"/> 
+                    </filterbar:control>
+                </filterbar:FilterItem>
+            </filterbar:filterItems>
+        </filterbar:FilterBar>
+                <!--LISTA-->
+                <VBox fitContainer="true">
+					<items>
+						<Table id="tblComissoes" width="100%" growing="true" growingScrollToLoad="true" growingThreshold="25" mode="None" itemPress="onTableItemPress" updateFinished="onUpdateFinished" 
+								items="{path: '/Comissoes', parameters: { expand: 'regulador'}}">
+							<headerToolbar>
+								<OverflowToolbar design="Transparent">
+									<content>
+										<Title textAlign="Begin" text="{i18n>comissoesTableTitle}({comissoesView>/comissoesRowCount})"/>                                    
+										<ToolbarSpacer/>
+										<Button icon="sap-icon://add-document" type="Transparent" 
+												visible="true"
+												text="{i18n>new_comissao_btn}" press="onCreatePress">
+										<layoutData>
+											<OverflowToolbarLayoutData moveToOverflow="true"/>
+										</layoutData>
+									</Button>
+								</content>
+							</OverflowToolbar>
+						</headerToolbar>
+						<columns>
+                            <Column demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
+								<header>
+									<Text text="{i18n>comissaoId}" width="auto"/>
+								</header>
+							</Column>	
+							<Column demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
+								<header>
+									<Text text="{i18n>descricao}" width="auto"/>
+								</header>
+							</Column>	
+                            <Column demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
+								<header>
+									<Text text="{i18n>regulador}" width="auto"/>
+								</header>
+							</Column>				
+						</columns>
+						<items>
+							<ColumnListItem type="Navigation">
+								<cells>
+									<Text text="{ID}" />
+                                    <Text text="{descricao}" />		
+                                    <Text text="{regulador/descricao}" />							
+								</cells>
+							</ColumnListItem>
+						</items>
+					</Table>
+				</items>
+			</VBox>	
+	</Page>
+</mvc:View>

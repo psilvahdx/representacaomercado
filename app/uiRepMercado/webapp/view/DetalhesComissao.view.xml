@@ -1,0 +1,69 @@
+<mvc:View
+		controllerName="ps.uiRepMercado.controller.DetalhesComissao"
+		xmlns="sap.m"
+		xmlns:mvc="sap.ui.core.mvc"
+		xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Page showHeader="true" title="{i18n>cadastro_comissoes_title}" showFooter="true" showNavButton="true" 
+    enableScrolling="true" navButtonPress="onPageNavButtonPress">
+		<content>
+
+            <VBox class="sapUiSmallMargin">
+
+                <f:Form id="formCadComissao"
+                    editable="true">
+                    <f:title>
+                        <core:Title text="{i18n>cadastro_comissoes_title}" />
+                    </f:title>
+                    <f:layout>
+                        <f:ResponsiveGridLayout
+                            labelSpanXL="4"
+                            labelSpanL="3"
+                            labelSpanM="4"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="4"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            columnsXL="2"
+                            columnsL="1"
+                            columnsM="1"
+                            singleContainerFullSize="false" />
+                    </f:layout>
+                    <f:formContainers>
+                        <f:FormContainer title="{i18n>dados_pessoais_usuario_title}">
+                            <f:formElements>
+                                <f:FormElement label="{i18n>comissaoId}">
+                                    <f:fields>
+                                        <Input value="{ID}" id="txtIdComissao" enabled="false"/>
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>descricao}">
+                                    <f:fields>
+                                        <Input value="{descricao}" id="txtDescComissao" change="onDescChange"/>                                        
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>regulador}">
+                                    <f:fields>
+                                        <Input value="{regulador/descricao}" id="txtDescRegulador" 
+                                            showValueHelp="true" valueHelpOnly="true" valueHelpRequest="showReguladorValueHelp"/>                                        
+                                    </f:fields>
+                                </f:FormElement>               
+                            </f:formElements>
+                        </f:FormContainer>
+                    </f:formContainers>
+                </f:Form>
+	        </VBox>
+
+        </content>
+        <footer>
+			<OverflowToolbar width="100%">
+				<content>					
+					<ToolbarSpacer width=""/>
+					<Button text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editComissaoModel>/isEditMode}"/>
+					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+				</content>
+			</OverflowToolbar>
+		</footer>
+    </Page>
+</mvc:View>

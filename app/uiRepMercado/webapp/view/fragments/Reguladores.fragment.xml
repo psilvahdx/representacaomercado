@@ -1,0 +1,20 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"  xmlns="sap.m">
+    <TableSelectDialog noDataText="{i18n>falha_na_requisi_txt}" multiSelect="false" 
+    confirm="onReguladoresConfirm" cancel="onReguladoresConfirm" title="{i18n>reguladores_title}" liveChange="onSearchReguladores" 
+    items="{path : 'reguladoresModel>/results'}">
+        <items>
+            <ColumnListItem press="onReguladoresConfirm">
+                <cells>
+                    <Text text="{reguladoresModel>descricao}" />
+                </cells>
+            </ColumnListItem>
+        </items>
+        <columns>
+            <Column hAlign="Begin">
+                <header>
+                    <Text text="{i18n>regulador}" />
+                </header>
+            </Column>
+        </columns>
+    </TableSelectDialog>
+</core:FragmentDefinition>
