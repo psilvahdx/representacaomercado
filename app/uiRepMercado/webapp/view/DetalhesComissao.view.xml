@@ -61,7 +61,7 @@
 				<content>					
 					<ToolbarSpacer width=""/>
 					<Button text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editComissaoModel>/isEditMode}"/>
-					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+					<Button text="{i18n>voltar_txt}" type="Default" press="onCancel"/>
 				</content>
 			</OverflowToolbar>
 		</footer>

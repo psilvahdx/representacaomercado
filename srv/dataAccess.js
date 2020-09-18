@@ -13,8 +13,8 @@ module.exports = cds.service.impl(async (service) => {
 
     //Before Events
     service.before("READ", Temas, async (context) => {
-        console.log("Context User: ", context.user);
-        console.log("Context is Auth User: ", context.user.is('authenticated-user'));
+        //console.log("Context User: ", context.user);
+        //console.log("Context is Auth User: ", context.user.is('authenticated-user'));
 
     });
 
@@ -40,6 +40,8 @@ module.exports = cds.service.impl(async (service) => {
             field: "ID"
         });
         context.data.ID = await reguladorId.getNextNumber();
+
+        console.log("USUARIO >>>>>>>>>", context.user.id);
     });
 
     service.before("CREATE", Comissoes, async (context) => {
@@ -74,6 +76,7 @@ module.exports = cds.service.impl(async (service) => {
         const temas = await next();
         let usuario = {},
             aReturn = [],
+            aTemasUsuario = [],
             aUsers = [],
             aComissoesUsuario = [];
 
@@ -87,6 +90,8 @@ module.exports = cds.service.impl(async (service) => {
             aComissoesUsuario = await cds.read(ComissoesRepresentante).where({ usuario_ID: usuario.ID });
         }
 
+        const $filter = context._.odataReq.getQueryOptions() && context._.odataReq.getQueryOptions().$filter || undefined;
+
         switch (usuario.perfil_ID) {
             case "ADM":
             case "PRES":
@@ -94,11 +99,34 @@ module.exports = cds.service.impl(async (service) => {
                 break;
             case "REP":
                 //Representante somente visualiza Temas para as comissões que esta relacionado 
-                aReturn = temas.filter(function (tema_el) {
+                aTemasUsuario = temas.filter(function (tema_el) {
                     return aComissoesUsuario.filter(function (comissUsuario_el) {
                         return comissUsuario_el.comissao_ID == tema_el.comissao_ID;
                     }).length > 0
                 });
+                console.log("Chave na Consulta?: ", context.data.ID)
+                if (context.data.ID) {
+                    aReturn = aTemasUsuario;
+                }
+                else {
+
+                    if ($filter) {
+                        console.log("Filtro?: ", $filter)
+                        aReturn = aTemasUsuario;
+                    } else {
+                        console.log("Filtro?: ", $filter)
+                        //Somente visualiza temas Temas em aberto, caso não utilize filtros
+                        for (let i = 0; i < aTemasUsuario.length; i++) {
+                            const tema = aTemasUsuario[i];
+                            if (tema.status_ID != 4) {//Encerrado
+                                aReturn.push(tema);
+                            }
+                        }
+
+                    }
+
+                }
+
                 break;
             case "VP_DIR":
                 //visualização dos temas e painéis de sua responsabilidade               
@@ -160,7 +188,7 @@ module.exports = cds.service.impl(async (service) => {
     service.on("READ", UsersExtensions, async (context, next) => {
         console.log("USEREX", context.user.id);
 
-        console.log("Key",context.data.ID);
+        console.log("Key", context.data.ID);
         let aUsers = [],
             aUserProfile = [],
             oUserProfile = {},
@@ -188,15 +216,15 @@ module.exports = cds.service.impl(async (service) => {
                 userProfile: {}
             }
 
-        if(context.data.ID){
-           oUserEx.ID =  context.data.ID; 
+        if (context.data.ID) {
+            oUserEx.ID = context.data.ID;
         }
-        else{
+        else {
             oUserEx.ID = context.user.id;
-        }        
-        
+        }
+
         //Busca dados Usuário logado
-        aUsers = await cds.read(Usuarios).where({ ID: oUserEx.ID  });
+        aUsers = await cds.read(Usuarios).where({ ID: oUserEx.ID });
         if (aUsers.length > 0) {
             oUser = aUsers[0];
             console.log("USUARIO:", oUser);
@@ -214,7 +242,7 @@ module.exports = cds.service.impl(async (service) => {
                     oUserEx.acoes_ID = oPerfilAcao.ID;
                 }
             }
-        
+
             oUserEx.ID = oUser.ID;
             oUserEx.userProfile_ID = oUserProfile.ID;
             oUserEx.nomeColaborador = oUser.nome;
@@ -223,15 +251,15 @@ module.exports = cds.service.impl(async (service) => {
             oUserEx.telefone = oUser.telefone;
             oUserEx.diretor = oUser.diretorGeral;
             oUserEx.diretorGeral = oUser.diretorGeral;
-            oUserEx.superintendencia = oUser.diretorExecutivo; 
-            oUserEx.diretorExecutivo = oUser.diretorExecutivo; 
-        }             
+            oUserEx.superintendencia = oUser.diretorExecutivo;
+            oUserEx.diretorExecutivo = oUser.diretorExecutivo;
+        }
 
         //############## Chama Api de Hierarquia #################################
-         //Busca dados Usuário logado
-         let oAppSettings ={};
+        //Busca dados Usuário logado
+        let oAppSettings = {};
         const aAppSettings = await cds.read(AppSettings).where({ ID: 1 });
-        if ( aAppSettings.length > 0) {
+        if (aAppSettings.length > 0) {
             oAppSettings = aAppSettings[0];
         }
 
@@ -240,16 +268,16 @@ module.exports = cds.service.impl(async (service) => {
         //Busca Token       
         let ret_token = "",
             matricula = "";
-            const re = /\S+@\S+\.\S+/;
+        const re = /\S+@\S+\.\S+/;
 
-            if(re.test(oUserEx.ID)){
-                matricula = oUser.matricula;
-            }else{
-                matricula = oUserEx.ID;                
-            }     
+        if (re.test(oUserEx.ID)) {
+            matricula = oUser.matricula;
+        } else {
+            matricula = oUserEx.ID;
+        }
 
 
-         ret_token = await axios({
+        ret_token = await axios({
             method: 'post',
             url: oAppSettings.urlToken,
             headers: {
@@ -277,34 +305,129 @@ module.exports = cds.service.impl(async (service) => {
                     'Authorization': `Bearer ${ret_token}`
                 }
             }).then(function (response) {
-                console.log("Chamou API de Hierarquia com Token?: ", response.data); 
-               return  response.data;
+                console.log("Chamou API de Hierarquia com Token?: ", response.data);
+                return response.data;
             }).catch(function (error) {
                 console.log("Erro na Busca de Hierarquia:", error);
             });
-       
+
         //Complementa dados Usuário com retorno Api de Hierarquia
-        if( ret_api_hierarquia.nomeColaborador){
-            oUserEx.nomeColaborador = ret_api_hierarquia.nomeColaborador;                
-            oUserEx.cargo = ret_api_hierarquia.cargo;                
+        if (ret_api_hierarquia && ret_api_hierarquia.nomeColaborador) {
+            oUserEx.nomeColaborador = ret_api_hierarquia.nomeColaborador;
+            oUserEx.cargo = ret_api_hierarquia.cargo;
             oUserEx.diretor = ret_api_hierarquia.diretor;
             oUserEx.gerencia = ret_api_hierarquia.gerencia;
-            oUserEx.superintendencia = ret_api_hierarquia.superintendencia;           
-            oUserEx.diretorGeral =  ret_api_hierarquia.diretor;           
-            oUserEx.diretorExecutivo = ret_api_hierarquia.superintendencia; 
-        }       
-         console.log("Retorno:",oUserEx);
-        if(context.data.ID){
+            oUserEx.superintendencia = ret_api_hierarquia.superintendencia;
+            oUserEx.diretorGeral = ret_api_hierarquia.diretor;
+            oUserEx.diretorExecutivo = ret_api_hierarquia.superintendencia;
+        }
+        console.log("Retorno:", oUserEx);
+        if (context.data.ID) {
             return oUserEx;
         }
-        else{
-             aUsersEx.push(oUserEx);           
+        else {
+            aUsersEx.push(oUserEx);
             return aUsersEx;
         }
-       
+
         //################################################################ 
 
     });
+
+     service.before("UPDATE", Usuarios, async (context) => {
+
+        let usuario = {},            
+            aUsers = [];
+
+        //Busca dados Usuário logado
+         console.log(context.user);
+        aUsers = await cds.read(Usuarios).where({ ID: context.user.id });
+
+        if (aUsers.length > 0) {
+            usuario = aUsers[0];
+            console.log(usuario);
+            if (usuario.perfil_ID !== "ADM") {
+                context.reject(403, "Usuário não autorizado");               
+            }            
+        }else{
+             context.reject(403, "Usuário não autorizado"); 
+        }
+    });
+
+    service.on("deleteSelectedUsers", async req => {
+          
+       
+       console.log(req.data.ids.split(";"));
+       let aUsersDelete = req.data.ids.split(";");
+            for (let i = 0; i < aUsersDelete.length; i++) {
+                const userDel =  aUsersDelete[i];
+                if (userDel.length > 4) {
+                    console.log(userDel);                
+                  
+                    const delComissoesUsuario = await service.delete(ComissoesRepresentante).where({ usuario_ID: userDel })
+                    console.log("Comissoes usuario deletadas",delComissoesUsuario); 
+                    
+                    const delUsuario = await service.delete(Usuarios).where({ ID: userDel });
+                    console.log("Usuario deletado", delUsuario);  
+                     
+                }                
+              
+            }
+           
+    });
+
+
+    service.on("deleteSelectedReguladores", async req => {
+          
+       
+       console.log(req.data.ids.split(";"));
+       let aReguDelete = req.data.ids.split(";");
+            for (let i = 0; i < aReguDelete.length; i++) {
+                const reguDel =  aReguDelete[i];
+                if (reguDel !== "") {
+                                       
+                    try {
+                         console.log(reguDel);  
+                         const deRegulador = await service.delete(Reguladores).where({ ID: reguDel })
+                        console.log("Regulador deletado",deRegulador);    
+                    } catch (error) {
+                        console.log("Errro ao excluir Regulaodr", error);
+                        req.reject(400, error);
+                    }
+                  
+                                  
+                     
+                }                
+              
+            }
+           
+    });
+
+
+    service.on("deleteSelectedComissoes", async req => {
+          
+       
+       console.log(req.data.ids.split(";"));
+       let aComissoesDelete = req.data.ids.split(";");
+            for (let i = 0; i < aComissoesDelete.length; i++) {
+                const comissaoDel =  aComissoesDelete[i];
+                if (comissaoDel !== "") {
+
+                    try {
+                        console.log(comissaoDel); 
+                        const delComissao = await service.delete(Comissoes).where({ ID: comissaoDel })
+                        console.log("Comissao deletada",delComissao); 
+                    } catch (error) {
+                        console.log("Errro ao excluir Comissao", error);
+                        req.reject(400, error);
+                    }
+                   
+                   
+                }                
+              
+            }
+           
+    });    
 
 });
 

@@ -35,12 +35,12 @@
                             <f:formElements>
                                 <f:FormElement label="{i18n>matricula_usuario_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/ID}" id="txtIdUser" liveChange="onInputIdChange"/>
+                                        <Input maxLength="8" placeholder="F0000000" value="{EditUsuarioModel>/ID}" id="txtIdUser" liveChange="onInputIdChange"/>
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>nome_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/nome}" />                                        
+                                        <Input id="txtNomeUser" value="{EditUsuarioModel>/nome}" />                                        
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>perfil_txt}">
@@ -58,17 +58,17 @@
                             <f:formElements>
                                 <f:FormElement label="{i18n>cargo_porto_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/cargo}" />
+                                        <Input id="txtCargoUser" value="{EditUsuarioModel>/cargo}" />
                                     </f:fields>
                                 </f:FormElement>
-                                <f:FormElement label="{i18n>diretor_geral_txt}">
+                                <f:FormElement label="{i18n>diretor_vp_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/diretorGeral}" />
+                                        <Input id="txtDiretorGeralUser" value="{EditUsuarioModel>/diretorGeral}" />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>diretor_executivo_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/diretorExecutivo}" />
+                                        <Input id="txtDiretorExecutivoUser" value="{EditUsuarioModel>/diretorExecutivo}" />
                                     </f:fields>
                                 </f:FormElement>
                             </f:formElements>
@@ -117,8 +117,8 @@
 			<OverflowToolbar width="100%">
 				<content>					
 					<ToolbarSpacer width=""/>
-					<Button text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editUserView>/isEditMode}"/>
-					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+					<Button id="btnSalvarUser" text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editUserView>/isEditMode}"/>
+					<Button text="{i18n>voltar_txt}" type="Default" press="onCancel"/>                   
 				</content>
 			</OverflowToolbar>
 		</footer>

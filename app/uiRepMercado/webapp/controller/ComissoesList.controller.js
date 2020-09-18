@@ -11,7 +11,7 @@ sap.ui.define([
 ], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox) {
 	"use strict";
 
-	return BaseController.extend("ps.uiRepMercado.controller.ReguladoresList", {
+	return BaseController.extend("ps.uiRepMercado.controller.ComissoesList", {
 
         formatter: formatter,
         
@@ -29,7 +29,13 @@ sap.ui.define([
         },
 
         _onObjectMatched: function () {
-            var oTableBinding = this.getView().byId("tblComissoes").getBinding("items");
+            var oTableBinding = this.getView().byId("tblComissoes").getBinding("items"),
+                oObject = this.getModel("userLogModel").getData();
+            
+            if(oObject.userLog.userProfile_ID !== "ADM"){
+            	    this.getRouter().navTo("temasList");
+            }
+
             oTableBinding.attachChange(function(){
                 var sRowCount = this.getView().byId("tblComissoes").getItems().length;
                 this.getView().getModel("comissoesView").setProperty("/comissoesRowCount", sRowCount);
@@ -48,8 +54,7 @@ sap.ui.define([
                             "$expand": "userProfile,acoes"
                         },
                     success: function (oData) {                    
-                        oObject.setProperty("/userLog",oData.results[0]);      
-                        //that.getComissoes(oObject.getProperty("/userLog/ID"));               
+                        oObject.setProperty("/userLog",oData.results[0]);                                     
                     },
                     error: function () {
                         oOwnerComponent._genericErrorMessage(that.geti18nText("load_representante_erro"));
@@ -73,6 +78,14 @@ sap.ui.define([
 			}); 
         },
 
+        onClearFilter : function(){
+            this.getView().byId("filterDesc").setValue("");
+            this.getView().getModel("comissoesView").setProperty("/reguladorFilterId",null);
+            this.getView().getModel("comissoesView").setProperty("/reguladorFilter", "");
+
+            this.onSearch();
+        },
+
 		onSearch : function () {
             var oTableBinding = this.getView().byId("tblComissoes").getBinding("items"),
             sDescFilter = this.getView().byId("filterDesc").getValue(),
@@ -80,7 +93,12 @@ sap.ui.define([
             bAnd = false,
             aFilters = [];
 
-            aFilters.push(new Filter("descricao", FilterOperator.Contains, sDescFilter));
+            aFilters.push(new Filter({
+                         path: 'descricao',
+                        operator: FilterOperator.Contains,
+                        value1: sDescFilter,
+                        caseSensitive: false
+            }));
             if(sReguladorFilter){
                 aFilters.push(new Filter("regulador_ID", FilterOperator.EQ, sReguladorFilter));
                 bAnd = true;
@@ -90,6 +108,11 @@ sap.ui.define([
         },       
 
         onPageNavButtonPress: function(){
+            this.getView().byId("filterDesc").setValue("");
+            this.getView().getModel("comissoesView").setProperty("/reguladorFilterId",null);
+            this.getView().getModel("comissoesView").setProperty("/reguladorFilter", "");
+
+            this.onSearch();
              history.go(-1);
         },
 
@@ -129,8 +152,86 @@ sap.ui.define([
             var oBinding = oEvent.getSource().getBinding("items");
             var aFilters = [];
             // @ts-ignore
-            aFilters.push(new Filter("descricao", FilterOperator.Contains, sValue));
+            aFilters.push(new Filter({
+                 path: 'descricao',
+                        operator: FilterOperator.Contains,
+                        value1: sValue,
+                        caseSensitive: false
+            }));
             oBinding.filter(aFilters);
+        },
+        
+        onTableComissoesSelectionChange: function(oEvent){
+
+            var oSelContext = oEvent.getSource().getSelectedContexts();
+            if (oSelContext.length > 0) {
+                this.byId("btnDelComissao").setEnabled(true);
+            }else{
+                this.byId("btnDelComissao").setEnabled(false);
+            }
+            
+        },
+
+        onDeleteComissao: function(oEvent){
+
+            var oTblComissDelete = this.byId("tblComissoes"),
+                oSelContext = oTblComissDelete.getSelectedContexts(),
+                that = this,
+                sMessage ="",
+                sSuccessMsg="",
+                sErrorMsg = "",
+                aComissDelete="",
+                oDeleteObjec = {
+                    ids: ""
+                }
+
+            sErrorMsg = this.getResourceBundle().getText("erro_excluir_comissao");
+            //Notifica que a Comissão sera excluida
+            if (oSelContext.length > 1) {
+                 sMessage = this.getResourceBundle().getText("confirma_exclusao_comissoes_txt");
+                 sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_comissoes");
+            }else{
+                sMessage = this.getResourceBundle().getText("confirma_exclusao_comissao_txt");
+                sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_comissao");
+            }          
+
+            for (let i = 0; i < oSelContext.length; i++) {                
+                const oComissDel = this.getModel().getObject(oSelContext[i].getPath());
+                aComissDelete = aComissDelete + oComissDel.ID + ";";
+            }
+
+            oDeleteObjec.ids = aComissDelete;
+           
+            MessageBox.warning(
+                sMessage,
+                {
+                    actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                    onClose: function (sAction) {
+                        if (sAction === MessageBox.Action.YES) {
+                            that.sendDeleteComissoesRequest(oDeleteObjec, sSuccessMsg, sErrorMsg );
+                        }
+                    }
+                });
+
+        },
+
+        sendDeleteComissoesRequest: function(sIdComissao, successMsg, errorMsg){
+
+            var oModel = this.getModel(),
+                sSuccessMsg = successMsg,
+                sErrorMsg = errorMsg,
+                that = this;
+
+            oModel.create("/deleteSelectedComissoes", sIdComissao,{
+                success: function(oData){
+                     that.getOwnerComponent()._genericSuccessMessage(sSuccessMsg);
+                     that.getView().getModel().refresh();                     
+                },
+                error: function(oError){
+                     that.getOwnerComponent()._genericErrorMessage(sErrorMsg);
+                     that.getView().getModel().refresh();                     
+                }
+            });
         }
 	});
 });

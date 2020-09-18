@@ -7,8 +7,9 @@ sap.ui.define([
     "../model/formatter",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/m/MessageBox"
-], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox) {
+    "sap/m/MessageBox",
+    "../model/jqueryMask"
+], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, jqueryMask) {
     "use strict";
 
     return BaseController.extend("ps.uiRepMercado.controller.DetalhesUsuario", {
@@ -45,6 +46,8 @@ sap.ui.define([
         onCancel: function (oEvent) {
             var oViewModel = this.getView().getModel("detUserView");
             oViewModel.setProperty("/isEditMode", true);
+            this.byId("btnSalvarUser").setEnabled(true);
+            this.initializeValidator();
             history.go(-1);
         },
 
@@ -68,11 +71,11 @@ sap.ui.define([
 
                 this.initializeValidator();
                 if (sObjectId !== "New") {
-                    this._bindView("/Usuarios('" + sObjectId + "')");
+                    this._bindView("/Usuarios('" + sObjectId + "')", sObjectId);
                 }
                 else {
                     this.byId("btnAddComissoes").setVisible(false);
-                    this.getView().setModel(new JSONModel(this.getUsuarioTemplate()), "EditUsuarioModel");                 
+                    this.getView().setModel(new JSONModel(this.getUsuarioTemplate()), "EditUsuarioModel");
 
                 }
 
@@ -83,9 +86,17 @@ sap.ui.define([
         initializeValidator: function () {
 
             var txtIdUser = this.byId("txtIdUser"),
-                cmbPerfil = this.byId("txtIdUser");
+                cmbPerfil = this.byId("cmbPerfil"),
+                txtNomeUser = this.byId("txtNomeUser"),
+                txtCargoUser = this.byId("txtCargoUser"),
+                txtDiretorGeralUser = this.byId("txtDiretorGeralUser"),
+                txtDiretorExecutivoUser = this.byId("txtDiretorExecutivoUser");
 
             txtIdUser.setValueState("None");
+            txtNomeUser.setValueState("None");
+            txtCargoUser.setValueState("None");
+            txtDiretorGeralUser.setValueState("None");
+            txtDiretorExecutivoUser.setValueState("None");
             cmbPerfil.setValueState("None");
         },
 
@@ -95,9 +106,10 @@ sap.ui.define([
 		 * @param {string} sObjectPath path to the object to be bound
 		 * @private
 		 */
-        _bindView: function (sObjectPath) {
+        _bindView: function (sObjectPath, sIdUsuario) {
             var oModel = this.getModel(),
                 that = this,
+                vIdUser = sIdUsuario,
                 oViewModel = this.getModel("detUserView");
 
             oModel.read(sObjectPath, {
@@ -108,9 +120,13 @@ sap.ui.define([
                     var oEditUsuarioModel = new JSONModel(oData);
                     that.getView().setModel(oEditUsuarioModel, "EditUsuarioModel");
                     that.byId("btnAddComissoes").setVisible(true);
+                    that.getUserExtension(oData.ID);
                 },
                 error: function (oError) {
-
+                    that.byId("btnAddComissoes").setVisible(false);
+                    var oBinding = that.byId("tblComissoesRep").getBinding("items");
+                    oBinding.filter([new Filter("descricao", FilterOperator.EQ, "#")]);
+                    that.getUserExtension(vIdUser);
                 }
             });
 
@@ -124,7 +140,13 @@ sap.ui.define([
                 oObject = this.getModel("EditUsuarioModel").getData(),
                 that = this;
 
+            sNewValue = sNewValue.replace(/^(.)|\s+(.)/g, c => c.toUpperCase());
+            //sNewValue = sNewValue.replace(/^[a-zA-Z][0-9]{7}$/g,"");
+            oEvent.getSource().setValue(sNewValue);
+
             if (sNewValue.length >= 8) {
+                that._bindView("/Usuarios('" + sNewValue + "')", sNewValue);
+                /*
                 oViewModel.setProperty("/busy", true);
                 oModel.read(`/UsersExtensions('${sNewValue}')`, {
                     success: function (oData) {
@@ -145,8 +167,49 @@ sap.ui.define([
                         oViewModel.setProperty("/busy", false);
                     }
 
+                });*/
+            }
+        },
+
+        getUserExtension: function (sNewValue) {
+
+            var oView = this.getView(),
+                oModel = this.getModel(),
+                oOwnerComponent = this.getOwnerComponent(),
+                oViewModel = this.getView().getModel("detUserView"),
+                oObject = this.getModel("EditUsuarioModel").getData(),
+                that = this;
+
+            if (sNewValue.length >= 8) {
+                oViewModel.setProperty("/busy", true);
+                oModel.read(`/UsersExtensions('${sNewValue}')`, {
+                    success: function (oData) {
+
+
+                        oObject.nome = oData.nomeColaborador;
+                        oObject.telefone = oData.telefone;
+                        oObject.cargo = oData.cargo;
+                        oObject.diretorGeral = oData.diretorGeral;
+                        oObject.diretorExecutivo = oData.diretorExecutivo;
+                        that.getModel("EditUsuarioModel").refresh();
+                        oViewModel.setProperty("/busy", false);
+
+                        if (oData.nomeColaborador === "") {
+
+                            oOwnerComponent._genericErrorMessage(that.geti18nText("usuario_nao_existente_msg"));
+                            that.byId("btnSalvarUser").setEnabled(false);
+                        }else{
+                            that.byId("btnSalvarUser").setEnabled(true);
+                        }
+
+                    },
+                    error: function (oError) {
+                        oViewModel.setProperty("/busy", false);
+                    }
+
                 });
             }
+
         },
 
         getComissoesRepresentante: function () {
@@ -210,7 +273,7 @@ sap.ui.define([
 
                 }
                 //this.sendComissoesUsuarioRequest(aComissoesRepresentante, editData.ID);
-                this._bindView("/Usuarios('" + editData.ID + "')");
+                this._bindView("/Usuarios('" + editData.ID + "')", editData.ID);
 
             }
 
@@ -302,6 +365,22 @@ sap.ui.define([
             if (!this._validateField("cmbPerfil"))
                 isValid = false;
 
+
+            if (!this._validateField("txtNomeUser"))
+                isValid = false;
+
+            if (!this._validateField("txtCargoUser"))
+                isValid = false;
+
+
+            if (!this._validateField("txtDiretorGeralUser"))
+                isValid = false;
+
+            if (!this._validateField("txtDiretorExecutivoUser"))
+                isValid = false;
+
+
+
             return isValid;
         },
 
@@ -348,7 +427,7 @@ sap.ui.define([
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_excluir_comissao_usuario"));
                     that.getView().getModel("EditUsuarioModel").refresh();
                     oModel.refresh();
-                    that._bindView("/Usuarios('" + sIdUsuario + "')");
+                    that._bindView("/Usuarios('" + sIdUsuario + "')", sIdUsuario);
                 },
                 error: function (oError) {
                     that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_excluir_comissao_usuario"));

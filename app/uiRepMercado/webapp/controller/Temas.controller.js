@@ -1,65 +1,87 @@
 /* eslint-disable no-undef */
 /* eslint-disable @sap/ui5-jsdocs/no-jsdoc */
 sap.ui.define([
-	"./BaseController",
-	"sap/ui/model/json/JSONModel",
-	"sap/ui/core/routing/History",
-	"../model/formatter",
-	"sap/ui/model/Filter",
+    "./BaseController",
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/core/routing/History",
+    "../model/formatter",
+    "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
-    "sap/ui/model/Sorter"
-], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, Sorter) {
-	"use strict";
-   
-	return BaseController.extend("ps.uiRepMercado.controller.Temas", {
-        
-		formatter: formatter,
+    "sap/ui/model/Sorter",
+    "sap/viz/ui5/format/ChartFormatter"
+], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, Sorter,ChartFormatter) {
+    "use strict";
 
-		/* =========================================================== */
-		/* lifecycle methods                                           */
-		/* =========================================================== */
+    return BaseController.extend("ps.uiRepMercado.controller.Temas", {
+
+        formatter: formatter,
+
+        /* =========================================================== */
+        /* lifecycle methods                                           */
+        /* =========================================================== */
 
 		/**
 		 * Called when the worklist controller is instantiated.
 		 * @public
 		 */
-		onInit : function () {
-			var oViewModel;
+        onInit: function () {
+            var oViewModel;
 
-			// keeps the search state
-			this._aTableSearchState = [];
+            // keeps the search state
+            this._aTableSearchState = [];
 
-			// Model used to manipulate control states
-			oViewModel = new JSONModel({
-				worklistTableTitle : this.getResourceBundle().getText("worklistTableTitle"),				
-				tableNoDataText : this.getResourceBundle().getText("tableNoDataText")
-			});
+            // Model used to manipulate control states
+            oViewModel = new JSONModel({
+                worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
+                tableNoDataText: this.getResourceBundle().getText("tableNoDataText")
+            });
             this.setModel(oViewModel, "temasView");
 
-			// Add the worklist page to the flp routing history
-			this.addHistoryEntry({
-				title: this.getResourceBundle().getText("temasViewTitle"),
-				icon: "sap-icon://table-view",
-				intent: "#RepresentacaoMercado-display"
-			}, true);
-        
+            // Add the worklist page to the flp routing history
+            this.addHistoryEntry({
+                title: this.getResourceBundle().getText("temasViewTitle"),
+                icon: "sap-icon://table-view",
+                intent: "#RepresentacaoMercado-display"
+            }, true);
+
+
+            var oFilter = this.getView().byId("ListReportFilterBar"),
+				that = this;
+				
+			oFilter.addEventDelegate({
+				"onAfterRendering": function(oEvent) {					
+                    var oButton = oEvent.srcControl._oSearchButton,
+                        oClearButton = oEvent.srcControl._oClearButtonOnFB;                    
+                    oButton.setText(that.getResourceBundle().getText("pesquisar_btn"));
+                    oClearButton.setText(that.getResourceBundle().getText("limpar_filtro_btn"));
+				}
+			});
+
         },
-        
-        getUserData: function(){
+
+        getUserData: function () {
             var oView = this.getView(),
                 oOwnerComponent = this.getOwnerComponent(),
                 oModel = this.getModel(),
                 oObject = this.getModel("userLogModel"),
                 that = this;
-           if(!oObject.getProperty("/userLog/ID")){
+            if (!oObject.getProperty("/userLog/ID")) {
                 oModel.read("/UsersExtensions", {
                     urlParameters: {
-                            "$expand": "userProfile,acoes"
-                        },
-                    success: function (oData) {                    
-                        oObject.setProperty("/userLog",oData.results[0]);      
-                        //that.getComissoes(oObject.getProperty("/userLog/ID"));               
+                        "$expand": "userProfile,acoes"
+                    },
+                    success: function (oData) {
+                        oObject.setProperty("/userLog", oData.results[0]);
+
+                        if (oObject.getProperty("/userLog/userProfile_ID") === "ADM") {
+                            that.byId("cadTab").setVisible(true);
+                            that.byId("dashBoardTab").setVisible(true);
+                        }
+                        if (oObject.getProperty("/userLog/acoes/isDashBoardVisible")) {
+                            that.byId("dashBoardTab").setVisible(true);
+                        }
+
                     },
                     error: function (oError) {
                         oOwnerComponent._genericErrorMessage(that.geti18nText("load_representante_erro"));
@@ -67,39 +89,12 @@ sap.ui.define([
 
                 });
             }
-            
+
         },
 
-        /*getComissoes: function(sUserID){
-
-            var oView = this.getView(),
-                oOwnerComponent = this.getOwnerComponent(),
-                oModel = this.getModel(),              
-                that = this,
-                sPath = "/Usuarios('" + sUserID + "')/comissoes";
-
-            if (sUserID) {              
-
-                oModel.read(sPath, {
-                    urlParameters: {
-                        "$expand": "comissao"
-                    },
-                    success: function (oData) {
-                        var oCommissoesModel = new JSONModel(oData);
-                        oView.setModel(oCommissoesModel, "userComissoesModel");  
-                    },
-                    error: function (oError) {
-
-                        oOwnerComponent._genericErrorMessage(that.geti18nText("load_comissoes_erro"));
-                    }
-
-                });
-            }
-        },*/
-
-		/* =========================================================== */
-		/* event handlers                                              */
-		/* =========================================================== */
+        /* =========================================================== */
+        /* event handlers                                              */
+        /* =========================================================== */
 
 		/**
 		 * Triggered by the table's 'updateFinished' event: after new table
@@ -110,48 +105,49 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the update finished event
 		 * @public
 		 */
-		onUpdateFinished : function (oEvent) {
-			// update the worklist's object counter after the table update
+        onUpdateFinished: function (oEvent) {
+            // update the worklist's object counter after the table update
             var sTitle,
                 sMessage,
                 that = this,
-				oTable = oEvent.getSource(),
-				iTotalItems = oEvent.getParameter("total");
-			// only update the counter if the length is final and
+                oTable = oEvent.getSource(),
+                iTotalItems = oEvent.getParameter("total");
+            // only update the counter if the length is final and
             // the table is not empty
-             // @ts-ignore
-			if (iTotalItems && oTable.getBinding("items").isLengthFinal()) {
-				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems]);
-			} else {
+            // @ts-ignore
+            if (iTotalItems && oTable.getBinding("items").isLengthFinal()) {
+                sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems]);
+            } else {
                 sTitle = this.getResourceBundle().getText("worklistTableTitle");
                 sMessage = this.getResourceBundle().getText("nenhum_registro_encontrado_cadastro");
                 var oFilterData = this.getModel("filterModel").getData();
-                if(oFilterData.temas.tema !== ""){
-                MessageBox.information(
-				sMessage,
-				{
-					actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-					onClose: function(sAction) {
-						if(sAction === MessageBox.Action.YES){
-							that.getRouter().navTo("detalheTema", {
-				                idTema: "New"
-			                }); 
-						}
-					}
-				}
-            );
+                if (oFilterData.temas.tema !== "") {
+                    MessageBox.information(
+                        sMessage,
+                        {
+                            actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                            onClose: function (sAction) {
+                                if (sAction === MessageBox.Action.YES) {
+                                    that.getRouter().navTo("detalheTema", {
+                                        idTema: "New"
+                                    });
+                                }
+                            }
+                        }
+                    );
+                }
+
+
             }
-
-
-			}
             this.getModel("temasView").setProperty("/worklistTableTitle", sTitle);
             this.getUserData();
+            this._bindChart();
         },
-        
-        onCreatePress: function(oEvent){
-           this.getRouter().navTo("detalheTema", {
-				idTema: "New"
-			}); 
+
+        onCreatePress: function (oEvent) {
+            this.getRouter().navTo("detalheTema", {
+                idTema: "New"
+            });
         },
 
 		/**
@@ -159,107 +155,216 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
 		 * @public
 		 */
-		onTableItemPress : function (oEvent) {
-			var oContext = oEvent.getParameter("listItem").getBindingContext(),
-			oObject = this.getModel().getObject(oContext.getPath());
+        onTableItemPress: function (oEvent) {
+            var oContext = oEvent.getParameter("listItem").getBindingContext(),
+                oObject = this.getModel().getObject(oContext.getPath());
 
-			//this.showBusy();
-			this.getRouter().navTo("detalheTema", {
-				idTema: oObject.ID
-			});
+            //this.showBusy();
+            this.getRouter().navTo("detalheTema", {
+                idTema: oObject.ID
+            });
         },
 
-        createFilter: function(key, value, operator, useToLower) {
-	        return new Filter(useToLower ? "tolower(" + key + ")" : key, operator, useToLower ? "'" + value.toLowerCase() + "'" : value)
+        createFilter: function (key, value, operator, useToLower) {
+            return new Filter(useToLower ? "tolower(" + key + ")" : key, operator, useToLower ? "'" + value.toLowerCase() + "'" : value)
         },
-        
+
         buildFilters: function (oFilterTema) {
 
             var aFilter = new Filter([]),
-			    oFilter = {};
-            
-                if(oFilterTema.tema){
-                    //oFilter = this.createFilter("descricao", oFilterTema.tema, FilterOperator.Contains,true);
-                    oFilter = new Filter({
-                                path: 'descricao',
-                                operator: FilterOperator.Contains,
-                                value1: oFilterTema.tema,
-                                caseSensitive: false
-                            });
-				    aFilter.aFilters.push(oFilter);
+                oFilter = {};
+
+            if (oFilterTema.tema) {
+                //oFilter = this.createFilter("descricao", oFilterTema.tema, FilterOperator.Contains,true);
+                oFilter = new Filter({
+                    path: 'descricao',
+                    operator: FilterOperator.Contains,
+                    value1: oFilterTema.tema,
+                    caseSensitive: false
+                });
+                aFilter.aFilters.push(oFilter);
+            }
+            if (oFilterTema.status) {
+                for (let i = 0; i < oFilterTema.status.length; i++) {
+                    var status_ID = oFilterTema.status[i];
+                    oFilter = new Filter("status_ID", FilterOperator.EQ, status_ID);
+                    aFilter.aFilters.push(oFilter);
                 }
-                if (oFilterTema.status) {
-                    for (let i = 0; i < oFilterTema.status.length; i++) {
-                        var status_ID = oFilterTema.status[i];
-                        oFilter = new Filter("status_ID", FilterOperator.EQ, status_ID);
-				        aFilter.aFilters.push(oFilter); 
-                    }
-                    
+
+            }
+            if (oFilterTema.comissoes) {
+                for (let i = 0; i < oFilterTema.comissoes.length; i++) {
+                    var comissao_ID = oFilterTema.comissoes[i];
+                    oFilter = new Filter("comissao_ID", FilterOperator.EQ, comissao_ID);
+                    aFilter.aFilters.push(oFilter);
                 }
-                if (oFilterTema.comissoes) {
-                    for (let i = 0; i < oFilterTema.comissoes.length; i++) {
-                        var comissao_ID = oFilterTema.comissoes[i];
-                        oFilter = new Filter("comissao_ID", FilterOperator.EQ, comissao_ID);
-				        aFilter.aFilters.push(oFilter); 
-                    }
-                    
-                }
+
+            }
 
             return aFilter;
         },
 
+        onClearFilter: function(oEvent){
+             var  ofilterModel = this.getModel("filterModel"),
+                oFilterTemas= ofilterModel.getProperty("/temas"),
+                oTable = this.byId("tblTemas"),
+                oBinding = oTable.getBinding("items"),                
+                oSelKeysStatus = this.byId("mtCBoxStatus"),
+                oSelKeysComis = this.byId("mtCBoxComissoes"),
+                aTableSearchState = [];            
+                
+                oFilterTemas.tema = "";
+                oFilterTemas.status = [];
+                oFilterTemas.comissoes = [];
+                ofilterModel.refresh();
 
-		onSearch : function (oEvent) {
-			if (oEvent.getParameters().refreshButtonPressed) {
-			
-				this.onRefresh();
-			} else {
+                oSelKeysStatus.setSelectedKeys([]);
+                oSelKeysComis.setSelectedKeys([]);
+
+                aTableSearchState = this.buildFilters(oFilterTemas);
+                oBinding.filter(aTableSearchState.aFilters);   
+
+        },
+
+        onSearch: function (oEvent) {
+            if (oEvent.getParameters().refreshButtonPressed) {
+
+                this.onRefresh();
+            } else {
                 var aTableSearchState = [],
                     filterModel = this.getModel("filterModel"),
                     oTable = this.byId("tblTemas"),
-				    oBinding = oTable.getBinding("items"),			
+                    oBinding = oTable.getBinding("items"),
                     oFilterTemas = filterModel.getProperty("/temas"),
                     aSelKeysStatus = this.byId("mtCBoxStatus").getSelectedKeys(),
-                    aSelKeysComis = this.byId("mtCBoxComissoes").getSelectedKeys(); 
-                    if(aSelKeysStatus && aSelKeysStatus.length > 0 ){
-                         oFilterTemas.status = aSelKeysStatus;
-                    }else{
-                        oFilterTemas.status = [];
-                    }  
-                    if(aSelKeysComis && aSelKeysComis.length > 0 ){
-                         oFilterTemas.comissoes = aSelKeysComis;
-                    }else{
-                        oFilterTemas.comissoes = [];
-                    }                      
-                   
+                    aSelKeysComis = this.byId("mtCBoxComissoes").getSelectedKeys();
+                if (aSelKeysStatus && aSelKeysStatus.length > 0) {
+                    oFilterTemas.status = aSelKeysStatus;
+                } else {
+                    oFilterTemas.status = [];
+                }
+                if (aSelKeysComis && aSelKeysComis.length > 0) {
+                    oFilterTemas.comissoes = aSelKeysComis;
+                } else {
+                    oFilterTemas.comissoes = [];
+                }
+
                 aTableSearchState = this.buildFilters(oFilterTemas);
                 oBinding.filter(aTableSearchState.aFilters);
                 //this._applySearch(aTableSearchState);
-			}
+            }
 
-        },     
+        },
 
 		/**
 		 * Event handler for refresh event. Keeps filter, sort
 		 * and group settings and refreshes the list binding.
 		 * @public
 		 */
-		onRefresh : function () {
-			var oTable = this.byId("tblTemas");
-			oTable.getBinding("items").refresh();
-		},
-
-        onCadUserTilePress: function(oEvent){
-             this.getRouter().navTo("cadUserApp"); 
+        onRefresh: function () {
+            var oTable = this.byId("tblTemas");
+            oTable.getBinding("items").refresh();
         },
 
-        onCadReguladoresTilePress: function(){
-            this.getRouter().navTo("cadReguladoresApp"); 
+        onCadUserTilePress: function (oEvent) {
+            this.getRouter().navTo("cadUserApp");
         },
-        
-        onCadComissoesTilePress: function(){
-            this.getRouter().navTo("cadComissoesApp"); 
+
+        onCadReguladoresTilePress: function () {
+            this.getRouter().navTo("cadReguladoresApp");
+        },
+
+        onCadComissoesTilePress: function () {
+            this.getRouter().navTo("cadComissoesApp");
+        },
+        ///DashBoard
+        _bindChart: function () {
+            sap.viz.ui5.api.env.Format.numericFormatter(ChartFormatter.getInstance());
+            var formatPattern = ChartFormatter.DefaultPattern;
+            var oVizFrame =  this.getView().byId("idVizFrame"),
+                oVizFrameTemasPorCriticidade = this.getView().byId("idVizFrameTemasPorCriticidade");
+
+            oVizFrame.setVizProperties({
+                plotArea: {
+                    dataLabel: {
+                        formatString:formatPattern.SHORTFLOAT_MFD2,
+                        visible: true,
+                        showTotal: true
+                    }
+                },
+                valueAxis: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                valueAxis2: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                categoryAxis: {
+                    title: {
+                        visible: false
+                    }
+                },
+                title: {
+                    visible: true,
+                    text: this.getResourceBundle().getText("temas_por_reguladores_title")
+                }
+            });
+
+
+            oVizFrameTemasPorCriticidade.setVizProperties({
+                plotArea: {
+                    dataLabel: {
+                        formatString:formatPattern.SHORTFLOAT_MFD2,
+                        visible: true,
+                        showTotal: true
+                    }
+                },
+                valueAxis: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                valueAxis2: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                categoryAxis: {
+                    title: {
+                        visible: false
+                    }
+                },
+                title: {
+                    visible: true,
+                    text: this.getResourceBundle().getText("temas_por_criticidade_title")
+                }
+            });
+            
+             var oPopOver = this.getView().byId("idPopOver"),
+                oPopOverTemasPorCriticidade = this.getView().byId("idPopOverTemasPorCriticidade");
+            
+            oPopOver.connect(oVizFrame.getVizUid());
+            oPopOver.setFormatString(formatPattern.STANDARDFLOAT);
+
+            oPopOverTemasPorCriticidade.connect(oVizFrameTemasPorCriticidade.getVizUid());
+            oPopOverTemasPorCriticidade.setFormatString(formatPattern.STANDARDFLOAT);
+            
         }
 
-	});
+    });
 });

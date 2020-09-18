@@ -18,6 +18,44 @@ service FullSerice {
     entity ComissoesRepresentante as projection on db.ComissoesRepresentante;
     entity AppSettings            as projection on db.AppSettings;
 
+    /*
+    //SQLITE
+    view TemasPorRegulador() as
+        select from db.Temas {
+            ID,
+            substr(
+                primeiroRegistro, 1, 4
+            ) || '-' || substr(
+                primeiroRegistro, 6, 2
+            ) || '-01T00:00:00Z' as mesAno               : DateTime,
+            regulador.ID         as regulador_ID,
+            regulador.descricao  as descRegulador,
+            count(
+                ID
+            )                    as qtdTemasPorRegulador : Integer
+        }
+        group by           
+            4,
+            2;
+
+    view TemasPorCriticidade() as
+        select from db.Temas {
+            ID,
+            substr(
+                primeiroRegistro, 1, 4
+            ) || '-' || substr(
+                primeiroRegistro, 6, 2
+            ) || '-01T00:00:00Z'  as mesAno                 : DateTime,
+            criticidade.ID        as criticidade_ID,
+            criticidade.descricao as descCriticidade,
+            count(
+                ID
+            )                     as qtdTemasPorCriticidade : Integer
+        }
+        group by            
+            4,
+            2;*/
+
     entity UsersExtensions {
         key ID                    : String;
             nomeColaborador       : String;
@@ -40,6 +78,8 @@ service FullSerice {
             acoes                 : Association to PerfilAcoes;
     }
 
-    function getUserData(id : String) returns String;
+    action deleteSelectedUsers(ids : String);
+    action deleteSelectedReguladores(ids : String);
+    action deleteSelectedComissoes(ids : String);
 
 }

@@ -12,7 +12,9 @@
 				expanded="{device>/isNoPhone}">
 			<items>
 				<IconTabFilter text="{i18n>pesquisa_temas_txt}" key="pesquisaTemaskey">	
-					<filterbar:FilterBar id="ListReportFilterBar" useToolbar="false" showGoOnFB="true" searchEnabled="true" search="onSearch"> 
+					<filterbar:FilterBar id="ListReportFilterBar" useToolbar="false" 
+                    showClearOnFB="true" showFilterConfiguration="false" showGoOnFB="true" 
+                    searchEnabled="true" search="onSearch" clear="onClearFilter"> 
 						<filterbar:filterItems>
 							<filterbar:FilterItem label="{i18n>tema_txt}" name="fltTema">
 								<filterbar:control>                                                                                       
@@ -129,9 +131,10 @@
 				</items>
 			</VBox>	
 		</IconTabFilter>
-		<IconTabFilter text="{i18n>representacao_mercado_txt}" key="dashBoardskey" visible="{userLogModel>/userLog/acoes/isDashBoardVisible}">
+	<IconTabFilter id="dashBoardTab" text="{i18n>representacao_mercado_txt}" key="dashBoardskey" visible="false">
+        	<core:Fragment fragmentName="ps.uiRepMercado.view.fragments.DashBoard" type="XML"/>
 	</IconTabFilter>
-	<IconTabFilter text="{i18n>cadastros_txt}" key="cadastroskey" visible="{userLogModel>/userLog/acoes/isCadastroVisible}">
+	<IconTabFilter id="cadTab" text="{i18n>cadastros_txt}" key="cadastroskey" visible="false">
         <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>cadastro_usuarios_title}"
 		subheader="" press="onCadUserTilePress">
 		    <TileContent footer="{i18n>cadastro_usuarios_footer}">

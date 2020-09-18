@@ -1,9 +1,8 @@
 ## send post action
-POST http://localhost:4004/v2/services/compliance/ComissoesRepresentante
+POST   http://localhost:4004/v2/services/compliance/deleteSelectedUsers
 Authorization: Basic P0646683:1234
 Content-Type: application/json
 
-[
-{"usuario_ID": "P0646683","comissao_ID": 26},
-{"usuario_ID": "P0646683","comissao_ID": 18}
-]
+{
+    "ids":"F0118107;F1400419;"
+}

@@ -36,6 +36,18 @@ sap.ui.define([
             this.getRouter().getRoute("cadUserApp").attachPatternMatched(this._onObjectMatched, this);
             this.setModel(oViewModel, "usuariosView"); 
 
+            var oFilter = this.getView().byId("ListReportFilterBar"),
+				that = this;
+				
+			oFilter.addEventDelegate({
+				"onAfterRendering": function(oEvent) {					
+                    var oButton = oEvent.srcControl._oSearchButton,
+                        oClearButton = oEvent.srcControl._oClearButtonOnFB;                    
+                    oButton.setText(that.getResourceBundle().getText("pesquisar_btn"));
+                    oClearButton.setText(that.getResourceBundle().getText("limpar_filtro_btn"));
+				}
+			});
+
         },
 
         /**
@@ -77,34 +89,7 @@ sap.ui.define([
                 });
             }
             
-        },
-
-        /*getComissoes: function(sUserID){
-
-            var oView = this.getView(),
-                oOwnerComponent = this.getOwnerComponent(),
-                oModel = this.getModel(),              
-                that = this,
-                sPath = "/Usuarios('" + sUserID + "')/comissoes";
-
-            if (sUserID) {              
-
-                oModel.read(sPath, {
-                    urlParameters: {
-                        "$expand": "comissao"
-                    },
-                    success: function (oData) {
-                        var oCommissoesModel = new JSONModel(oData);
-                        oView.setModel(oCommissoesModel, "userComissoesModel");  
-                    },
-                    error: function (oError) {
-
-                        oOwnerComponent._genericErrorMessage(that.geti18nText("load_comissoes_erro"));
-                    }
-
-                });
-            }
-        },*/
+        },       
 
 		/* =========================================================== */
 		/* event handlers                                              */
@@ -169,11 +154,21 @@ sap.ui.define([
 				    aFilter.aFilters.push(oFilter);
                 }
                  if(oFilterUser.nome){
-                    oFilter = new Filter("nome", FilterOperator.Contains, oFilterUser.nome);
+                    oFilter = new Filter({
+                        path: 'nome',
+                        operator: FilterOperator.Contains,
+                        value1: oFilterUser.nome,
+                        caseSensitive: false
+                    });
 				    aFilter.aFilters.push(oFilter);
                 }
                 if(oFilterUser.matricula){
-                    oFilter = new Filter("matricula", FilterOperator.Contains, oFilterUser.matricula);
+                    oFilter = new Filter({
+                        path: 'matricula',
+                        operator: FilterOperator.Contains,
+                        value1: oFilterUser.matricula,
+                        caseSensitive: false
+                    });
 				    aFilter.aFilters.push(oFilter);
                 }
                 if (oFilterUser.perfil) {
@@ -183,19 +178,14 @@ sap.ui.define([
 				        aFilter.aFilters.push(oFilter); 
                     }
                     
-                }
-                /*if (oFilterTema.comissoes) {
-                    for (let i = 0; i < oFilterTema.comissoes.length; i++) {
-                        var comissao_ID = oFilterTema.comissoes[i];
-                        oFilter = new Filter("comissao_ID", FilterOperator.EQ, comissao_ID);
-				        aFilter.aFilters.push(oFilter); 
-                    }
-                    
-                }*/
+                }               
 
             return aFilter;
         },
 
+        onClearFilter: function(oEvent){
+            this.clearFilters();
+        },
 
 		onSearch : function (oEvent) {
 			if (oEvent.getParameters().refreshButtonPressed) {
@@ -207,24 +197,37 @@ sap.ui.define([
                     oTable = this.byId("tblUsers"),
 				    oBinding = oTable.getBinding("items"),			
                     oFilterUsuarios= filterModel.getProperty("/usuarios"),
-                    aSelKeysPerfil = this.byId("mtCBoxPerfil").getSelectedKeys();
-                    //aSelKeysComis = this.byId("mtCBoxComissoes").getSelectedKeys(); 
+                    aSelKeysPerfil = this.byId("mtCBoxPerfil").getSelectedKeys();                    
                     if(aSelKeysPerfil && aSelKeysPerfil.length > 0 ){
                          oFilterUsuarios.perfil = aSelKeysPerfil;
                     }else{
                         oFilterUsuarios.perfil = [];
-                    }  
-                   /* if(aSelKeysComis && aSelKeysComis.length > 0 ){
-                         oFilterTemas.comissoes = aSelKeysComis;
-                    }else{
-                        oFilterTemas.comissoes = [];
-                    }   */                   
+                    }                               
                    
                 aTableSearchState = this.buildFilters(oFilterUsuarios);
                 oBinding.filter(aTableSearchState.aFilters);               
 			}
 
         },     
+
+        clearFilters: function(){
+            var  ofilterModel = this.getModel("filterModel"),
+                oFilterUsuarios= ofilterModel.getProperty("/usuarios"),
+                oTable = this.byId("tblUsers"),
+                oBinding = oTable.getBinding("items"),
+                oSelKeysPerfil = this.byId("mtCBoxPerfil"),
+                aTableSearchState = [];
+            
+                oFilterUsuarios.perfil = [];
+                oFilterUsuarios.nome = "";
+                ofilterModel.refresh();
+
+                oSelKeysPerfil.setSelectedKeys([]);
+
+                aTableSearchState = this.buildFilters(oFilterUsuarios);
+                oBinding.filter(aTableSearchState.aFilters);   
+            
+        },
 
 		/**
 		 * Event handler for refresh event. Keeps filter, sort
@@ -240,7 +243,81 @@ sap.ui.define([
 		/* internal methods                                            */
 		/* =========================================================== */
         _onPageNavButtonPress: function(oEvent){
+            this.clearFilters();
              history.go(-1);
+        },
+
+        onTableUsersSelectionChange: function(oEvent){
+
+            var oSelContext = oEvent.getSource().getSelectedContexts();
+            if (oSelContext.length > 0) {
+                this.byId("btnDelUser").setEnabled(true);
+            }else{
+                this.byId("btnDelUser").setEnabled(false);
+            }
+            
+        },
+
+        onDeleteUser: function(oEvent){
+
+            var oTblUsersDelete = this.byId("tblUsers"),
+                oSelContext = oTblUsersDelete.getSelectedContexts(),
+                that = this,
+                sMessage ="",
+                sSuccessMsg="",
+                sErrorMsg = "",
+                aUsersDelete="",
+                oDeleteObjec = {
+                    ids: ""
+                }
+
+            sErrorMsg = this.getResourceBundle().getText("erro_excluir_usuario");
+            //Notifica que relacionamento entre Usuário será removido
+            if (oSelContext.length > 1) {
+                 sMessage = this.getResourceBundle().getText("confirma_exclusao_usarios_txt");
+                 sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_usuarios");
+            }else{
+                sMessage = this.getResourceBundle().getText("confirma_exclusao_usario_txt");
+                sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_usuario");
+            }          
+
+            for (let i = 0; i < oSelContext.length; i++) {                
+                const oUserDel = this.getModel().getObject(oSelContext[i].getPath());
+                aUsersDelete = aUsersDelete + oUserDel.ID + ";";
+            }
+
+            oDeleteObjec.ids = aUsersDelete;
+           
+            MessageBox.warning(
+                sMessage,
+                {
+                    actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                    onClose: function (sAction) {
+                        if (sAction === MessageBox.Action.YES) {
+                            that.sendDeleteUsuarioRequest(oDeleteObjec, sSuccessMsg, sErrorMsg );
+                        }
+                    }
+                });
+
+        },
+
+        sendDeleteUsuarioRequest: function(sIdUser, successMsg, errorMsg){
+
+            var oModel = this.getModel(),
+                sSuccessMsg = successMsg,
+                sErrorMsg = errorMsg,
+                that = this;
+
+            oModel.create("/deleteSelectedUsers", sIdUser,{
+                success: function(oData){
+                     that.getOwnerComponent()._genericSuccessMessage(sSuccessMsg);
+                     that.getView().getModel().refresh();
+                },
+                error: function(oError){
+                     that.getOwnerComponent()._genericErrorMessage(sErrorMsg);
+                     that.getView().getModel().refresh();
+                }
+            });
         }
 	});
 });

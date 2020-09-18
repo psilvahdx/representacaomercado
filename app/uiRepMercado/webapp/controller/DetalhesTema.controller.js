@@ -49,6 +49,7 @@ sap.ui.define([
         onCancel: function (oEvent) {
             var oViewModel = this.getView().getModel("objectView");
             oViewModel.setProperty("/isEditMode", true);
+            this.setEditMode(true);
             history.go(-1);
         },
 
@@ -95,6 +96,8 @@ sap.ui.define([
             var sObjectId = oEvent.getParameter("arguments").idTema,
                 oToggleButton = this.byId("toggleButton");
 
+            this.byId("dtUltimaReuniao").setMaxDate(new Date());
+
             if (sap.ui.Device.system.phone) {
                 oToggleButton.setVisible(true);
             } else {
@@ -105,11 +108,13 @@ sap.ui.define([
             if (sObjectId !== "New") {
                 this._bindView("/Temas(" + sObjectId + ")");
                 this.filterHistorico(sObjectId);
+                this.byId("cmbStatus").setEditable(true);
             }
             else {
                 this.getView().setModel(new JSONModel(this.getTemaTemplate()), "EditTemaModel");
                 this.filterHistorico(null);
                 this.getComissoesRepresentante();
+                this.byId("cmbStatus").setEditable(false);
             }
 
         },
@@ -117,10 +122,18 @@ sap.ui.define([
         initializeValidator: function () {
 
             var txtDescTema = this.byId("txtDescTema"),
-                cmbCriticidade = this.byId("cmbCriticidade");
+                cmbCriticidade = this.byId("cmbCriticidade"),
+                txtDetDisc = this.byId("txtDetDisc"),
+                txtPrincImpact = this.byId("txtPrincImpact"),
+                cmbStatus = this.byId("cmbStatus"),
+                inpComissao = this.byId("inpComissao");
 
             txtDescTema.setValueState("None");
             cmbCriticidade.setValueState("None");
+            txtDetDisc.setValueState("None");
+            txtPrincImpact.setValueState("None");
+            cmbStatus.setValueState("None");
+            inpComissao.setValueState("None");
         },
 
         filterHistorico: function (idTema) {
@@ -168,11 +181,41 @@ sap.ui.define([
                 success: function (oData) {
                     var oEditTemaModel = new JSONModel(oData);
                     that.getView().setModel(oEditTemaModel, "EditTemaModel");
+
+                    if (oData.status_ID === 4) {
+                        //Tema encerrado não pode ser editado
+                        that.setEditMode(false);
+                        oViewModel.setProperty("/isEditMode",false);
+                    }else{
+                        oViewModel.setProperty("/isEditMode",true);
+                        that.setEditMode(true);
+                    }
+                    oViewModel.refresh();
                 },
                 error: function (oError) {
 
                 }
             });
+
+        },
+
+        setEditMode: function(bEdit){
+
+             var txtDescTema = this.byId("txtDescTema"),
+                cmbCriticidade = this.byId("cmbCriticidade"),
+                txtDetDisc = this.byId("txtDetDisc"),
+                txtPrincImpact = this.byId("txtPrincImpact"),
+                cmbStatus = this.byId("cmbStatus"),
+                inpComissao = this.byId("inpComissao"),
+                dtUltimaReuniao = this.byId("dtUltimaReuniao");
+
+            txtDescTema.setEditable(bEdit);
+            //cmbCriticidade.setEditable(bEdit);
+            txtDetDisc.setEditable(bEdit);
+            txtPrincImpact.setEditable(bEdit);
+            cmbStatus.setEditable(bEdit);
+            inpComissao.setEditable(bEdit);
+            dtUltimaReuniao.setEditable(bEdit);
 
         },
 
@@ -227,6 +270,7 @@ sap.ui.define([
                 oModel = this.getModel(),
                 oObject = this.getView().getModel("EditTemaModel").getData(),
                 that = this,
+                event = oEvent,
                 sPath = "/Usuarios('" + oObject.representante_ID + "')/comissoes";
 
             if (oObject.representante_ID) {
@@ -240,22 +284,29 @@ sap.ui.define([
                     success: function (oData) {
                         var oCommissoesModel = new JSONModel(oData);
                         oView.setModel(oCommissoesModel, "comissoesModel");
-                        if (oData.results.length > 1 && oEvent) {
+                        if (event) {
                             that._oDialogComissao.open();
                         } else {
-                            var oComissao = oCommissoesModel.getProperty("/results")[0];
-                            if (oComissao) {
-                                oObject.comissao_ID = oComissao.comissao_ID;
-                                oObject.comissao.descricao = oComissao.comissao.descricao;
-                                that.getReguladorPorComissao(oComissao.comissao_ID);
 
-                            } else {
-                                oObject.comissao_ID = "";
-                                oObject.comissao.descricao = "";
-                                oObject.regulador_ID = "";
-                                oObject.regulador.descricao = "";
+                            if (oData.results.length <= 1) {
+
+                                var oComissao = oCommissoesModel.getProperty("/results")[0];
+                                if (oComissao) {
+                                    oObject.comissao_ID = oComissao.comissao_ID;
+                                    oObject.comissao.descricao = oComissao.comissao.descricao;
+                                    that.getReguladorPorComissao(oComissao.comissao_ID);
+
+                                } else {
+                                    oObject.comissao_ID = "";
+                                    oObject.comissao.descricao = "";
+                                    oObject.regulador_ID = "";
+                                    oObject.regulador.descricao = "";
+                                }
+
+
+                                that.getView().getModel("EditTemaModel").refresh();
                             }
-                            that.getView().getModel("EditTemaModel").refresh();
+
                         }
 
                     },
@@ -523,13 +574,33 @@ sap.ui.define([
 
         validaInformacoes: function () {
 
-            var isValid = true;
+            var isValid = true,
+                oUserLog = this.getModel("userLogModel");
 
-            if (!this._validateField("txtDescTema"))
+            if (!this._validateField("txtDescTema")) {
                 isValid = false;
+            }
 
-            if (!this._validateField("inpComissao"))
+            if (!this._validateField("inpComissao")) {
                 isValid = false;
+            }
+
+            if (!this._validateField("txtDetDisc")) {
+                isValid = false;
+            }
+
+
+             if (!this._validateField("txtPrincImpact")) {
+                isValid = false;
+            }
+
+
+            if (oUserLog.getProperty("/userLog/userProfile_ID") === "ADM") {
+                if (!this._validateField("cmbCriticidade")) {
+                    isValid = false;
+                }
+
+            }
 
             return isValid;
         },
@@ -626,7 +697,9 @@ sap.ui.define([
             sMessage = this.getResourceBundle().getText("confirma_status_tema_txt");
 
             if (oParams.status_ID === 1) {//Status Novo
-                MessageBox.information(
+                oParams.status_ID = 3; //Atualizado
+                that.sendUpdateTemaRequest(entitySet, oParams);
+                /*MessageBox.information(
                     sMessage,
                     {
                         actions: [MessageBox.Action.YES, MessageBox.Action.NO],
@@ -635,7 +708,7 @@ sap.ui.define([
                                 that.sendUpdateTemaRequest(entitySet, oParams);
                             }
                         }
-                    });
+                    });*/
             } else {
                 this.sendUpdateTemaRequest(entitySet, oParams);
             }
@@ -651,7 +724,8 @@ sap.ui.define([
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_tema"));
                     oParams.idTema = oData.ID;
-                    that.saveHistorico(oParams);
+                    that.saveHistorico(oParams, null);
+                    that.byId("cmbStatus").setEditable(true);
                 },
                 error: function (oError) {
                     that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_tema"));
@@ -664,13 +738,14 @@ sap.ui.define([
         sendUpdateTemaRequest: function (entitySet, oParams) {
 
             var oModel = this.getModel(),
-                that = this;
+                that = this,
+                oOldTema = oModel.getObject("/Temas(" + oParams.ID + ")")
 
             oModel.update(entitySet, oParams, {
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_tema"));
                     oParams.idTema = oData.ID;
-                    that.saveHistorico(oParams);
+                    that.saveHistorico(oParams, oOldTema);
                 },
                 error: function (oError) {
                     that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_tema"));
@@ -681,10 +756,48 @@ sap.ui.define([
 
         },
 
-        saveHistorico: function (oParams) {
+        saveHistorico: function (oParams, oOldTema) {
             var oModel = this.getModel(),
-                that = this;
+                that = this,
+                sDescricao = this.getResourceBundle().getText("tema_txt"),
+                sStatus = this.getResourceBundle().getText("status_txt"),
+                sDtUltimaReuniao = this.getResourceBundle().getText("ultima_reuniao_txt"),
+                sComissao = this.getResourceBundle().getText("comissao_short_txt"),
+                sDetalheDiscussao = this.getResourceBundle().getText("detalhamento_discussao_txt"),
+                sPrincipaisImpactos = this.getResourceBundle().getText("principais_impactos_short_txt");
+
             delete oParams.ID;
+
+            //Registra log de campos que foram modificados
+            if (oOldTema) {
+                if (oParams.descricao !== oOldTema.descricao) {
+                    oParams.descAlterda = this.getResourceBundle().getText("campo_alterado_msg", [sDescricao]);
+                }
+                if (oParams.comissao_ID !== oOldTema.comissao_ID) {
+                    oParams.comissaoAlterado = this.getResourceBundle().getText("campo_alterado_msg", [sComissao]);
+                }
+                if (oParams.status_ID !== oOldTema.status_ID) {
+                    oParams.statusAlterado = this.getResourceBundle().getText("campo_alterado_msg", [sStatus]);
+                }
+                if (oParams.detalheDiscussao !== oOldTema.detalheDiscussao) {
+                    oParams.detalheAlterado = this.getResourceBundle().getText("campo_alterado_msg", [sDetalheDiscussao]);
+                }
+                if (oParams.principaisImpactos !== oOldTema.principaisImpactos) {
+                    oParams.princImpAlterado = this.getResourceBundle().getText("campo_alterado_msg", [sPrincipaisImpactos]);
+                }
+                if (oParams.dataUltimaReuniao) {
+                    var sDataUltimaReuniao = oOldTema.dataUltimaReuniao ? oOldTema.dataUltimaReuniao.toDateString() : null;
+                    if (oParams.dataUltimaReuniao.toDateString() !== sDataUltimaReuniao) {
+                        oParams.dtUltimaReuniaoAlterado = this.getResourceBundle().getText("campo_alterado_msg", [sDtUltimaReuniao]);
+                    }
+                } else {
+                    if (oOldTema.dataUltimaReuniao) {
+                        oParams.dtUltimaReuniaoAlterado = this.getResourceBundle().getText("campo_alterado_msg", [sDtUltimaReuniao]);
+                    }
+                }
+
+            }
+
             oModel.create("/Historico", oParams, {
                 success: function (oData) {
                     oModel.refresh();

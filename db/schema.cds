@@ -31,7 +31,7 @@ entity Usuarios : cuid {
         nome             : String;
         telefone         : String;
         cargo            : String;
-        perfil           : Association to Perfis;
+        perfil           : Association to Perfis;       
         comissoes        : Association to many ComissoesRepresentante
                                on comissoes.usuario = $self;
         diretorGeral     : String;
@@ -69,22 +69,28 @@ entity Temas : cuid {
 }
 
 entity Historico : cuid {
-    key ID                 : Integer;
-        idTema             : Integer;
-        descricao          : String;
-        status             : Association to Status;
-        criticidade        : Association to Criticidades;
-        regulador          : Association to Reguladores;
-        detalheDiscussao   : String;
-        principaisImpactos : String;
-        primeiroRegistro   : DateTime null;
-        ultimoRegistro     : DateTime null;
-        dataUltimaReuniao  : DateTime null;
-        representante      : Association to Usuarios;
-        comissao           : Association to Comissoes;
-        diretorGeral       : String;
-        diretorExecutivo   : String;
-        userAlteracao      : Association to Usuarios;
+    key ID                      : Integer;
+        idTema                  : Integer;
+        descricao               : String;
+        status                  : Association to Status;
+        criticidade             : Association to Criticidades;
+        regulador               : Association to Reguladores;
+        detalheDiscussao        : LargeString;
+        principaisImpactos      : LargeString;
+        primeiroRegistro        : DateTime null;
+        ultimoRegistro          : DateTime null;
+        dataUltimaReuniao       : DateTime null;
+        representante           : Association to Usuarios;
+        comissao                : Association to Comissoes;
+        diretorGeral            : String;
+        diretorExecutivo        : String;
+        userAlteracao           : Association to Usuarios;
+        descAlterda             : String;
+        statusAlterado          : String;
+        detalheAlterado         : String;
+        princImpAlterado        : String;
+        dtUltimaReuniaoAlterado : String;
+        comissaoAlterado        : String;
 
 }
 
@@ -97,12 +103,12 @@ entity PerfilAcoes : cuid {
 }
 
 entity AppSettings : cuid {
-    key ID : Integer;        
-        urlApi: String;
-        urlToken: String;
+    key ID           : Integer;
+        urlApi       : String;
+        urlToken     : String;
         @cds.api.ignore
-        clientID: String;
+        clientID     : String;
         @cds.api.ignore
-        clientSecret: String;
+        clientSecret : String;
 
 }

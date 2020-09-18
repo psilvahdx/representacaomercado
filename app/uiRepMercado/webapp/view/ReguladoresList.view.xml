@@ -3,7 +3,8 @@
 		xmlns:f="sap.f" xmlns:variants="sap.ui.comp.variants" xmlns="sap.m" xmlns:filterbar="sap.ui.comp.filterbar" xmlns:core="sap.ui.core">
 	<Page id="page" showHeader="true" title="{i18n>cadastro_reguladores_title}" showFooter="false" showNavButton="true" navButtonPress="onPageNavButtonPress">
 		<!--FILTERBAR-->
-		<filterbar:FilterBar id="reguladoresListFilterBar" useToolbar="false" showGoOnFB="true" searchEnabled="true" search="onSearch"> 
+		<filterbar:FilterBar id="reguladoresListFilterBar" useToolbar="false" showGoOnFB="true"
+        showClearOnFB="true" showFilterConfiguration="false" searchEnabled="true" search="onSearch"  clear="onClearFilter"> 
             <filterbar:filterItems>
                 <filterbar:FilterItem label="{i18n>descricao}" name="fltDesc">
                     <filterbar:control>                                                                                       
@@ -15,13 +16,21 @@
                 <!--LISTA-->
                 <VBox fitContainer="true">
 					<items>
-						<Table id="tblReguladores" width="100%" growing="true" growingScrollToLoad="true" growingThreshold="25" mode="None" itemPress="onTableItemPress" updateFinished="onUpdateFinished" 
+						<Table id="tblReguladores" width="100%" growing="true" growingScrollToLoad="true" growingThreshold="25" mode="MultiSelect" 
+                        itemPress="onTableItemPress" updateFinished="onUpdateFinished" selectionChange="onTableRegulaodresSelectionChange"
 								items="{path: '/Reguladores'}">
 							<headerToolbar>
 								<OverflowToolbar design="Transparent">
 									<content>
 										<Title textAlign="Begin" text="{i18n>reguladoresTableTitle}({reguladoresView>/reguladoresRowCount})"/>                                    
 										<ToolbarSpacer/>
+                                        <Button id="btnDelRegulador" icon="sap-icon://delete" type="Transparent" 
+												enabled="false"
+												text="{i18n>delete_regulador_btn}" press="onDeleteRegulador">
+                                            <layoutData>
+                                                <OverflowToolbarLayoutData moveToOverflow="true"/>
+                                            </layoutData>
+									    </Button>
 										<Button icon="sap-icon://add-document" type="Transparent" 
 												visible="true"
 												text="{i18n>new_regulador_btn}" press="onCreatePress">

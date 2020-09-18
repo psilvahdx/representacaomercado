@@ -3,7 +3,8 @@
 		xmlns:f="sap.f" xmlns:variants="sap.ui.comp.variants" xmlns="sap.m" xmlns:filterbar="sap.ui.comp.filterbar" xmlns:core="sap.ui.core">
 	<Page id="page" visible="{userLogModel>/userLog/acoes/isCadastroVisible}" showHeader="true" title="{i18n>cadastro_usuarios_title}" showFooter="false" showNavButton="true" navButtonPress="_onPageNavButtonPress">
 		<!--FILTERBAR-->
-		<filterbar:FilterBar id="ListReportFilterBar" useToolbar="false" showGoOnFB="true" searchEnabled="true" search="onSearch"> 
+		<filterbar:FilterBar id="ListReportFilterBar" useToolbar="false" showGoOnFB="true"
+        showClearOnFB="true" showFilterConfiguration="false" searchEnabled="true" search="onSearch" clear="onClearFilter"> 
 						<filterbar:filterItems>
 							<filterbar:FilterItem label="{i18n>nome_txt}" name="fltNome">
 								<filterbar:control>                                                                                       
@@ -38,7 +39,8 @@
                 <!--LISTA-->
                 <VBox fitContainer="true">
 					<items>
-						<Table id="tblUsers" width="100%" growing="true" growingScrollToLoad="true" growingThreshold="25" mode="None" itemPress="onTableItemPress" updateFinished="onUpdateFinished" 
+						<Table id="tblUsers" width="100%" growing="true" growingScrollToLoad="true" growingThreshold="25" mode="MultiSelect" 
+                        itemPress="onTableItemPress" updateFinished="onUpdateFinished"  selectionChange="onTableUsersSelectionChange"
 								items="{path:'/Usuarios', parameters: {expand: 'perfil'}  , sorter : {
                                                                                              path : 'nome',
                                                                                              descending : false
@@ -48,13 +50,20 @@
 									<content>
 										<Title textAlign="Begin" text="{usuariosView>/usuariosTableTitle}"/>                                    
 										<ToolbarSpacer/>
+                                        <Button id="btnDelUser" icon="sap-icon://employee-rejections" type="Transparent" 
+												enabled="false"
+												text="{i18n>delete_user_btn}" press="onDeleteUser">
+                                            <layoutData>
+                                                <OverflowToolbarLayoutData moveToOverflow="true"/>
+                                            </layoutData>
+									    </Button>
 										<Button icon="sap-icon://add-employee" type="Transparent" 
 												visible="{userLogModel>/userLog/acoes/createTemas}"
 												text="{i18n>novo_user_btn}" press="onCreatePress">
-										<layoutData>
-											<OverflowToolbarLayoutData moveToOverflow="true"/>
-										</layoutData>
-									</Button>
+                                            <layoutData>
+                                                <OverflowToolbarLayoutData moveToOverflow="true"/>
+                                            </layoutData>
+									    </Button>
 								</content>
 							</OverflowToolbar>
 						</headerToolbar>
