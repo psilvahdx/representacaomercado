@@ -26,6 +26,11 @@ entity Criticidades : cuid {
         descricao : String;
 }
 
+entity ClassificacaoCargo : cuid {
+    key ID        : Integer;
+        descricao : String;
+}
+
 entity Usuarios : cuid {
     key ID               : String;
         nome             : String;
@@ -37,6 +42,7 @@ entity Usuarios : cuid {
         diretorGeral     : String;
         diretorExecutivo : String;
         matricula        : String;
+        cargoClassif     : Association  to ClassificacaoCargo;
 }
 
 entity ComissoesRepresentante : cuid {

@@ -81,7 +81,8 @@
 											</form:label>
 											<form:fields>
 												<ComboBox id="cmbCriticidade" selectedKey="{EditTemaModel>/criticidade_ID}" 
-                                                items="{path:'/Criticidades', templateShareable:true}" editable="{userLogModel>/userLog/acoes/isCadastroVisible}" enabled="true" >
+                                                items="{path:'/Criticidades', templateShareable:true}" 
+                                                editable="{= ${userLogModel>/userLog/acoes/isCadastroVisible}? ${userLogModel>/userLog/acoes/isCadastroVisible} : false}" enabled="true" >
 													<items>
 														<core:Item key="{ID}" text="{descricao}"/>													
 													</items>
@@ -193,10 +194,11 @@
 												<Label text="{i18n>nome_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<Input type="Text"
+												<Input  id="inpRepresentante"
+                                                        type="Text"
 														valueHelpRequest="openDialogRepresentante" valueHelpOnly="true" showValueHelp="true"
 														value="{EditTemaModel>/representante/nome}"  
-                                                        editable="{userLogModel>/userLog/acoes/changeRepresentante}"/>
+                                                        editable="{= ${userLogModel>/userLog/acoes/changeRepresentante}? ${userLogModel>/userLog/acoes/changeRepresentante}: false}"/>
 											</form:fields>
 										</form:FormElement>
 									</form:formElements>

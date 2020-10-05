@@ -13,7 +13,7 @@
     "resources": "resources.json",
     "dataSources": {
       "mainService": {
-        "uri": "/srv_api/v2/services/compliance/",
+        "uri": "/v2/services/compliance/",
         "type": "OData",
         "settings": {
           "odataVersion": "2.0",
@@ -91,6 +91,10 @@
       "AvaliacaoModel": {
 				"type": "sap.ui.model.json.JSONModel",
 				"uri": "model/CriteriosAvaliacao.json"
+      },
+      "ExportModel": {
+				"type": "sap.ui.model.json.JSONModel",
+				"uri": "model/ExportFields.json"
 	  },
       "": {
         "dataSource": "mainService",
@@ -170,6 +174,20 @@
           ]
         },
         {
+          "pattern": "TiposAlerta",
+          "name": "cadTiposAlertaApp",
+          "target": [
+            "cadTiposAlertaApp"
+          ]
+        },
+        {
+          "pattern": "DetalhesTipoAlerta-{idTipoAlerta}",
+          "name": "detalhesTipoAlerta",
+          "target": [
+            "detalhesTipoAlerta"
+          ]
+        },
+        {
           "pattern": "Comissoes",
           "name": "cadComissoesApp",
           "target": [
@@ -225,6 +243,16 @@
         "detalhesComissao": {
           "viewName": "DetalhesComissao",
           "viewId": "detalhesComissao",
+          "viewLevel": 4
+        },
+        "cadTiposAlertaApp": {
+          "viewName": "TiposAlertaList",
+          "viewId": "cadTiposAlertaApp",
+          "viewLevel": 3
+        },
+        "detalhesTipoAlerta": {
+          "viewName": "DetalhesTipoAlerta",
+          "viewId": "detalhesTipoAlerta",
           "viewLevel": 4
         },
         "objectNotFound": {

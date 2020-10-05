@@ -1,0 +1,91 @@
+{
+    "temasExportList": [
+        {
+            "key": 0,
+            "value": "Representante",
+            "selected": true
+        },
+        {
+            "key": 1,
+            "value": "Regulador",
+            "selected": true            
+        },
+        {
+            "key": 2,
+            "value": "Comissão",
+            "selected": true
+        },
+        {
+            "key": 3,
+            "value": "Tema",
+            "selected": true
+        },
+        {
+            "key": 4,
+            "value": "Último Registro",
+            "selected": true
+        },
+        {
+            "key": 5,
+            "value": "1º Registro",
+            "selected": false
+        },
+        {
+            "key": 6,
+            "value": "Criticidade",
+            "selected": true
+        },
+        {
+            "key": 7,
+            "value": "Status",
+            "selected": true
+        },
+        {
+            "key": 8,
+            "value": "Data da última reunião",
+            "selected": false
+        },        
+       
+        {
+            "key": 9,
+            "value": "Detalhamento da Discussão",
+            "selected": false
+        },
+        {
+            "key": 10,
+            "value": "Diretor Executivo",
+            "selected": false
+        },
+        {
+            "key": 11,
+            "value": "Diretoria",
+            "selected": false
+        },
+        {
+            "key": 12,
+            "value": "Principais Impactos do tema na Companhia / Produto",
+            "selected": false
+        }
+    ],
+    "usuariosExportList":[ {
+            "key": 0,
+            "value": "Matricula",
+            "selected": true
+        },
+        {
+            "key": 1,
+            "value": "Nome",
+            "selected": true
+        },
+        {
+            "key": 2,
+            "value": "Cargo Porto",
+            "selected": true
+        },
+        {
+            "key": 3,
+            "value": "Perfil",
+            "selected": true
+        }
+        ]
+}

@@ -33,6 +33,7 @@ sap.ui.define([
                 delay: 0,
                 isEditMode: true
             });
+            this.byId("btnSalvarUser").setEnabled(false);
             this.getRouter().getRoute("detalheUsuario").attachPatternMatched(this._onObjectMatched, this);
             this.setModel(oViewModel, "detUserView");
         },
@@ -89,12 +90,14 @@ sap.ui.define([
                 cmbPerfil = this.byId("cmbPerfil"),
                 txtNomeUser = this.byId("txtNomeUser"),
                 txtCargoUser = this.byId("txtCargoUser"),
+                cmbCargoClassif = this.byId("cmbCargoClassif"),
                 txtDiretorGeralUser = this.byId("txtDiretorGeralUser"),
                 txtDiretorExecutivoUser = this.byId("txtDiretorExecutivoUser");
 
             txtIdUser.setValueState("None");
             txtNomeUser.setValueState("None");
             txtCargoUser.setValueState("None");
+            cmbCargoClassif.setValueState("None");
             txtDiretorGeralUser.setValueState("None");
             txtDiretorExecutivoUser.setValueState("None");
             cmbPerfil.setValueState("None");
@@ -114,13 +117,14 @@ sap.ui.define([
 
             oModel.read(sObjectPath, {
                 urlParameters: {
-                    "$expand": "perfil,comissoes($expand=comissao)"
+                    "$expand": "perfil,comissoes($expand=comissao),cargoClassif"
                 },
                 success: function (oData) {
                     var oEditUsuarioModel = new JSONModel(oData);
                     that.getView().setModel(oEditUsuarioModel, "EditUsuarioModel");
                     that.byId("btnAddComissoes").setVisible(true);
                     that.getUserExtension(oData.ID);
+                    that.byId("btnSalvarUser").setEnabled(true);
                 },
                 error: function (oError) {
                     that.byId("btnAddComissoes").setVisible(false);
@@ -140,34 +144,13 @@ sap.ui.define([
                 oObject = this.getModel("EditUsuarioModel").getData(),
                 that = this;
 
-            sNewValue = sNewValue.replace(/^(.)|\s+(.)/g, c => c.toUpperCase());
-            //sNewValue = sNewValue.replace(/^[a-zA-Z][0-9]{7}$/g,"");
+            sNewValue = sNewValue.replace(/^(.)|\s+(.)/g, c => c.toUpperCase());           
             oEvent.getSource().setValue(sNewValue);
 
             if (sNewValue.length >= 8) {
-                that._bindView("/Usuarios('" + sNewValue + "')", sNewValue);
-                /*
-                oViewModel.setProperty("/busy", true);
-                oModel.read(`/UsersExtensions('${sNewValue}')`, {
-                    success: function (oData) {
-                        // oObject.setProperty("/userLog",oData.results[0]); 
-                        oObject.nome = oData.nomeColaborador;
-                        oObject.telefone = oData.telefone;
-                        oObject.cargo = oData.cargo;
-                        oObject.diretorGeral = oData.diretorGeral;
-                        oObject.diretorExecutivo = oData.diretorExecutivo;
-                        that.getModel("EditUsuarioModel").refresh();
-                        oViewModel.setProperty("/busy", false);
-                        if (oData.userProfile_ID && oData.userProfile_ID !== "") {
-                            that._bindView("/Usuarios('" + oData.ID + "')");
-                        }
-
-                    },
-                    error: function (oError) {
-                        oViewModel.setProperty("/busy", false);
-                    }
-
-                });*/
+                that._bindView("/Usuarios('" + sNewValue + "')", sNewValue);                
+            }else{
+                 that.byId("btnSalvarUser").setEnabled(false);
             }
         },
 
@@ -300,6 +283,7 @@ sap.ui.define([
                     nome: oObject.nome,
                     telefone: oObject.telefone,
                     cargo: oObject.cargo,
+                    cargoClassif_ID: oObject.cargoClassif_ID? parseInt(oObject.cargoClassif_ID): null,
                     diretorGeral: oObject.diretorGeral,
                     diretorExecutivo: oObject.diretorExecutivo,
                     perfil_ID: oObject.perfil_ID
@@ -315,6 +299,10 @@ sap.ui.define([
                 nome: "",
                 telefone: "",
                 cargo: "",
+                cargoClassif: {
+                    ID: "",
+                    descricao: ""
+                },
                 diretorGeral: "",
                 diretorExecutivo: "",
                 perfil_ID: "",
@@ -372,6 +360,8 @@ sap.ui.define([
             if (!this._validateField("txtCargoUser"))
                 isValid = false;
 
+            if (!this._validateField("cmbCargoClassif"))
+                isValid = false;
 
             if (!this._validateField("txtDiretorGeralUser"))
                 isValid = false;

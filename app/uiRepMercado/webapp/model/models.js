@@ -35,7 +35,9 @@ sap.ui.define([
                     ID:"",
                     matricula:"",
                     nome:"",
+                    cargo:"",
                     perfil: [],
+                    calssficCargo: [],
                     comissoes: []
                 }
             });

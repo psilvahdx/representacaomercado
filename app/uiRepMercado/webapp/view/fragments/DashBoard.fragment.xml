@@ -6,9 +6,60 @@
 		xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
 		xmlns:viz.data="sap.viz.ui5.data" >
 	<layout:FixFlex id='chartFixFlex' minFlexSize="250">        
+    <layout:fixContent>
+        <VBox class="sapUiCompFilterBar">
+
+                    <form:Form>
+									<form:formContainers>
+										<form:FormContainer>
+											<form:formElements>
+												<form:FormElement>
+                                                    <form:label>
+                                                       <Label text="{i18n>periodo_txt}" design="Standard" width="100%"   />
+                                                    </form:label>
+													<form:fields>
+														<DateRangeSelection
+                                                            id="dtrPeriodo"
+                                                            displayFormat="MM/yyyy"
+                                                            change="handlePeriodoChange"/>
+													</form:fields>
+												</form:FormElement>
+											</form:formElements>                                            
+										</form:FormContainer>       
+									</form:formContainers>
+									<form:layout>
+										<form:ResponsiveGridLayout 	labelSpanXL="4"
+										labelSpanL="12"
+										labelSpanM="12"
+										labelSpanS="12"
+										adjustLabelSpan="false"
+										emptySpanXL="0"
+										emptySpanL="0"
+										emptySpanM="0"
+										emptySpanS="0"
+										columnsXL="3"
+										columnsL="3"
+										columnsM="3"
+										singleContainerFullSize="false"/>
+									</form:layout>
+								</form:Form>
+								<OverflowToolbar  width="auto" height="46px" design="Transparent">
+									<content >
+										<ToolbarSpacer width=""/>
+                                        <Button id="btnClearDashBoardFilter" text="{i18n>limpar_filtro_btn}" press="onClearDashBoardFilter"/>
+                                        <Button id="btnFiltrarDashBoard" text="{i18n>pesquisar_btn}" type="Emphasized" press="onSearchDashBoard"/>										
+									</content>
+								</OverflowToolbar>
+							
+                    </VBox>	
+    </layout:fixContent>
 		<layout:flexContent>
 			<viz:Popover id="idPopOver"></viz:Popover> 
 			<viz:Popover id="idPopOverTemasPorCriticidade"></viz:Popover>
+            <viz:Popover id="idPopOverComissSemRep"></viz:Popover>
+            <viz:Popover id="idPopOverComissComRep"></viz:Popover>
+            <viz:Popover id="idPopOverRepMercado"></viz:Popover>
+            <viz:Popover id="idPopOverRepPorCargo"></viz:Popover>
 			<VBox class="formTitleHeight">
 				<form:SimpleForm id="SimpleFormDisplay" 
 						maxContainerCols="2"
@@ -21,36 +72,38 @@
 						columnsM="2">
 					<form:content>
 						<viz:VizFrame width="100%" id="idVizFrame" uiConfig="{applicationSet:'fiori'}"
-								vizType='stacked_column'>
+								vizType='stacked_combination'>
 							<viz:dataset>
-								<viz.data:FlattenedDataset data="{/TemasPorRegulador}">
+								<viz.data:FlattenedDataset data="{chartRegData>/}">
 									<viz.data:dimensions>
 										<viz.data:DimensionDefinition name="Data"
-												value="{path: 'mesAno', formatter: '.formatter.formatDateShortMonthYear'}" />
+												value="{MESANO}" />                                       
 										<viz.data:DimensionDefinition name="descRegulador"
 												value="{descRegulador}" />
 									</viz.data:dimensions>
-									<viz.data:measures>                                 
+									<viz.data:measures> 
 										<viz.data:MeasureDefinition name="Quantidade de Temas"
-												value="{qtdTemasPorRegulador}" />                                                                       
+												value="{qtdTemasPorRegulador}" />    
+                                        <!--<viz.data:MeasureDefinition name="Total"
+												value="{total}" />-->                                                                  
 									</viz.data:measures>
 								</viz.data:FlattenedDataset>
 							</viz:dataset>
 
 							<viz:feeds>  
-								<viz.feeds:FeedItem uid="valueAxis" type="Measure"
-										values="Quantidade de Temas" />                                  
+                                <viz.feeds:FeedItem uid="valueAxis" type="Measure"
+										values="Quantidade de Temas" />                               
 								<viz.feeds:FeedItem id="feedCategoryAxis" uid="categoryAxis" type="Dimension"
-										values="Data" />   
-								<viz.feeds:FeedItem uid="color" type="Dimension"
-										values="descRegulador" />                          
+										values="Data" /> 
+                                <viz.feeds:FeedItem uid="color" type="Dimension"
+										values="descRegulador" />                        
 							</viz:feeds>
 						</viz:VizFrame>            
 						<!--Temas por Criticidade-->            
 						<viz:VizFrame width="100%" id="idVizFrameTemasPorCriticidade" uiConfig="{applicationSet:'fiori'}"
-								vizType='stacked_column'>
+								vizType='stacked_combination'>
 							<viz:dataset>
-								<viz.data:FlattenedDataset data="{/TemasPorCriticidade}">
+								<viz.data:FlattenedDataset>
 									<viz.data:dimensions>
 										<viz.data:DimensionDefinition name="Data"
 												value="{path: 'mesAno', formatter: '.formatter.formatDateShortMonthYear'}" />
@@ -72,10 +125,145 @@
 								<viz.feeds:FeedItem uid="color" type="Dimension"
 										values="descCriticidade" />                          
 							</viz:feeds>
-						</viz:VizFrame>    
+						</viz:VizFrame> 
 					</form:content>
 				</form:SimpleForm>
-			</VBox> 
+
+                <form:SimpleForm  
+						maxContainerCols="2"
+						layout="ResponsiveGridLayout" 
+						labelSpanL="4"
+						labelSpanM="4"
+						emptySpanL="0"
+						emptySpanM="0"
+						columnsL="2"
+						columnsM="2"
+                        visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}">
+					<form:content>
+                        <!--Indicações/representantes por Cargo-->
+						<viz:VizFrame width="100%" id="idVizFrameRepPorCargo" uiConfig="{applicationSet:'fiori'}"
+								vizType='stacked_combination'>
+							<viz:dataset>
+								<viz.data:FlattenedDataset >
+									<viz.data:dimensions>
+										<viz.data:DimensionDefinition name="Data"
+												value="{MESANO}" />                                       
+										<viz.data:DimensionDefinition name="descRegulador"
+												value="{descRegulador}" />
+									</viz.data:dimensions>
+									<viz.data:measures> 
+										<viz.data:MeasureDefinition name="Quantidade de Temas"
+												value="{qtdTemasPorRegulador}" />                                                                                                      
+									</viz.data:measures>
+								</viz.data:FlattenedDataset>
+							</viz:dataset>
+
+							<viz:feeds>  
+                                <viz.feeds:FeedItem uid="valueAxis" type="Measure"
+										values="Quantidade de Temas" />                               
+								<viz.feeds:FeedItem id="feedCategoryAxisRepPorCargo" uid="categoryAxis" type="Dimension"
+										values="Data" /> 
+                                <viz.feeds:FeedItem uid="color" type="Dimension"
+										values="descRegulador" />                        
+							</viz:feeds>
+						</viz:VizFrame>
+
+
+                        <!--Quantidade de Representações no Mercado-->
+						<viz:VizFrame width="100%" id="idVizFrameRepMercado" uiConfig="{applicationSet:'fiori'}"
+								vizType='stacked_combination'>
+							<viz:dataset>
+								<viz.data:FlattenedDataset >
+									<viz.data:dimensions>
+										<viz.data:DimensionDefinition name="Data"
+												value="{MESANO}" />                                       
+										<viz.data:DimensionDefinition name="descRegulador"
+												value="{descRegulador}" />
+									</viz.data:dimensions>
+									<viz.data:measures> 
+										<viz.data:MeasureDefinition name="Quantidade de Temas"
+												value="{qtdTemasPorRegulador}" />                                                                                                      
+									</viz.data:measures>
+								</viz.data:FlattenedDataset>
+							</viz:dataset>
+
+							<viz:feeds>  
+                                <viz.feeds:FeedItem uid="valueAxis" type="Measure"
+										values="Quantidade de Temas" />                               
+								<viz.feeds:FeedItem id="feedCategoryAxisRepM" uid="categoryAxis" type="Dimension"
+										values="Data" /> 
+                                <viz.feeds:FeedItem uid="color" type="Dimension"
+										values="descRegulador" />                        
+							</viz:feeds>
+						</viz:VizFrame>
+					</form:content>
+				</form:SimpleForm>
+                   <!-- <NumericContent value="65" 
+                            valueColor="Good"  class="sapUiSmallMargin"
+                            press="press" />-->	
+                <form:SimpleForm
+						maxContainerCols="2"
+						layout="ResponsiveGridLayout" 
+						labelSpanL="4"
+						labelSpanM="4"
+						emptySpanL="0"
+						emptySpanM="0"
+						columnsL="2"
+						columnsM="2"
+                        visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}">
+					<form:content>	
+                    					  
+                        <!--Comissoes sem Representante-->
+                        <viz:VizFrame width="100%" id="idVizFrameComissSemRep" uiConfig="{applicationSet:'fiori'}"
+								vizType='donut'>
+							 <viz:dataset>
+                                <viz.data:FlattenedDataset>
+                                    <viz.data:dimensions>
+                                        <viz.data:DimensionDefinition name="Regulador"
+                                            value="{descricao}" />
+                                    </viz.data:dimensions>
+                                    <viz.data:measures>
+                                        <viz.data:MeasureDefinition name="Total"
+                                            value="{ID}" />
+                                    </viz.data:measures>
+                                </viz.data:FlattenedDataset>
+                            </viz:dataset>
+
+                            <viz:feeds>
+                                <viz.feeds:FeedItem uid="size" type="Measure"
+                                    values="Total" />
+                                <viz.feeds:FeedItem uid="color" type="Dimension"
+                                    values="Regulador" />
+                            </viz:feeds>
+						</viz:VizFrame>
+                        <!--Comissoes Com Representante-->
+                        <viz:VizFrame width="100%" id="idVizFrameComissComRep" uiConfig="{applicationSet:'fiori'}"
+								vizType='donut'>
+							 <viz:dataset>
+                                <viz.data:FlattenedDataset>
+                                    <viz.data:dimensions>
+                                        <viz.data:DimensionDefinition name="Regulador"
+                                            value="{descricao}" />
+                                    </viz.data:dimensions>
+                                    <viz.data:measures>
+                                        <viz.data:MeasureDefinition name="Total"
+                                            value="{ID}" />
+                                    </viz.data:measures>
+                                </viz.data:FlattenedDataset>
+                            </viz:dataset>
+
+                            <viz:feeds>
+                                <viz.feeds:FeedItem uid="size" type="Measure"
+                                    values="Total" />
+                                <viz.feeds:FeedItem uid="color" type="Dimension"
+                                    values="Regulador" />
+                            </viz:feeds>
+						</viz:VizFrame>
+					</form:content>
+				</form:SimpleForm>
+			</VBox>          
+				
+			
 		</layout:flexContent>
 	</layout:FixFlex>
 </core:FragmentDefinition>

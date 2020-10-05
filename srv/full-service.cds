@@ -13,48 +13,58 @@ service FullSerice {
     entity Perfis                 as projection on db.Perfis;
     entity PerfilAcoes            as projection on db.PerfilAcoes;
     entity Usuarios               as projection on db.Usuarios;
+    entity CargoClassificacoes    as projection on db.ClassificacaoCargo;
     entity Temas                  as projection on db.Temas;
-    entity Historico              as projection on db.Historico;
+    entity Historico              as projection on db.Historico;   
     entity ComissoesRepresentante as projection on db.ComissoesRepresentante;
     entity AppSettings            as projection on db.AppSettings;
 
-    /*
-    //SQLITE
+ 
     view TemasPorRegulador() as
         select from db.Temas {
-            ID,
-            substr(
-                primeiroRegistro, 1, 4
-            ) || '-' || substr(
-                primeiroRegistro, 6, 2
-            ) || '-01T00:00:00Z' as mesAno               : DateTime,
-            regulador.ID         as regulador_ID,
-            regulador.descricao  as descRegulador,
-            count(
-                ID
-            )                    as qtdTemasPorRegulador : Integer
+            key substr(
+                    primeiroRegistro, 1, 4
+                ) || '-' || substr(
+                    primeiroRegistro, 6, 2
+                ) || '-01T00:00:00Z' as mesAno               : DateTime,
+            key regulador.descricao  as descRegulador,
+                count(
+                    ID
+                )                    as qtdTemasPorRegulador : Integer
         }
-        group by           
-            4,
-            2;
+        group by
+            primeiroRegistro,
+            regulador.descricao;
 
     view TemasPorCriticidade() as
         select from db.Temas {
-            ID,
-            substr(
-                primeiroRegistro, 1, 4
-            ) || '-' || substr(
-                primeiroRegistro, 6, 2
-            ) || '-01T00:00:00Z'  as mesAno                 : DateTime,
-            criticidade.ID        as criticidade_ID,
-            criticidade.descricao as descCriticidade,
-            count(
-                ID
-            )                     as qtdTemasPorCriticidade : Integer
+            key substr(
+                    primeiroRegistro, 1, 4
+                ) || '-' || substr(
+                    primeiroRegistro, 6, 2
+                ) || '-01T00:00:00Z'  as mesAno                 : DateTime,
+            key criticidade.descricao as descCriticidade,
+                count(
+                    ID
+                )                     as qtdTemasPorCriticidade : Integer
         }
-        group by            
-            4,
-            2;*/
+        group by
+            primeiroRegistro,
+            criticidade.descricao;
+   
+   entity RepresentacoesMercado{
+        key ID : Integer;
+         comIndicacao: Boolean;
+         comissao: String;
+         regulador: String;
+    };   
+
+    entity RepresentacoesPorCargo{
+        key ID : Integer;         
+         cargo: String;
+         comissao: String;
+         regulador: String;
+    }; 
 
     entity UsersExtensions {
         key ID                    : String;
@@ -81,5 +91,13 @@ service FullSerice {
     action deleteSelectedUsers(ids : String);
     action deleteSelectedReguladores(ids : String);
     action deleteSelectedComissoes(ids : String);
+    function comissoesSemRepresentante() returns array of Comissoes;
+    function comissoesComRepresentante() returns array of Comissoes;
+    function representacoesMercado() returns array of RepresentacoesMercado;
+    function representacoesPorCargo() returns array of RepresentacoesPorCargo;
+    function getUserExtension(ID: String) returns UsersExtensions;
+
+
+
 
 }

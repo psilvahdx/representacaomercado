@@ -11,6 +11,7 @@
     "@sap/hana-client": "^2.4.177",
     "@sap/xsenv": "^3.0.0",
     "@sap/xssec": "^2.2.5",
+    "dateformat": "^3.0.3",
     "passport": "^0.4.1",
     "qs": "^6.9.4",
     "sap-cf-axios": "^0.2.19"
@@ -21,15 +22,15 @@
   "cds": {
     "requires": {
       "db": {
-        "kind": "hana"
+        "kind": "sql"
       },
       "uaa": {
         "kind": "xsuaa"
       },
-      "hierarquia_dest": {
-        "kind": "rest",
+      "ODATA_COLABORADORES": {
+        "kind": "odata",
         "credentials": {
-          "destination": "hierarquia_dest"
+          "destination": "ODATA_COLABORADORES"
         }
       }
     },

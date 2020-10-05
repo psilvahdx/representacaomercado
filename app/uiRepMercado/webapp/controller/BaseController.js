@@ -57,7 +57,15 @@ sap.ui.define([
 			} else {
 				return null;
 			}
-		},
+        },
+        
+        showBusy: function(){
+            sap.ui.core.BusyIndicator.show();
+        },
+
+        hideBusy: function(){
+            sap.ui.core.BusyIndicator.hide();
+        },
 
 		geti18nText1: function (k, r) {
 			if (this.getResourceBundle()) {

@@ -114,6 +114,10 @@ sap.ui.define([
                 this.getView().setModel(new JSONModel(this.getTemaTemplate()), "EditTemaModel");
                 this.filterHistorico(null);
                 this.getComissoesRepresentante();
+                var oCmbStatus = this.byId("cmbStatus"),
+                    oBinding = oCmbStatus.getBinding("items");
+                oBinding.filter([]);
+
                 this.byId("cmbStatus").setEditable(false);
             }
 
@@ -126,7 +130,14 @@ sap.ui.define([
                 txtDetDisc = this.byId("txtDetDisc"),
                 txtPrincImpact = this.byId("txtPrincImpact"),
                 cmbStatus = this.byId("cmbStatus"),
-                inpComissao = this.byId("inpComissao");
+                inpComissao = this.byId("inpComissao"),
+                oObject = this.getModel("userLogModel").getData(),
+                objectView = this.getView().getModel("objectView");
+
+            if (oObject.userLog.userProfile_ID === "VP_DIR" || oObject.userLog.userProfile_ID === "PRES") {
+                this.setEditMode(false);
+                objectView.setProperty("/isEditMode", false);
+            }
 
             txtDescTema.setValueState("None");
             cmbCriticidade.setValueState("None");
@@ -172,7 +183,9 @@ sap.ui.define([
         _bindView: function (sObjectPath) {
             var oModel = this.getModel(),
                 that = this,
-                oViewModel = this.getModel("objectView");
+                oCmbStatus = this.byId("cmbStatus"),
+                oViewModel = this.getModel("objectView"),
+                oUserLog = this.getModel("userLogModel").getData();
 
             oModel.read(sObjectPath, {
                 urlParameters: {
@@ -185,11 +198,20 @@ sap.ui.define([
                     if (oData.status_ID === 4) {
                         //Tema encerrado não pode ser editado
                         that.setEditMode(false);
-                        oViewModel.setProperty("/isEditMode",false);
-                    }else{
-                        oViewModel.setProperty("/isEditMode",true);
+                        oViewModel.setProperty("/isEditMode", false);
+                    } else {
+                        oViewModel.setProperty("/isEditMode", true);
                         that.setEditMode(true);
+                        if (oData.status_ID > 1) {
+                            var oBinding = oCmbStatus.getBinding("items");
+                            oBinding.filter(new Filter("ID", FilterOperator.NE, 1));
+                        }
                     }
+                    if (oUserLog.userLog.userProfile_ID === "VP_DIR" || oUserLog.userLog.userProfile_ID === "PRES") {
+                        that.setEditMode(false);
+                        oViewModel.setProperty("/isEditMode", false);
+                    }
+
                     oViewModel.refresh();
                 },
                 error: function (oError) {
@@ -199,23 +221,30 @@ sap.ui.define([
 
         },
 
-        setEditMode: function(bEdit){
+        setEditMode: function (bEdit) {
 
-             var txtDescTema = this.byId("txtDescTema"),
+            var txtDescTema = this.byId("txtDescTema"),
                 cmbCriticidade = this.byId("cmbCriticidade"),
                 txtDetDisc = this.byId("txtDetDisc"),
                 txtPrincImpact = this.byId("txtPrincImpact"),
                 cmbStatus = this.byId("cmbStatus"),
                 inpComissao = this.byId("inpComissao"),
-                dtUltimaReuniao = this.byId("dtUltimaReuniao");
+                dtUltimaReuniao = this.byId("dtUltimaReuniao"),
+                inpRepresentante = this.byId("inpRepresentante"),
+                oUserLog = this.getModel("userLogModel").getData();
 
-            txtDescTema.setEditable(bEdit);
-            //cmbCriticidade.setEditable(bEdit);
+            txtDescTema.setEditable(bEdit);           
             txtDetDisc.setEditable(bEdit);
             txtPrincImpact.setEditable(bEdit);
             cmbStatus.setEditable(bEdit);
             inpComissao.setEditable(bEdit);
             dtUltimaReuniao.setEditable(bEdit);
+
+            if(oUserLog.userLog.userProfile_ID === "ADM"){
+                inpRepresentante.setEditable(bEdit);
+                cmbCriticidade.setEditable(bEdit);
+            }
+            
 
         },
 
@@ -590,7 +619,7 @@ sap.ui.define([
             }
 
 
-             if (!this._validateField("txtPrincImpact")) {
+            if (!this._validateField("txtPrincImpact")) {
                 isValid = false;
             }
 
@@ -696,7 +725,7 @@ sap.ui.define([
             entitySet = entitySet + "(ID=" + oParams.ID + ")";
             sMessage = this.getResourceBundle().getText("confirma_status_tema_txt");
 
-            if (oParams.status_ID === 1) {//Status Novo
+            if (oParams.status_ID === 1 || oParams.status_ID === 2) {//Status Novo ou Sem Atualização
                 oParams.status_ID = 3; //Atualizado
                 that.sendUpdateTemaRequest(entitySet, oParams);
                 /*MessageBox.information(

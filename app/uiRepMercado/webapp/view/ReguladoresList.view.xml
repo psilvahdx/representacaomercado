@@ -1,18 +1,50 @@
 <mvc:View xmlns:mvc="sap.ui.core.mvc"
-		controllerName="ps.uiRepMercado.controller.ReguladoresList"
+		controllerName="ps.uiRepMercado.controller.ReguladoresList" xmlns:form="sap.ui.layout.form"
 		xmlns:f="sap.f" xmlns:variants="sap.ui.comp.variants" xmlns="sap.m" xmlns:filterbar="sap.ui.comp.filterbar" xmlns:core="sap.ui.core">
 	<Page id="page" showHeader="true" title="{i18n>cadastro_reguladores_title}" showFooter="false" showNavButton="true" navButtonPress="onPageNavButtonPress">
 		<!--FILTERBAR-->
-		<filterbar:FilterBar id="reguladoresListFilterBar" useToolbar="false" showGoOnFB="true"
-        showClearOnFB="true" showFilterConfiguration="false" searchEnabled="true" search="onSearch"  clear="onClearFilter"> 
-            <filterbar:filterItems>
-                <filterbar:FilterItem label="{i18n>descricao}" name="fltDesc">
-                    <filterbar:control>                                                                                       
-                        <Input type="Text" id="filterDesc" placeholder="{i18n>descPlaceholder}" value="{reguladoresView>/descricaoFilter}" />
-                    </filterbar:control>
-                </filterbar:FilterItem>
-            </filterbar:filterItems>
-        </filterbar:FilterBar>
+        <VBox class="sapUiCompFilterBar">
+
+                    <form:Form>
+									<form:formContainers>
+										<form:FormContainer>
+											<form:formElements>
+												<form:FormElement>
+                                                    <form:label>
+                                                       <Label text="{i18n>descricao}" design="Standard" width="100%"   />
+                                                    </form:label>
+													<form:fields>
+														<Input type="Text" id="filterDesc" placeholder="{i18n>descPlaceholder}" value="{reguladoresView>/descricaoFilter}" />
+													</form:fields>
+												</form:FormElement>
+											</form:formElements>                                            
+										</form:FormContainer>                                             
+									</form:formContainers>
+									<form:layout>
+										<form:ResponsiveGridLayout 	labelSpanXL="4"
+										labelSpanL="12"
+										labelSpanM="12"
+										labelSpanS="12"
+										adjustLabelSpan="false"
+										emptySpanXL="0"
+										emptySpanL="0"
+										emptySpanM="0"
+										emptySpanS="0"
+										columnsXL="3"
+										columnsL="3"
+										columnsM="3"
+										singleContainerFullSize="false"/>
+									</form:layout>
+								</form:Form>
+								<OverflowToolbar  width="auto" height="46px" design="Transparent">
+									<content >
+										<ToolbarSpacer width=""/>
+                                        <Button id="btnClearFilter" text="{i18n>limpar_filtro_btn}" press="onClearFilter"/>
+                                        <Button id="btnFiltrar" text="{i18n>pesquisar_btn}" type="Emphasized" press="onSearch"/>										
+									</content>
+								</OverflowToolbar>
+							
+                    </VBox>
                 <!--LISTA-->
                 <VBox fitContainer="true">
 					<items>
@@ -24,6 +56,7 @@
 									<content>
 										<Title textAlign="Begin" text="{i18n>reguladoresTableTitle}({reguladoresView>/reguladoresRowCount})"/>                                    
 										<ToolbarSpacer/>
+                                        <Button icon="sap-icon://excel-attachment" press="onExport" text="{i18n>exportar_excel_txt}"/>
                                         <Button id="btnDelRegulador" icon="sap-icon://delete" type="Transparent" 
 												enabled="false"
 												text="{i18n>delete_regulador_btn}" press="onDeleteRegulador">

@@ -32,6 +32,14 @@ sap.ui.define([
 				pattern: "dd/MM/yyyy HH:mm:ss"
 			});
 			return oDateFormat.format(new Date(oDate));
+        },
+        
+        dateTimeUTC: function (oDate) {
+			if (oDate === null) return "";
+			var oDateFormat = DateFormat.getDateTimeInstance({
+				pattern: "dd/MM/yyyy HH:mm:ss"
+			});
+			return oDateFormat.format(new Date(oDate),true);
 		},
 
 		formatDateShow: function (oDate) {

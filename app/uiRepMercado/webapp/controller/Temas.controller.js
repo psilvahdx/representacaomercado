@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable no-undef */
 /* eslint-disable @sap/ui5-jsdocs/no-jsdoc */
 sap.ui.define([
@@ -9,10 +10,12 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
     "sap/ui/model/Sorter",
-    "sap/viz/ui5/format/ChartFormatter"
-], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, Sorter,ChartFormatter) {
+    "sap/viz/ui5/format/ChartFormatter",
+    "sap/ui/export/library",
+    "sap/ui/export/Spreadsheet"
+], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, Sorter, ChartFormatter, exportLibrary, Spreadsheet) {
     "use strict";
-
+    var EdmType = exportLibrary.EdmType;
     return BaseController.extend("ps.uiRepMercado.controller.Temas", {
 
         formatter: formatter,
@@ -45,18 +48,34 @@ sap.ui.define([
                 intent: "#RepresentacaoMercado-display"
             }, true);
 
+            var odtrPeriodo = this.byId("dtrPeriodo"),
+                vToday = new Date();
+            odtrPeriodo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            odtrPeriodo.setDateValue(new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()));
+            odtrPeriodo.setSecondDateValue(vToday);
 
-            var oFilter = this.getView().byId("ListReportFilterBar"),
-				that = this;
-				
-			oFilter.addEventDelegate({
-				"onAfterRendering": function(oEvent) {					
-                    var oButton = oEvent.srcControl._oSearchButton,
-                        oClearButton = oEvent.srcControl._oClearButtonOnFB;                    
-                    oButton.setText(that.getResourceBundle().getText("pesquisar_btn"));
-                    oClearButton.setText(that.getResourceBundle().getText("limpar_filtro_btn"));
-				}
-			});
+            //this.getOwnerComponent().setBusy(true);
+            this.showBusy();
+
+        },
+
+        onAfterRendering: function () {
+            this.getUserData();
+            var oModel = this.getModel(),
+                that = this;
+            oModel.attachRequestFailed(function (oEvent) {
+
+                var oResponse = oEvent.getParameter("response");
+                that.byId("tblTemas").setBusy(false);
+                that.byId("tblTemas").setNoDataText(that.byId("tblTemas").getNoDataText());
+                that.hideBusy();
+                if (oResponse && oResponse.statusCode === "404") {
+                    var oJsonResponseText = JSON.parse(oResponse.responseText);
+                    that.getOwnerComponent()._genericErrorMessage(oJsonResponseText.error.message.value);
+                }
+
+
+            });
 
         },
 
@@ -73,6 +92,7 @@ sap.ui.define([
                     },
                     success: function (oData) {
                         oObject.setProperty("/userLog", oData.results[0]);
+                        that.hideBusy();
 
                         if (oObject.getProperty("/userLog/userProfile_ID") === "ADM") {
                             that.byId("cadTab").setVisible(true);
@@ -85,6 +105,7 @@ sap.ui.define([
                     },
                     error: function (oError) {
                         oOwnerComponent._genericErrorMessage(that.geti18nText("load_representante_erro"));
+                        that.hideBusy();
                     }
 
                 });
@@ -140,7 +161,7 @@ sap.ui.define([
 
             }
             this.getModel("temasView").setProperty("/worklistTableTitle", sTitle);
-            this.getUserData();
+            //this.getUserData();
             this._bindChart();
         },
 
@@ -204,25 +225,25 @@ sap.ui.define([
             return aFilter;
         },
 
-        onClearFilter: function(oEvent){
-             var  ofilterModel = this.getModel("filterModel"),
-                oFilterTemas= ofilterModel.getProperty("/temas"),
+        onClearFilter: function (oEvent) {
+            var ofilterModel = this.getModel("filterModel"),
+                oFilterTemas = ofilterModel.getProperty("/temas"),
                 oTable = this.byId("tblTemas"),
-                oBinding = oTable.getBinding("items"),                
+                oBinding = oTable.getBinding("items"),
                 oSelKeysStatus = this.byId("mtCBoxStatus"),
                 oSelKeysComis = this.byId("mtCBoxComissoes"),
-                aTableSearchState = [];            
-                
-                oFilterTemas.tema = "";
-                oFilterTemas.status = [];
-                oFilterTemas.comissoes = [];
-                ofilterModel.refresh();
+                aTableSearchState = [];
 
-                oSelKeysStatus.setSelectedKeys([]);
-                oSelKeysComis.setSelectedKeys([]);
+            oFilterTemas.tema = "";
+            oFilterTemas.status = [];
+            oFilterTemas.comissoes = [];
+            ofilterModel.refresh();
 
-                aTableSearchState = this.buildFilters(oFilterTemas);
-                oBinding.filter(aTableSearchState.aFilters);   
+            oSelKeysStatus.setSelectedKeys([]);
+            oSelKeysComis.setSelectedKeys([]);
+
+            aTableSearchState = this.buildFilters(oFilterTemas);
+            oBinding.filter(aTableSearchState.aFilters);
 
         },
 
@@ -277,20 +298,86 @@ sap.ui.define([
         onCadComissoesTilePress: function () {
             this.getRouter().navTo("cadComissoesApp");
         },
+        onCadTiposAlertaTilePress: function(){
+            this.getRouter().navTo("cadTiposAlertaApp");
+        },
         ///DashBoard
+
+        handlePeriodoChange: function (oEvent) {
+            var sFrom = oEvent.getParameter("from"),
+                sTo = oEvent.getParameter("to"),
+                bValid = oEvent.getParameter("valid"),
+                btnFiltrar = this.byId("btnFiltrarDashBoard"),
+                oEventSource = oEvent.getSource();
+            //oText = this.byId("TextEvent");
+
+            //this._iEvent++;
+
+            //oText.setText("Id: " + oEventSource.getId() + "\nFrom: " + sFrom + "\nTo: " + sTo);
+
+            if (bValid) {
+                oEventSource.setValueState("None");
+                btnFiltrar.setEnabled(true);
+            } else {
+                oEventSource.setValueState("Error");
+                btnFiltrar.setEnabled(false);
+            }
+        },
+
+        onSearchDashBoard: function (oEvent) {
+            this._bindChart();
+        },
+
+        onClearDashBoardFilter: function () {
+
+            var odtrPeriodo = this.byId("dtrPeriodo"),
+                vToday = new Date();
+            odtrPeriodo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            odtrPeriodo.setDateValue(new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()));
+            odtrPeriodo.setSecondDateValue(vToday);
+
+            this._bindChart();
+        },
+
         _bindChart: function () {
             sap.viz.ui5.api.env.Format.numericFormatter(ChartFormatter.getInstance());
             var formatPattern = ChartFormatter.DefaultPattern;
-            var oVizFrame =  this.getView().byId("idVizFrame"),
-                oVizFrameTemasPorCriticidade = this.getView().byId("idVizFrameTemasPorCriticidade");
+            var sTitleFontSize = "13px",
+                oObjectUser = this.getModel("userLogModel").getData(),
+                oVizFrame = this.getView().byId("idVizFrame"),
+                oVizFrameTemasPorCriticidade = this.getView().byId("idVizFrameTemasPorCriticidade"),
+                oVizFrameComissSemRep = this.getView().byId("idVizFrameComissSemRep"),
+                oVizFrameComissComRep = this.getView().byId("idVizFrameComissComRep"),
+                oVizFrameRepMercado = this.getView().byId("idVizFrameRepMercado"),
+                oVizFrameRepPorCargo = this.getView().byId("idVizFrameRepPorCargo");
 
+            this.showBusy();
+            //Temas Por Regulador
             oVizFrame.setVizProperties({
                 plotArea: {
                     dataLabel: {
-                        formatString:formatPattern.SHORTFLOAT_MFD2,
+                        formatString: formatPattern.SHORTFLOAT_MFD2,
                         visible: true,
                         showTotal: true
-                    }
+                    },
+                    dataShape: {
+                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                    },
+                    colorPalette: [
+                        "sapUiChartPaletteSemanticNeutralDark2",
+                        "sapUiChartPaletteSequentialHue1Light3",
+                        "sapUiChartPaletteSequentialHue1Light2",
+                        "sapUiChartPaletteSequentialHue1Light1",
+                        "sapUiChartPaletteSequentialHue1",
+                        "sapUiChartPaletteSequentialHue1Dark1",
+                        "sapUiChartPaletteSequentialHue1Dark2",
+                        "sapUiChartPaletteSequentialNeutralLight3",
+                        "sapUiChartPaletteSequentialNeutralLight2",
+                        "sapUiChartPaletteSequentialNeutralLight1",
+                        "sapUiChartPaletteSequentialNeutral",
+                        "sapUiChartPaletteSequentialNeutralDark1",
+                        "sapUiChartPaletteSequentialNeutralDark2"
+                    ]
                 },
                 valueAxis: {
                     label: {
@@ -315,18 +402,39 @@ sap.ui.define([
                 },
                 title: {
                     visible: true,
-                    text: this.getResourceBundle().getText("temas_por_reguladores_title")
+                    text: this.getResourceBundle().getText("temas_por_reguladores_title"),
+                    style:{
+                        fontSize: sTitleFontSize
+                    }
                 }
             });
 
-
+            //Temas por Criticidade
             oVizFrameTemasPorCriticidade.setVizProperties({
                 plotArea: {
                     dataLabel: {
-                        formatString:formatPattern.SHORTFLOAT_MFD2,
+                        formatString: formatPattern.SHORTFLOAT_MFD2,
                         visible: true,
                         showTotal: true
-                    }
+                    },
+                    dataShape: {
+                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                    },
+                    colorPalette: [
+                        "sapUiChartPaletteSemanticNeutralDark2",
+                        "sapUiChartPaletteSequentialHue1Light3",
+                        "sapUiChartPaletteSequentialHue1Light2",
+                        "sapUiChartPaletteSequentialHue1Light1",
+                        "sapUiChartPaletteSequentialHue1",
+                        "sapUiChartPaletteSequentialHue1Dark1",
+                        "sapUiChartPaletteSequentialHue1Dark2",
+                        "sapUiChartPaletteSequentialNeutralLight3",
+                        "sapUiChartPaletteSequentialNeutralLight2",
+                        "sapUiChartPaletteSequentialNeutralLight1",
+                        "sapUiChartPaletteSequentialNeutral",
+                        "sapUiChartPaletteSequentialNeutralDark1",
+                        "sapUiChartPaletteSequentialNeutralDark2"
+                    ]
                 },
                 valueAxis: {
                     label: {
@@ -351,19 +459,1260 @@ sap.ui.define([
                 },
                 title: {
                     visible: true,
-                    text: this.getResourceBundle().getText("temas_por_criticidade_title")
+                    text: this.getResourceBundle().getText("temas_por_criticidade_title"),
+                    style:{
+                        fontSize: sTitleFontSize
+                    }
                 }
             });
-            
-             var oPopOver = this.getView().byId("idPopOver"),
-                oPopOverTemasPorCriticidade = this.getView().byId("idPopOverTemasPorCriticidade");
-            
+
+
+            //Indicações/representantes por Cargo
+            oVizFrameRepPorCargo.setVizProperties({
+                plotArea: {
+                    dataLabel: {
+                        formatString: formatPattern.SHORTFLOAT_MFD2,
+                        visible: true,
+                        showTotal: true
+                    },                    
+                    dataShape: {
+                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                    },
+                    colorPalette: [
+                        "sapUiChartPaletteSemanticNeutralDark2",
+                        "sapUiChartPaletteSequentialHue1Light3",
+                        "sapUiChartPaletteSequentialHue1Light2",
+                        "sapUiChartPaletteSequentialHue1Light1",
+                        "sapUiChartPaletteSequentialHue1",
+                        "sapUiChartPaletteSequentialHue1Dark1",
+                        "sapUiChartPaletteSequentialHue1Dark2",
+                        "sapUiChartPaletteSequentialNeutralLight3",
+                        "sapUiChartPaletteSequentialNeutralLight2",
+                        "sapUiChartPaletteSequentialNeutralLight1",
+                        "sapUiChartPaletteSequentialNeutral",
+                        "sapUiChartPaletteSequentialNeutralDark1",
+                        "sapUiChartPaletteSequentialNeutralDark2"
+                    ]
+                },
+                legendGroup: {
+                    layout: {
+                            position: "bottom"
+                        }
+                },
+                valueAxis: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                valueAxis2: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                categoryAxis: {
+                    title: {
+                        visible: false
+                    }
+                },
+                title: {
+                    visible: true,
+                    text: this.getResourceBundle().getText("representacoes_por_cargo_title"),
+                    style:{
+                        fontSize: sTitleFontSize
+                    }
+                }
+            });
+
+
+            //Representações no Mercado
+            oVizFrameRepMercado.setVizProperties({
+                plotArea: {
+                    dataLabel: {
+                        formatString: formatPattern.SHORTFLOAT_MFD2,
+                        visible: true,
+                        showTotal: true
+                    },
+                    dataShape: {
+                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                    },
+                    colorPalette: [
+                        "sapUiChartPaletteSemanticNeutralDark2",
+                        "sapUiChartPaletteSequentialHue1Light3",
+                        "sapUiChartPaletteSequentialHue1Light2",
+                        "sapUiChartPaletteSequentialHue1Light1",
+                        "sapUiChartPaletteSequentialHue1",
+                        "sapUiChartPaletteSequentialHue1Dark1",
+                        "sapUiChartPaletteSequentialHue1Dark2",
+                        "sapUiChartPaletteSequentialNeutralLight3",
+                        "sapUiChartPaletteSequentialNeutralLight2",
+                        "sapUiChartPaletteSequentialNeutralLight1",
+                        "sapUiChartPaletteSequentialNeutral",
+                        "sapUiChartPaletteSequentialNeutralDark1",
+                        "sapUiChartPaletteSequentialNeutralDark2"
+                    ]
+                },
+                 legendGroup: {
+                    layout: {
+                            position: "bottom",
+                            alignment: "center"
+                        }
+                },
+                valueAxis: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                valueAxis2: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                categoryAxis: {
+                    title: {
+                        visible: false
+                    }
+                },
+                title: {
+                    visible: true,
+                    text: this.getResourceBundle().getText("representacoes_mercado_title"),
+                    style:{
+                        fontSize: sTitleFontSize
+                    }
+                }
+            });
+
+            //Comissoes sem Representante
+            oVizFrameComissSemRep.setVizProperties({
+                plotArea: {
+                    dataLabel: {
+                        formatString: formatPattern.SHORTFLOAT_MFD2,
+                        visible: true,
+                        type: "value"
+                    },
+                    colorPalette: [                        
+                        "sapUiChartPaletteSequentialHue1Light3",
+                        "sapUiChartPaletteSequentialHue1Light2",
+                        "sapUiChartPaletteSequentialHue1Light1",
+                        "sapUiChartPaletteSequentialHue1",
+                        "sapUiChartPaletteSequentialHue1Dark1",
+                        "sapUiChartPaletteSequentialHue1Dark2",
+                        "sapUiChartPaletteSequentialNeutralLight3",
+                        "sapUiChartPaletteSequentialNeutralLight2",
+                        "sapUiChartPaletteSequentialNeutralLight1",
+                        "sapUiChartPaletteSequentialNeutral",
+                        "sapUiChartPaletteSequentialNeutralDark1",
+                        "sapUiChartPaletteSequentialNeutralDark2"
+                    ]
+                },
+                legendGroup: {
+                    layout: {
+                            position: "bottom",
+                            alignment: "center"
+                        }
+                },
+                valueAxis: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                valueAxis2: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                categoryAxis: {
+                    title: {
+                        visible: false
+                    }
+                },
+                title: {
+                    visible: true,
+                    text: this.getResourceBundle().getText("comissoes_sem_representante_title"),
+                    style:{
+                        fontSize: sTitleFontSize
+                    }
+                }
+            });
+
+
+            //Comissoes Com Representante
+            oVizFrameComissComRep.setVizProperties({
+                plotArea: {
+                    dataLabel: {
+                        formatString: formatPattern.SHORTFLOAT_MFD2,
+                        visible: true,
+                        type: "value",
+                        position: 'inside'
+                        //showTotal: true
+                    },
+                    colorPalette: [                        
+                        "sapUiChartPaletteSequentialHue1Light3",
+                        "sapUiChartPaletteSequentialHue1Light2",
+                        "sapUiChartPaletteSequentialHue1Light1",
+                        "sapUiChartPaletteSequentialHue1",
+                        "sapUiChartPaletteSequentialHue1Dark1",
+                        "sapUiChartPaletteSequentialHue1Dark2",
+                        "sapUiChartPaletteSequentialNeutralLight3",
+                        "sapUiChartPaletteSequentialNeutralLight2",
+                        "sapUiChartPaletteSequentialNeutralLight1",
+                        "sapUiChartPaletteSequentialNeutral",
+                        "sapUiChartPaletteSequentialNeutralDark1",
+                        "sapUiChartPaletteSequentialNeutralDark2"
+                    ]
+                },
+                legendGroup: {
+                    layout: {
+                            position: "bottom",
+                            alignment: "center"
+                        }
+                },
+                valueAxis: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                valueAxis2: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                categoryAxis: {
+                    title: {
+                        visible: false
+                    }
+                },
+                title: {
+                    visible: true,
+                    text: this.getResourceBundle().getText("comissoes_com_representante_title"),
+                    style:{
+                        fontSize: sTitleFontSize
+                    }
+                }
+            });
+
+            var oPopOver = this.getView().byId("idPopOver"),
+                oPopOverTemasPorCriticidade = this.getView().byId("idPopOverTemasPorCriticidade"),
+                oPopOverComissSemRep = this.getView().byId("idPopOverComissSemRep"),
+                oPopOverComissComRep = this.getView().byId("idPopOverComissComRep"),
+                oPopOverRepMercado = this.getView().byId("idPopOverRepMercado"),
+                oPopOverRepPorCargo = this.getView().byId("idPopOverRepPorCargo");
+
             oPopOver.connect(oVizFrame.getVizUid());
             oPopOver.setFormatString(formatPattern.STANDARDFLOAT);
 
             oPopOverTemasPorCriticidade.connect(oVizFrameTemasPorCriticidade.getVizUid());
             oPopOverTemasPorCriticidade.setFormatString(formatPattern.STANDARDFLOAT);
-            
+
+            oPopOverComissSemRep.connect(oVizFrameComissSemRep.getVizUid());
+            oPopOverComissSemRep.setFormatString(formatPattern.STANDARDFLOAT);
+
+            oPopOverComissComRep.connect(oVizFrameComissComRep.getVizUid());
+            oPopOverComissComRep.setFormatString(formatPattern.STANDARDFLOAT);
+
+            oPopOverRepMercado.connect(oVizFrameRepMercado.getVizUid());
+            oPopOverRepMercado.setFormatString(formatPattern.STANDARDFLOAT);
+
+            oPopOverRepPorCargo.connect(oVizFrameRepPorCargo.getVizUid());
+            oPopOverRepPorCargo.setFormatString(formatPattern.STANDARDFLOAT);
+
+
+            var aFilter = [],
+                odtrPeriodo = this.byId("dtrPeriodo");
+
+            if (odtrPeriodo.getDateValue()) {
+
+                var vMinDate = odtrPeriodo.getDateValue(),
+                    vMaxDate = new Date(odtrPeriodo.getSecondDateValue().getFullYear(), odtrPeriodo.getSecondDateValue().getMonth()+1, 0);  
+                aFilter.push(new Filter({
+                    path: "primeiroRegistro",
+                    operator: FilterOperator.BT,
+                    value1: vMinDate,
+                    value2: vMaxDate
+                }));
+            }else{
+
+               var  vToday = new Date(),
+                    vMinDate = new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()),
+                    vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth()+1, 0);  
+                
+                    
+                aFilter.push(new Filter({
+                    path: "primeiroRegistro",
+                    operator: FilterOperator.BT,
+                    value1: vMinDate,
+                    value2: vMaxDate
+                }));
+
+            }
+
+            this.getTemasPorRegulador(aFilter);
+            this.getTemasPorCriticidade(aFilter);            
+
+            if (oObjectUser.userLog.userProfile_ID !== "REP") {
+                this.getRepresentacoesPorCargo();
+                this.getRepresentacoesNoMercado();
+                this.getComissoesSemRepresentantePorRegulador();
+                this.getComissoesComRepresentantePorRegulador();
+            }   
+
+        },
+
+        getTemasPorRegulador: function (aFilter) {
+            var oModel = this.getModel(),
+                that = this,
+                aTemasReguladorMes = [],
+                aMeasures = [],
+                aDimensions = [],
+                aMeasuresConfig = [],
+                sPath = '/Temas';
+
+            oModel.read(sPath, {
+                filters: [aFilter],
+                urlParameters: {
+                    "$expand": "regulador",
+                    "$select": "primeiroRegistro"
+                },
+
+                success: function (oData) {
+                    var oResults = oData.results;
+
+                    for (let i = 0; i < oResults.length; i++) {
+                        const element = oResults[i];
+                        element.primeiroRegistro = new Date(element.primeiroRegistro.getFullYear(), element.primeiroRegistro.getMonth(), 1);
+                    }
+
+                    var aDates = oResults.filter((tema, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.primeiroRegistro.toString() === tema.primeiroRegistro.toString() && t.primeiroRegistro.toString() === tema.primeiroRegistro.toString()
+                        ))
+                    );
+
+                    for (let i = 0; i < aDates.length; i++) {
+                        const tema = aDates[i];
+
+                        var aGroupMonth = oResults.filter(r => { return r.primeiroRegistro.toString() === tema.primeiroRegistro.toString() });
+
+                        var oMeasure = {};
+
+                        var aReguladoresMes = aGroupMonth.filter((tema, index, self) =>
+                            index === self.findIndex((t) => (
+                                t.regulador.descricao === tema.regulador.descricao && t.regulador.descricao === tema.regulador.descricao
+                            ))
+                        );
+
+                        var sElement = '{ "MESANO": "' + tema.primeiroRegistro + '","',
+                            vTotal = 0;
+
+                        for (let z = 0; z < aReguladoresMes.length; z++) {
+                            const element = aReguladoresMes[z];
+
+                            var aGroupRegulador = aGroupMonth.filter(r => { return r.regulador.descricao === element.regulador.descricao });
+                            vTotal += aGroupRegulador.length;
+                            sElement += element.regulador.descricao + '": ' + aGroupRegulador.length;
+                            if (z !== aReguladoresMes.length - 1) {
+                                sElement += ',"';
+                            }
+
+                            aMeasuresConfig.push({ name: element.regulador.descricao, value: '{' + element.regulador.descricao + '}' });
+
+                        }
+
+                        sElement += ',"TOTAL": ' + vTotal + ' }';
+
+
+
+                        oMeasure = JSON.parse(sElement);
+                        aMeasures.push(oMeasure);
+
+                    }
+
+                    for (let dts = 0; dts < aMeasures.length; dts++) {
+                        const element = aMeasures[dts];
+                        element.MESANO = new Date(element.MESANO);
+                    }
+
+                    var assignedContentData = {
+                        AssignedContentData: aMeasures
+                    };
+                    var oVizFrame = that.getView().byId("idVizFrame"),
+                        dataModel = new JSONModel(assignedContentData);
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({ name: "MESANO", value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }" });
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+
+
+                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.name === measure.name && t.name === measure.name
+                        ))
+                    );
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();
+
+                    var oSorter = new sap.ui.model.Sorter("MESANO", false);
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/AssignedContentData",
+                            sorter: oSorter
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "categoryAxis",
+                        type: "Dimension",
+                        values: ["MESANO"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "valueAxis",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+
+                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
+                        const element = aMeasuresConfig[ax];
+
+                        if (element.name !== "TOTAL") {
+                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                                uid: "valueAxis",
+                                type: "Measure",
+                                values: [element.name]
+                            }));
+                        }
+                    }
+
+                      that.hideBusy();
+                },
+                error: function (oError) {
+                     that.hideBusy();
+                }
+            });
+        },
+
+
+        getTemasPorCriticidade: function (aFilter) {
+            var oModel = this.getModel(),
+                that = this,
+                aTemasReguladorMes = [],
+                //aFilter = new Filter([]),
+                aMeasures = [],
+                aDimensions = [],
+                aMeasuresConfig = [],
+                sPath = '/Temas';
+
+            oModel.read(sPath, {
+                filters: [aFilter],
+                urlParameters: {
+                    "$expand": "criticidade",
+                    "$select": "primeiroRegistro"
+                },
+
+                success: function (oData) {
+                    var oResults = oData.results;
+
+                    for (let i = 0; i < oResults.length; i++) {
+                        const element = oResults[i];
+                        element.primeiroRegistro = new Date(element.primeiroRegistro.getFullYear(), element.primeiroRegistro.getMonth(), 1);
+                    }
+
+                    var aDates = oResults.filter((tema, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.primeiroRegistro.toString() === tema.primeiroRegistro.toString() && t.primeiroRegistro.toString() === tema.primeiroRegistro.toString()
+                        ))
+                    );
+
+                    for (let i = 0; i < aDates.length; i++) {
+                        const tema = aDates[i];
+
+                        var aGroupMonth = oResults.filter(r => { return r.primeiroRegistro.toString() === tema.primeiroRegistro.toString() });
+
+                        var oMeasure = {};
+
+                        var aCriticidadeMes = aGroupMonth.filter((tema, index, self) =>
+                            index === self.findIndex((t) => (
+                                t.criticidade.descricao === tema.criticidade.descricao && t.criticidade.descricao === tema.criticidade.descricao
+                            ))
+                        );
+
+                        var sElement = '{ "MESANO": "' + tema.primeiroRegistro + '","',
+                            vTotal = 0;
+
+                        for (let z = 0; z < aCriticidadeMes.length; z++) {
+                            const element = aCriticidadeMes[z];
+
+                            var aGroupCriticidade = aGroupMonth.filter(r => { return r.criticidade.descricao === element.criticidade.descricao });
+                            vTotal += aGroupCriticidade.length;
+                            sElement += element.criticidade.descricao + '": ' + aGroupCriticidade.length;
+                            if (z !== aCriticidadeMes.length - 1) {
+                                sElement += ',"';
+                            }
+
+                            aMeasuresConfig.push({ name: element.criticidade.descricao, value: '{' + element.criticidade.descricao + '}' });
+
+                        }
+
+                        sElement += ',"TOTAL": ' + vTotal + ' }';
+
+
+
+                        oMeasure = JSON.parse(sElement);
+                        aMeasures.push(oMeasure);
+
+                    }
+
+                    for (let dts = 0; dts < aMeasures.length; dts++) {
+                        const element = aMeasures[dts];
+                        element.MESANO = new Date(element.MESANO);
+                    }
+
+                    var assignedContentData = {
+                        AssignedContentData: aMeasures
+                    };
+                    var oVizFrame = that.getView().byId("idVizFrameTemasPorCriticidade"),
+                        dataModel = new JSONModel(assignedContentData);
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({ name: "MESANO", value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }" });
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+
+
+                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.name === measure.name && t.name === measure.name
+                        ))
+                    );
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();
+
+                    var oSorter = new sap.ui.model.Sorter("MESANO", false);
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/AssignedContentData",
+                            sorter: oSorter
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "categoryAxis",
+                        type: "Dimension",
+                        values: ["MESANO"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "valueAxis",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+
+                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
+                        const element = aMeasuresConfig[ax];
+
+                        if (element.name !== "TOTAL") {
+                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                                uid: "valueAxis",
+                                type: "Measure",
+                                values: [element.name]
+                            }));
+                        }
+                    }
+
+
+                      that.hideBusy();
+                },
+                error: function (oError) {
+                      that.hideBusy();
+                }
+            });
+        },
+
+        getRepresentacoesPorCargo: function(){
+            var oModel = this.getModel(),
+                that = this,
+                aTemasReguladorMes = [],
+                aMeasures = [],
+                aDimensions = [],
+                aMeasuresConfig = [],
+                sPath = '/representacoesPorCargo()';
+
+            oModel.read(sPath, {               
+                success: function (oData) {
+                    
+                    var oResults = oData.results;
+
+                    var aReguladores = oResults.filter((repPorCargo, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.regulador === repPorCargo.regulador && t.regulador === repPorCargo.regulador
+                        ))
+                    );
+
+                    for (let i = 0; i < aReguladores.length; i++) {
+                        const reg = aReguladores[i];
+
+                        var aGroupRegulador = oResults.filter(r => { return r.regulador === reg.regulador });
+
+                        var oMeasure = {};
+
+                        var aCargosPorRegulador = aGroupRegulador.filter((grpReg, index, self) =>
+                            index === self.findIndex((t) => (
+                                t.cargo === grpReg.cargo && t.cargo === grpReg.cargo
+                            ))
+                        );
+
+                        var sElement = '{ "REGULADOR": "' + reg.regulador + '","',
+                            vTotal = 0;
+
+                        for (let z = 0; z < aCargosPorRegulador.length; z++) {
+                            const element = aCargosPorRegulador[z];
+
+                            var aGroupCargos = aGroupRegulador.filter(r => { return r.cargo === element.cargo });
+                            vTotal += aGroupCargos.length;
+                            sElement += element.cargo + '": ' + aGroupCargos.length;
+                            if (z !== aCargosPorRegulador.length - 1) {
+                                sElement += ',"';
+                            }
+
+                            aMeasuresConfig.push({ name: element.cargo, value: '{' + element.cargo + '}' });
+
+                        }
+
+                        sElement += ',"TOTAL": ' + vTotal + ' }';
+
+
+
+                        oMeasure = JSON.parse(sElement);
+                        aMeasures.push(oMeasure);
+
+                    }                  
+
+                    var assignedContentData = {
+                        RepresentacoesPorCargo: aMeasures
+                    };
+                    var oVizFrame = that.getView().byId("idVizFrameRepPorCargo"),
+                        dataModel = new JSONModel(assignedContentData);
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+
+
+                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.name === measure.name && t.name === measure.name
+                        ))
+                    );
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();
+
+                    var oSorter = new sap.ui.model.Sorter("REGULADOR", false);
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/RepresentacoesPorCargo",
+                            sorter: oSorter
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "categoryAxis",
+                        type: "Dimension",
+                        values: ["REGULADOR"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "valueAxis",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+
+                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
+                        const element = aMeasuresConfig[ax];
+
+                        if (element.name !== "TOTAL") {
+                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                                uid: "valueAxis",
+                                type: "Measure",
+                                values: [element.name]
+                            }));
+                        }
+                    }
+
+
+                      that.hideBusy();
+                
+                },
+                error: function (oError) {
+                     that.hideBusy();
+                }
+            });
+        },
+
+
+        getRepresentacoesNoMercado: function () {
+            var oModel = this.getModel(),
+                that = this,
+                aTemasReguladorMes = [],
+                aMeasures = [],
+                aDimensions = [],
+                aMeasuresConfig = [],
+                sPath = '/representacoesMercado()';
+
+            oModel.read(sPath, {               
+                success: function (oData) {
+                    var oResults = oData.results                ,
+                        sSemRegulador = that.getResourceBundle().getText("sem_regulador_txt");
+                   
+                    var aReguladores = oResults.filter((comissao, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.regulador === comissao.regulador && t.regulador === comissao.regulador
+                        ))
+                    );                  
+                 
+                    for (let i = 0; i < aReguladores.length; i++) {
+                        const reg = aReguladores[i];
+
+                        var aGroupRegulador = oResults.filter(r => { return r.regulador === reg.regulador});
+
+                        var aQtdComIndicacao = aGroupRegulador.filter(regC=>{ return regC.comIndicacao}),
+                            aQtdSemIndicacao = aGroupRegulador.filter(regS=>{ return !regS.comIndicacao});
+
+                        var oMeasure = {};
+                      
+                        var sElement = '{ "REGULADOR": "' + reg.regulador + '","',
+                            vTotal = 0;
+
+                            vTotal = aQtdComIndicacao.length + aQtdSemIndicacao.length
+
+                         oMeasure={
+                             REGULADOR: reg.regulador,
+                             COM_INDICACAO: aQtdComIndicacao.length,
+                             SEM_INDICACAO: aQtdSemIndicacao.length,
+                             TOTAL: vTotal
+                         };
+                      
+                        aMeasures.push(oMeasure);
+
+                    }
+
+                    var assignedContentData = {
+                        RepresentacoesMercado: aMeasures
+                    };
+                    var oVizFrame = that.getView().byId("idVizFrameRepMercado"),
+                        dataModel = new JSONModel(assignedContentData);
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+
+                    var  sComIndicacao = that.getResourceBundle().getText("com_indicacao_txt"),
+                         sSemIndicacao = that.getResourceBundle().getText("sem_indicacao_txt");
+
+                    aMeasuresConfig.push({ name: sComIndicacao, value: "{COM_INDICACAO}" });
+                    aMeasuresConfig.push({ name: sSemIndicacao, value: "{SEM_INDICACAO}" });
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();
+
+                    var oSorter = new sap.ui.model.Sorter("REGULADOR", false);
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/RepresentacoesMercado",
+                            sorter: oSorter
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "categoryAxis",
+                        type: "Dimension",
+                        values: ["REGULADOR"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "valueAxis",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+
+                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
+                        const element = aMeasuresConfig[ax];
+
+                        if (element.name !== "TOTAL") {
+                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                                uid: "valueAxis",
+                                type: "Measure",
+                                values: [element.name]
+                            }));
+                        }
+                    }
+
+                      that.hideBusy();
+                },
+                error: function (oError) {
+                     that.hideBusy();
+                }
+            });
+        },
+
+        getComissoesSemRepresentantePorRegulador: function () {
+            var oModel = this.getModel(),
+                that = this,               
+                aMeasures = [],
+                aDimensions = [],
+                aMeasuresConfig = [],
+                sPath = '/comissoesSemRepresentante';
+
+            oModel.read(sPath, {                
+                urlParameters: {
+                    "$expand": "regulador"
+                },
+
+                success: function (oData) {
+                    var oResults = oData.results,
+                        sSemRegulador = that.getResourceBundle().getText("sem_regulador_txt");
+                   
+                    var aReguladores = oResults.filter((comissao, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.regulador === comissao.regulador && t.regulador === comissao.regulador
+                        ))
+                    );
+
+                    for (let i = 0; i < aReguladores.length; i++) {
+                        const regulador = aReguladores[i];
+
+                        var aComissoesRegulador = oResults.filter(r => { return r.regulador === regulador.regulador });
+                        
+                        if (regulador.regulador) {
+                            aMeasures.push({REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });    
+                        }else{
+                            aMeasures.push({REGULADOR: sSemRegulador, TOTAL: aComissoesRegulador.length });
+                        }
+                        
+
+                    }                   
+
+                    var assignedContentData = {
+                        ComissoesSemRepresentante: aMeasures
+                    };
+                    var oVizFrame = that.getView().byId("idVizFrameComissSemRep"),
+                        dataModel = new JSONModel(assignedContentData);
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();                   
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/ComissoesSemRepresentante"
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "color",
+                        type: "Dimension",
+                        values: ["REGULADOR"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "size",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+                      that.hideBusy();
+                },
+                error: function (oError) {
+                     that.hideBusy();
+                }
+            });
+        },
+
+        getComissoesComRepresentantePorRegulador: function () {
+            var oModel = this.getModel(),
+                that = this,               
+                aMeasures = [],
+                aDimensions = [],
+                aMeasuresConfig = [],
+                sPath = '/comissoesComRepresentante';
+
+            oModel.read(sPath, {                
+                urlParameters: {
+                    "$expand": "regulador"
+                },
+
+                success: function (oData) {
+                    var oResults = oData.results;
+                   
+                    var aReguladores = oResults.filter((comissao, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.regulador === comissao.regulador && t.regulador === comissao.regulador
+                        ))
+                    );
+
+                    for (let i = 0; i < aReguladores.length; i++) {
+                        const regulador = aReguladores[i];
+
+                        var aComissoesRegulador = oResults.filter(r => { return r.regulador.descricao === regulador.regulador.descricao });
+                        
+                        if (regulador.regulador) {
+                            aMeasures.push({REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });    
+                        }else{
+                            aMeasures.push({REGULADOR: regulador.regulador, TOTAL: aComissoesRegulador.length });
+                        }
+                        
+
+                    }                   
+
+                    var assignedContentData = {
+                        ComissoesComRepresentante: aMeasures
+                    };
+                    var oVizFrame = that.getView().byId("idVizFrameComissComRep"),
+                        dataModel = new JSONModel(assignedContentData);
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/ComissoesComRepresentante"
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "color",
+                        type: "Dimension",
+                        values: ["REGULADOR"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "size",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+                      that.hideBusy();
+                },
+                error: function (oError) {
+                     that.hideBusy();
+                }
+            });
+        },
+
+        //EXPORT EXCEL
+        createColumnConfig: function (aSelectedColumns) {
+            var aCols = [],
+                oI18n = this.getResourceBundle();
+
+
+            for (let i = 0; i < aSelectedColumns.length; i++) {
+                const field = aSelectedColumns[i];
+
+                switch (field) {
+                    case 0:
+                        aCols.push({
+                            label: oI18n.getText("representante_txt"),
+                            property: 'representante/nome',
+                            type: EdmType.String
+                        });
+                        break;
+                    case 1:
+                        aCols.push({
+                            label: oI18n.getText("regulador_txt"),
+                            type: EdmType.String,
+                            property: 'regulador/descricao'
+                        });
+                        break;
+
+                    case 2:
+                        aCols.push({
+                            label: oI18n.getText("comissao_short_txt"),
+                            type: EdmType.String,
+                            property: 'comissao/descricao'
+                        });
+
+                        break;
+
+                    case 3:
+                        aCols.push({
+                            label: oI18n.getText("tema_txt"),
+                            type: EdmType.String,
+                            property: 'descricao'
+                        });
+
+                        break;
+
+                    case 4:
+                        aCols.push({
+                            label: oI18n.getText("ultimo_registro_txt"),
+                            type: EdmType.Date,
+                            property: 'ultimoRegistro'
+                        });
+
+                        break;
+
+                    case 5:
+                        aCols.push({
+                            label: oI18n.getText("primeiro_registro_txt"),
+                            type: EdmType.Date,
+                            property: 'primeiroRegistro'
+                        });
+
+                        break;
+                    case 6:
+                        aCols.push({
+                            label: oI18n.getText("criticidade_txt"),
+                            type: EdmType.String,
+                            property: 'criticidade/descricao'
+                        });
+                        break;
+
+                    case 7:
+                        aCols.push({
+                            label: oI18n.getText("status_txt"),
+                            type: EdmType.String,
+                            property: 'status/descricao'
+                        });
+
+                        break;
+
+                    case 8:
+                        aCols.push({
+                            label: oI18n.getText("data_ultima_reuniao_txt"),
+                            type: EdmType.Date,
+                            property: 'dataUltimaReuniao'
+                        });
+                        break;
+
+                    case 9:
+                        aCols.push({
+                            label: oI18n.getText("detalhamento_discussao_txt"),
+                            type: EdmType.String,
+                            property: 'detalheDiscussao'
+                        });
+                        break;
+
+                    case 10:
+                        aCols.push({
+                            label: oI18n.getText("diretor_executivo_txt"),
+                            type: EdmType.String,
+                            property: 'diretorExecutivo'
+                        });
+                        break;
+
+                    case 11:
+                        aCols.push({
+                            label: oI18n.getText("diretor_geral_txt"),
+                            type: EdmType.String,
+                            property: 'diretorGeral'
+                        });
+                        break;
+
+                    case 12:
+                        aCols.push({
+                            label: oI18n.getText("principais_impactos_txt"),
+                            type: EdmType.String,
+                            property: 'principaisImpactos'
+                        });
+                        break;
+
+                    default:
+
+                        aCols.push({
+                            label: oI18n.getText("representante_txt"),
+                            property: 'representante/nome',
+                            type: EdmType.String
+                        });
+
+                        aCols.push({
+                            label: oI18n.getText("regulador_txt"),
+                            type: EdmType.String,
+                            property: 'regulador/descricao'
+                        });
+
+                        aCols.push({
+                            label: oI18n.getText("comissao_short_txt"),
+                            type: EdmType.String,
+                            property: 'comissao/descricao'
+                        });
+
+                        aCols.push({
+                            label: oI18n.getText("tema_txt"),
+                            type: EdmType.String,
+                            property: 'descricao'
+                        });
+
+                        aCols.push({
+                            label: oI18n.getText("ultimo_registro_txt"),
+                            type: EdmType.Date,
+                            property: 'ultimoRegistro'
+                        });
+
+
+                        aCols.push({
+                            label: oI18n.getText("criticidade_txt"),
+                            type: EdmType.String,
+                            property: 'criticidade/descricao'
+                        });
+
+                        aCols.push({
+                            label: oI18n.getText("status_txt"),
+                            type: EdmType.String,
+                            property: 'status/descricao'
+                        });
+
+                        break;
+                }
+            }
+
+            return aCols;
+        },
+
+        onExport: function () {
+            var sFragment = "ps.uiRepMercado.view.fragments.ExportTemas";
+
+            this.getModel("ExportModel").refresh();
+            if (!this._oDialogSelectTemaFields) {
+                this._oDialogSelectTemaFields = sap.ui.xmlfragment(sFragment, this);
+                this.getView().addDependent(this._oDialogSelectTemaFields);
+            }
+            this._oDialogSelectTemaFields.open();
+
+        },
+
+        _onSearchFieldNames: function (oEvent) {
+            var sValue = oEvent.getParameter("value");
+            var oFilter = new Filter(
+                "value",
+                FilterOperator.Contains,
+                sValue,
+                false
+            );
+            var oBinding = oEvent.getSource().getBinding("items");
+            oBinding.filter([oFilter]);
+        },
+
+        onSelectColumnsExportConfirm: function (oEvent) {
+            var oSelContexts = oEvent.getParameter("selectedContexts"),
+                aSelectedColumns = [];
+
+            if (oSelContexts.length > 0) {
+                for (let i = 0; i < oSelContexts.length; i++) {
+                    const campo = oSelContexts[i].getObject();
+                    aSelectedColumns.push(campo.key);
+                }
+            }
+            this.exportToExcel(aSelectedColumns);
+
+        },
+
+        exportToExcel: function (aSelectedColumns) {
+            var aCols, oRowBinding, oSettings, oSheet, oTable;
+
+            if (!this._oTable) {
+                this._oTable = this.byId('tblTemas');
+            }
+
+            oTable = this._oTable;
+            oRowBinding = oTable.getBinding('items');
+
+            aCols = this.createColumnConfig(aSelectedColumns);
+
+            var oModel = oRowBinding.getModel();
+
+            oSettings = {
+                workbook: {
+                    columns: aCols,//,
+                    //hierarchyLevel: 'Level'
+                    context: {
+                        sheetName: 'Temas'
+                    }
+                },
+                dataSource: {
+                    type: 'odata',
+                    dataUrl: oRowBinding.getDownloadUrl ? oRowBinding.getDownloadUrl() : null,
+                    serviceUrl: this._sServiceUrl,
+                    headers: oModel.getHeaders ? oModel.getHeaders() : null,
+                    count: oRowBinding.getLength ? oRowBinding.getLength() : null,
+                    useBatch: true // Default for ODataModel V2
+                },
+                fileName: 'Temas.xlsx'//,
+                //worker: false // We need to disable worker because we are using a MockServer as OData Service
+            };
+
+            oSheet = new Spreadsheet(oSettings);
+            oSheet.build().finally(function () {
+                oSheet.destroy();
+            });
         }
 
     });

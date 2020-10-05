@@ -13,26 +13,25 @@ sap.ui.define([
 ], function (BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, exportLibrary, Spreadsheet) {
     "use strict";
     var EdmType = exportLibrary.EdmType;
-    return BaseController.extend("ps.uiRepMercado.controller.ComissoesList", {
+    return BaseController.extend("ps.uiRepMercado.controller.TiposAlertaList", {
 
         formatter: formatter,
 
         onInit: function () {
-            var oComissaoModel = new JSONModel({
+            var oReguladorModel = new JSONModel({
                 descricaoFilter: "",
-                reguladorFilter: "",
-                reguladorFilterId: null,
-                comissoesRowCount: 0
+                reguladorIdFilter: null,
+                tiposAlertaRowCount: 0
             });
 
-            this.setModel(oComissaoModel, "comissoesView");
+            this.setModel(oReguladorModel, "tiposAlertaView");
 
-            this.getRouter().getRoute("cadComissoesApp").attachPatternMatched(this._onObjectMatched, this);
+            this.getRouter().getRoute("cadTiposAlertaApp").attachPatternMatched(this._onObjectMatched, this);
 
         },
 
         _onObjectMatched: function () {
-            var oTableBinding = this.getView().byId("tblComissoes").getBinding("items"),
+            var oTableBinding = this.getView().byId("tblTiposAlerta").getBinding("items"),
                 oObject = this.getModel("userLogModel").getData();
 
             if (oObject.userLog.userProfile_ID !== "ADM") {
@@ -40,8 +39,8 @@ sap.ui.define([
             }
 
             oTableBinding.attachChange(function () {
-                var sRowCount = this.getView().byId("tblComissoes").getItems().length;
-                this.getView().getModel("comissoesView").setProperty("/comissoesRowCount", sRowCount);
+                var sRowCount = this.getView().byId("tblTiposAlerta").getItems().length;
+                this.getView().getModel("tiposAlertaView").setProperty("/tiposAlertaRowCount", sRowCount);
             }.bind(this));
             this.getView().getModel().refresh();
         },
@@ -69,31 +68,27 @@ sap.ui.define([
         },
 
         onCreatePress: function () {
-            this.getOwnerComponent().getRouter().navTo("detalhesComissao", {
-                idComissao: "New"
+            this.getOwnerComponent().getRouter().navTo("detalhesTipoAlerta", {
+                idTipoAlerta: "New"
             });
         },
 
         onTableItemPress: function (oEvent) {
             var sId = oEvent.getParameter("listItem").getCells()[0].getText()
-            this.getOwnerComponent().getRouter().navTo("detalhesComissao", {
-                idComissao: sId
+            this.getOwnerComponent().getRouter().navTo("detalhesTipoAlerta", {
+                idTipoAlerta: sId
             });
         },
 
-        onClearFilter: function () {
+        onClearFilter: function (oEvent) {
             this.getView().byId("filterDesc").setValue("");
-            this.getView().getModel("comissoesView").setProperty("/reguladorFilterId", null);
-            this.getView().getModel("comissoesView").setProperty("/reguladorFilter", "");
-
             this.onSearch();
         },
 
         onSearch: function () {
-            var oTableBinding = this.getView().byId("tblComissoes").getBinding("items"),
+            var oTableBinding = this.getView().byId("tblTiposAlerta").getBinding("items"),
                 sDescFilter = this.getView().byId("filterDesc").getValue(),
-                sReguladorFilter = this.getView().getModel("comissoesView").getProperty("/reguladorFilterId"),
-                bAnd = false,
+                aSelKeysPerfil = this.byId("mtCBoxPerfil").getSelectedKeys(),
                 aFilters = [];
 
             aFilters.push(new Filter({
@@ -102,108 +97,65 @@ sap.ui.define([
                 value1: sDescFilter,
                 caseSensitive: false
             }));
-            if (sReguladorFilter) {
-                aFilters.push(new Filter("regulador_ID", FilterOperator.EQ, sReguladorFilter));
-                bAnd = true;
+
+            if (aSelKeysPerfil && aSelKeysPerfil.length > 0) {
+                for (let i = 0; i < aSelKeysPerfil.length; i++) {
+                    var perfil_ID = aSelKeysPerfil[i];
+                    var oFilter = new Filter("perfil_ID", FilterOperator.EQ, perfil_ID);
+                    aFilters.push(oFilter);
+                }
+
             }
 
-            oTableBinding.filter(new Filter(aFilters, bAnd));
+            oTableBinding.filter(new Filter(aFilters, true));
         },
 
         onPageNavButtonPress: function () {
             this.getView().byId("filterDesc").setValue("");
-            this.getView().getModel("comissoesView").setProperty("/reguladorFilterId", null);
-            this.getView().getModel("comissoesView").setProperty("/reguladorFilter", "");
-
             this.onSearch();
             history.go(-1);
         },
 
-        showReguladorValueHelp: function () {
-            if (!this._oDialogReguladores) {
-                this._oDialogReguladores = sap.ui.xmlfragment("ps.uiRepMercado.view.fragments.Reguladores", this);
-                this.getView().addDependent(this._oDialogReguladores);
-                this.getView().getModel().read("/Reguladores", {
-                    success: function (oData) {
-                        var oReguladoresModel = new JSONModel(oData);
-                        this.getView().setModel(oReguladoresModel, "reguladoresModel");
-                    }.bind(this),
-                    error: function (oError) {
-                        var oErrorMsg = JSON.parse(oError.responseText);
-                        MessageBox.error(oErrorMsg.error.message.value);
-                    }
-                });
-            }
-            this._oDialogReguladores.open();
-        },
-
-        onReguladoresConfirm: function (oEvent) {
-            if (oEvent.getParameter("selectedItem")) {
-                var sReguladorPath = oEvent.getParameter("selectedItem").getBindingContext("reguladoresModel").getPath();
-                var oRegulador = this.getView().getModel("reguladoresModel").getProperty(sReguladorPath);
-                this.getView().getModel("comissoesView").setProperty("/reguladorFilter", oRegulador.descricao);
-                this.getView().getModel("comissoesView").setProperty("/reguladorFilterId", oRegulador.ID);
-            } else {
-                this.getView().getModel("comissoesView").setProperty("/reguladorFilter", "");
-                this.getView().getModel("comissoesView").setProperty("/reguladorFilterId", null);
-            }
-            this.getView().getModel("comissoesView").refresh();
-        },
-
-        onSearchReguladores: function (oEvent) {
-            var sValue = oEvent.getParameter("value");
-            var oBinding = oEvent.getSource().getBinding("items");
-            var aFilters = [];
-            // @ts-ignore
-            aFilters.push(new Filter({
-                path: 'descricao',
-                operator: FilterOperator.Contains,
-                value1: sValue,
-                caseSensitive: false
-            }));
-            oBinding.filter(aFilters);
-        },
-
-        onTableComissoesSelectionChange: function (oEvent) {
+        onTableTiposAlertaSelectionChange: function (oEvent) {
 
             var oSelContext = oEvent.getSource().getSelectedContexts();
             if (oSelContext.length > 0) {
-                this.byId("btnDelComissao").setEnabled(true);
+                this.byId("btnDelTipoAlerta").setEnabled(true);
             } else {
-                this.byId("btnDelComissao").setEnabled(false);
+                this.byId("btnDelTipoAlerta").setEnabled(false);
             }
 
         },
 
-        onDeleteComissao: function (oEvent) {
+        onDeleteTipoAlerta: function (oEvent) {
 
-            var oTblComissDelete = this.byId("tblComissoes"),
-                oSelContext = oTblComissDelete.getSelectedContexts(),
+            var oTblTpAlertaDelete = this.byId("tblTiposAlerta"),
+                oSelContext = oTblTpAlertaDelete.getSelectedContexts(),
                 that = this,
                 sMessage = "",
                 sSuccessMsg = "",
                 sErrorMsg = "",
-                aComissDelete = "",
+                aTipoAlertaDelete = "",
                 oDeleteObjec = {
                     ids: ""
                 }
 
-            sErrorMsg = this.getResourceBundle().getText("erro_excluir_comissao");
-            //Notifica que a Comissão sera excluida
+            sErrorMsg = this.getResourceBundle().getText("erro_excluir_tipo_alerta");
+            //Notifica que Tipo de Alerta será removido
             if (oSelContext.length > 1) {
-                sMessage = this.getResourceBundle().getText("confirma_exclusao_comissoes_txt");
-                sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_comissoes");
+                sMessage = this.getResourceBundle().getText("confirma_exclusao_tipos_alerta_txt");
+                sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_tipos_alerta");
             } else {
-                sMessage = this.getResourceBundle().getText("confirma_exclusao_comissao_txt");
-                sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_comissao");
+                sMessage = this.getResourceBundle().getText("confirma_exclusao_tipo_alerta_txt");
+                sSuccessMsg = this.getResourceBundle().getText("sucesso_excluir_tipo_alerta");
             }
 
             for (let i = 0; i < oSelContext.length; i++) {
-                const oComissDel = this.getModel().getObject(oSelContext[i].getPath());
-                aComissDelete = aComissDelete + oComissDel.ID + ";";
+                const oRegDel = this.getModel().getObject(oSelContext[i].getPath());
+                aTipoAlertaDelete = aTipoAlertaDelete + oRegDel.ID + ";";
             }
 
-            oDeleteObjec.ids = aComissDelete;
+            oDeleteObjec.ids = aTipoAlertaDelete;
 
             MessageBox.warning(
                 sMessage,
@@ -211,28 +163,32 @@ sap.ui.define([
                     actions: [MessageBox.Action.YES, MessageBox.Action.NO],
                     onClose: function (sAction) {
                         if (sAction === MessageBox.Action.YES) {
-                            that.sendDeleteComissoesRequest(oDeleteObjec, sSuccessMsg, sErrorMsg);
+                            that.sendDeleteTiposAlertaRequest(oDeleteObjec, sSuccessMsg, sErrorMsg);
                         }
                     }
                 });
 
         },
 
-        sendDeleteComissoesRequest: function (sIdComissao, successMsg, errorMsg) {
+        sendDeleteTiposAlertaRequest: function (sIdTipoAlerta, successMsg, errorMsg) {
 
             var oModel = this.getModel(),
                 sSuccessMsg = successMsg,
                 sErrorMsg = errorMsg,
                 that = this;
 
-            oModel.create("/deleteSelectedComissoes", sIdComissao, {
+            oModel.create("/deleteSelectedTiposAlerta", sIdTipoAlerta, {
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(sSuccessMsg);
                     that.getView().getModel().refresh();
+                    that.getView().byId("filterDesc").setValue("");
+                    that.onSearch();
                 },
                 error: function (oError) {
                     that.getOwnerComponent()._genericErrorMessage(sErrorMsg);
                     that.getView().getModel().refresh();
+                    that.getView().byId("filterDesc").setValue("");
+                    that.onSearch();
                 }
             });
         },
@@ -247,11 +203,10 @@ sap.ui.define([
             });
 
             aCols.push({
-                label: oI18n.getText("descricao"),
-                property: 'regulador/descricao',
-                type: EdmType.String
+                label: oI18n.getText("perfil_txt"),
+                type: EdmType.String,
+                property: 'perfil/descricao'
             });
-
 
             return aCols;
         },
@@ -260,7 +215,7 @@ sap.ui.define([
             var aCols, oRowBinding, oSettings, oSheet, oTable;
 
             if (!this._oTable) {
-                this._oTable = this.byId('tblComissoes');
+                this._oTable = this.byId('tblTiposAlerta');
             }
 
             oTable = this._oTable;
@@ -275,7 +230,7 @@ sap.ui.define([
                     columns: aCols,//,
                     //hierarchyLevel: 'Level'
                     context: {
-                        sheetName: 'Comissões'
+                        sheetName: 'TiposAlerta'
                     }
                 },
                 dataSource: {
@@ -286,7 +241,7 @@ sap.ui.define([
                     count: oRowBinding.getLength ? oRowBinding.getLength() : null,
                     useBatch: true // Default for ODataModel V2
                 },
-                fileName: 'Comissões.xlsx'//,
+                fileName: 'TiposAlerta.xlsx'//,
                 //worker: false // We need to disable worker because we are using a MockServer as OData Service
             };
 
@@ -295,5 +250,6 @@ sap.ui.define([
                 oSheet.destroy();
             });
         }
+
     });
 });

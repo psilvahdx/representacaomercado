@@ -61,6 +61,15 @@
                                         <Input id="txtCargoUser" value="{EditUsuarioModel>/cargo}" />
                                     </f:fields>
                                 </f:FormElement>
+                                 <f:FormElement label="{i18n>cargo_classif_txt}">
+                                    <f:fields>                                        
+                                        <ComboBox selectedKey="{EditUsuarioModel>/cargoClassif_ID}" id="cmbCargoClassif" items="{path:'/CargoClassificacoes', templateShareable:true}">
+									        <items>
+										        <core:Item key="{ID}" text="{descricao}"/>
+									        </items>
+								        </ComboBox>
+                                    </f:fields>
+                                </f:FormElement>
                                 <f:FormElement label="{i18n>diretor_vp_txt}">
                                     <f:fields>
                                         <Input id="txtDiretorGeralUser" value="{EditUsuarioModel>/diretorGeral}" />
