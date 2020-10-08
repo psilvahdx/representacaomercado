@@ -18,6 +18,9 @@ service FullSerice {
     entity Historico              as projection on db.Historico;   
     entity ComissoesRepresentante as projection on db.ComissoesRepresentante;
     entity AppSettings            as projection on db.AppSettings;
+    entity TiposAlerta            as projection on db.TiposAlerta;
+    entity EventosAlerta          as projection on db.EventosAlerta;
+    entity AlertasUsuario         as projection on db.AlertasUsuario;
 
  
     view TemasPorRegulador() as
@@ -91,6 +94,7 @@ service FullSerice {
     action deleteSelectedUsers(ids : String);
     action deleteSelectedReguladores(ids : String);
     action deleteSelectedComissoes(ids : String);
+   action deleteSelectedTiposAlerta(ids : String);
     function comissoesSemRepresentante() returns array of Comissoes;
     function comissoesComRepresentante() returns array of Comissoes;
     function representacoesMercado() returns array of RepresentacoesMercado;

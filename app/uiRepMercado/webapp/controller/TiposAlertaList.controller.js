@@ -74,14 +74,17 @@ sap.ui.define([
         },
 
         onTableItemPress: function (oEvent) {
-            var sId = oEvent.getParameter("listItem").getCells()[0].getText()
+            var oContext = oEvent.getParameter("listItem").getBindingContext(),
+                oObject = this.getModel().getObject(oContext.getPath());
             this.getOwnerComponent().getRouter().navTo("detalhesTipoAlerta", {
-                idTipoAlerta: sId
+                idTipoAlerta: oObject.ID
             });
         },
 
         onClearFilter: function (oEvent) {
+            var oSelKeysPerfil = this.byId("mtCBoxPerfil");
             this.getView().byId("filterDesc").setValue("");
+             oSelKeysPerfil.setSelectedKeys([]);
             this.onSearch();
         },
 
@@ -175,7 +178,7 @@ sap.ui.define([
             var oModel = this.getModel(),
                 sSuccessMsg = successMsg,
                 sErrorMsg = errorMsg,
-                that = this;
+                that = this;               
 
             oModel.create("/deleteSelectedTiposAlerta", sIdTipoAlerta, {
                 success: function (oData) {

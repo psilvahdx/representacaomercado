@@ -67,7 +67,7 @@ sap.ui.define([
 
                 this.initializeValidator();
                 if (sObjectId !== "New") {
-                    this._bindView("/TiposAlerta('" + sObjectId + "')", sObjectId);
+                    this._bindView("/TiposAlerta(guid'" + sObjectId + "')", sObjectId);
                 }
                 else {
                     
@@ -196,21 +196,14 @@ sap.ui.define([
         },
 
         saveTipoAlerta: function (oParams, oViewModel, entitySet) {
-            var sMessage = "",
-                oModel = this.getModel(),
-                that = this;
-
+        
             this.sendCreateTipoAlertaRequest(entitySet, oParams);
-
         },
 
-        updateTipoAlerta: function (oParams, oViewModel, entitySet) {
-            var sMessage = "",
-                that = this;
+        updateTipoAlerta: function (oParams, oViewModel, entitySet) {        
 
-            entitySet = entitySet + "(ID='" + oParams.ID + "')";
+            entitySet = entitySet + "(guid'" + oParams.ID + "')";
             this.sendUpdateTipoAlertaRequest(entitySet, oParams);
-
 
         },
 
@@ -220,10 +213,13 @@ sap.ui.define([
                 oViewModel = this.getModel("detTipoAlertaView"),
                 that = this;
 
+            delete oParams.ID;
+
             oModel.create(entitySet, oParams, {
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_tipo_alerta"));                   
-                    oViewModel.setProperty("/busy", false);                    
+                    oViewModel.setProperty("/busy", false);    
+                    history.go(-1);                
                 },
                 error: function (oError) {
                     that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_tipo_alerta"));
@@ -242,7 +238,8 @@ sap.ui.define([
             oModel.update(entitySet, oParams, {
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_tipo_alerta"));
-                    oViewModel.setProperty("/busy", false);                   
+                    oViewModel.setProperty("/busy", false);    
+                    history.go(-1);               
                 },
                 error: function (oError) {
                     that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_tipo_alerta"));

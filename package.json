@@ -7,14 +7,15 @@
   "private": true,
   "dependencies": {
     "@sap/cds": "^3",
-    "@sap/cds-odata-v2-adapter-proxy": "^1.4.42",
+    "@sap/cds-odata-v2-adapter-proxy": "^1.4.46",
     "@sap/hana-client": "^2.4.177",
     "@sap/xsenv": "^3.0.0",
     "@sap/xssec": "^2.2.5",
     "dateformat": "^3.0.3",
     "passport": "^0.4.1",
     "qs": "^6.9.4",
-    "sap-cf-axios": "^0.2.19"
+    "sap-cf-axios": "^0.2.19",
+    "sqlite3": "^5.0.0"
   },
   "scripts": {
     "start": "npx cds run"

@@ -95,7 +95,7 @@
       "ExportModel": {
 				"type": "sap.ui.model.json.JSONModel",
 				"uri": "model/ExportFields.json"
-	  },
+      },
       "": {
         "dataSource": "mainService",
         "preload": true,
@@ -103,7 +103,10 @@
           "operationMode": "Server",
           "groupId": "$direct",
           "synchronizationMode": "None",
-          "autoExpandSelect": true
+          "autoExpandSelect": true,
+          "defaultCountMode": "Request",
+          "useBatch": false,
+          "defaultUpdateMethod": "PUT"
         }
       }
     },

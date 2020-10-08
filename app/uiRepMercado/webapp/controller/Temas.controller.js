@@ -31,6 +31,9 @@ sap.ui.define([
         onInit: function () {
             var oViewModel;
 
+            this._oDialogDetalhesAlerta = sap.ui.xmlfragment("ps.uiRepMercado.view.fragments.DetalhesAlerta", this);
+            this.getView().addDependent(this._oDialogDetalhesAlerta);
+
             // keeps the search state
             this._aTableSearchState = [];
 
@@ -65,13 +68,16 @@ sap.ui.define([
                 that = this;
             oModel.attachRequestFailed(function (oEvent) {
 
-                var oResponse = oEvent.getParameter("response");
+                var oResponse = oEvent.getParameter("response"),
+                    sUrl = oEvent.getParameter("url");
                 that.byId("tblTemas").setBusy(false);
                 that.byId("tblTemas").setNoDataText(that.byId("tblTemas").getNoDataText());
                 that.hideBusy();
-                if (oResponse && oResponse.statusCode === "404") {
-                    var oJsonResponseText = JSON.parse(oResponse.responseText);
-                    that.getOwnerComponent()._genericErrorMessage(oJsonResponseText.error.message.value);
+                if (sUrl.includes("Temas")) {
+                    if (oResponse && oResponse.statusCode === "404") {
+                        var oJsonResponseText = JSON.parse(oResponse.responseText);
+                        that.getOwnerComponent()._genericErrorMessage(oJsonResponseText.error.message.value);
+                    }
                 }
 
 
@@ -298,7 +304,7 @@ sap.ui.define([
         onCadComissoesTilePress: function () {
             this.getRouter().navTo("cadComissoesApp");
         },
-        onCadTiposAlertaTilePress: function(){
+        onCadTiposAlertaTilePress: function () {
             this.getRouter().navTo("cadTiposAlertaApp");
         },
         ///DashBoard
@@ -403,7 +409,7 @@ sap.ui.define([
                 title: {
                     visible: true,
                     text: this.getResourceBundle().getText("temas_por_reguladores_title"),
-                    style:{
+                    style: {
                         fontSize: sTitleFontSize
                     }
                 }
@@ -460,7 +466,7 @@ sap.ui.define([
                 title: {
                     visible: true,
                     text: this.getResourceBundle().getText("temas_por_criticidade_title"),
-                    style:{
+                    style: {
                         fontSize: sTitleFontSize
                     }
                 }
@@ -474,7 +480,7 @@ sap.ui.define([
                         formatString: formatPattern.SHORTFLOAT_MFD2,
                         visible: true,
                         showTotal: true
-                    },                    
+                    },
                     dataShape: {
                         primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
                     },
@@ -496,8 +502,8 @@ sap.ui.define([
                 },
                 legendGroup: {
                     layout: {
-                            position: "bottom"
-                        }
+                        position: "bottom"
+                    }
                 },
                 valueAxis: {
                     label: {
@@ -523,7 +529,7 @@ sap.ui.define([
                 title: {
                     visible: true,
                     text: this.getResourceBundle().getText("representacoes_por_cargo_title"),
-                    style:{
+                    style: {
                         fontSize: sTitleFontSize
                     }
                 }
@@ -557,11 +563,11 @@ sap.ui.define([
                         "sapUiChartPaletteSequentialNeutralDark2"
                     ]
                 },
-                 legendGroup: {
+                legendGroup: {
                     layout: {
-                            position: "bottom",
-                            alignment: "center"
-                        }
+                        position: "bottom",
+                        alignment: "center"
+                    }
                 },
                 valueAxis: {
                     label: {
@@ -587,7 +593,7 @@ sap.ui.define([
                 title: {
                     visible: true,
                     text: this.getResourceBundle().getText("representacoes_mercado_title"),
-                    style:{
+                    style: {
                         fontSize: sTitleFontSize
                     }
                 }
@@ -601,7 +607,7 @@ sap.ui.define([
                         visible: true,
                         type: "value"
                     },
-                    colorPalette: [                        
+                    colorPalette: [
                         "sapUiChartPaletteSequentialHue1Light3",
                         "sapUiChartPaletteSequentialHue1Light2",
                         "sapUiChartPaletteSequentialHue1Light1",
@@ -618,9 +624,9 @@ sap.ui.define([
                 },
                 legendGroup: {
                     layout: {
-                            position: "bottom",
-                            alignment: "center"
-                        }
+                        position: "bottom",
+                        alignment: "center"
+                    }
                 },
                 valueAxis: {
                     label: {
@@ -646,7 +652,7 @@ sap.ui.define([
                 title: {
                     visible: true,
                     text: this.getResourceBundle().getText("comissoes_sem_representante_title"),
-                    style:{
+                    style: {
                         fontSize: sTitleFontSize
                     }
                 }
@@ -663,7 +669,7 @@ sap.ui.define([
                         position: 'inside'
                         //showTotal: true
                     },
-                    colorPalette: [                        
+                    colorPalette: [
                         "sapUiChartPaletteSequentialHue1Light3",
                         "sapUiChartPaletteSequentialHue1Light2",
                         "sapUiChartPaletteSequentialHue1Light1",
@@ -680,9 +686,9 @@ sap.ui.define([
                 },
                 legendGroup: {
                     layout: {
-                            position: "bottom",
-                            alignment: "center"
-                        }
+                        position: "bottom",
+                        alignment: "center"
+                    }
                 },
                 valueAxis: {
                     label: {
@@ -708,7 +714,7 @@ sap.ui.define([
                 title: {
                     visible: true,
                     text: this.getResourceBundle().getText("comissoes_com_representante_title"),
-                    style:{
+                    style: {
                         fontSize: sTitleFontSize
                     }
                 }
@@ -746,20 +752,20 @@ sap.ui.define([
             if (odtrPeriodo.getDateValue()) {
 
                 var vMinDate = odtrPeriodo.getDateValue(),
-                    vMaxDate = new Date(odtrPeriodo.getSecondDateValue().getFullYear(), odtrPeriodo.getSecondDateValue().getMonth()+1, 0);  
+                    vMaxDate = new Date(odtrPeriodo.getSecondDateValue().getFullYear(), odtrPeriodo.getSecondDateValue().getMonth() + 1, 0);
                 aFilter.push(new Filter({
                     path: "primeiroRegistro",
                     operator: FilterOperator.BT,
                     value1: vMinDate,
                     value2: vMaxDate
                 }));
-            }else{
+            } else {
 
-               var  vToday = new Date(),
+                var vToday = new Date(),
                     vMinDate = new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()),
-                    vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth()+1, 0);  
-                
-                    
+                    vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
+
+
                 aFilter.push(new Filter({
                     path: "primeiroRegistro",
                     operator: FilterOperator.BT,
@@ -770,14 +776,14 @@ sap.ui.define([
             }
 
             this.getTemasPorRegulador(aFilter);
-            this.getTemasPorCriticidade(aFilter);            
+            this.getTemasPorCriticidade(aFilter);
 
             if (oObjectUser.userLog.userProfile_ID !== "REP") {
                 this.getRepresentacoesPorCargo();
                 this.getRepresentacoesNoMercado();
                 this.getComissoesSemRepresentantePorRegulador();
                 this.getComissoesComRepresentantePorRegulador();
-            }   
+            }
 
         },
 
@@ -914,10 +920,10 @@ sap.ui.define([
                         }
                     }
 
-                      that.hideBusy();
+                    that.hideBusy();
                 },
                 error: function (oError) {
-                     that.hideBusy();
+                    that.hideBusy();
                 }
             });
         },
@@ -1058,15 +1064,15 @@ sap.ui.define([
                     }
 
 
-                      that.hideBusy();
+                    that.hideBusy();
                 },
                 error: function (oError) {
-                      that.hideBusy();
+                    that.hideBusy();
                 }
             });
         },
 
-        getRepresentacoesPorCargo: function(){
+        getRepresentacoesPorCargo: function () {
             var oModel = this.getModel(),
                 that = this,
                 aTemasReguladorMes = [],
@@ -1075,9 +1081,9 @@ sap.ui.define([
                 aMeasuresConfig = [],
                 sPath = '/representacoesPorCargo()';
 
-            oModel.read(sPath, {               
+            oModel.read(sPath, {
                 success: function (oData) {
-                    
+
                     var oResults = oData.results;
 
                     var aReguladores = oResults.filter((repPorCargo, index, self) =>
@@ -1123,7 +1129,7 @@ sap.ui.define([
                         oMeasure = JSON.parse(sElement);
                         aMeasures.push(oMeasure);
 
-                    }                  
+                    }
 
                     var assignedContentData = {
                         RepresentacoesPorCargo: aMeasures
@@ -1185,11 +1191,11 @@ sap.ui.define([
                     }
 
 
-                      that.hideBusy();
-                
+                    that.hideBusy();
+
                 },
                 error: function (oError) {
-                     that.hideBusy();
+                    that.hideBusy();
                 }
             });
         },
@@ -1204,39 +1210,39 @@ sap.ui.define([
                 aMeasuresConfig = [],
                 sPath = '/representacoesMercado()';
 
-            oModel.read(sPath, {               
+            oModel.read(sPath, {
                 success: function (oData) {
-                    var oResults = oData.results                ,
+                    var oResults = oData.results,
                         sSemRegulador = that.getResourceBundle().getText("sem_regulador_txt");
-                   
+
                     var aReguladores = oResults.filter((comissao, index, self) =>
                         index === self.findIndex((t) => (
                             t.regulador === comissao.regulador && t.regulador === comissao.regulador
                         ))
-                    );                  
-                 
+                    );
+
                     for (let i = 0; i < aReguladores.length; i++) {
                         const reg = aReguladores[i];
 
-                        var aGroupRegulador = oResults.filter(r => { return r.regulador === reg.regulador});
+                        var aGroupRegulador = oResults.filter(r => { return r.regulador === reg.regulador });
 
-                        var aQtdComIndicacao = aGroupRegulador.filter(regC=>{ return regC.comIndicacao}),
-                            aQtdSemIndicacao = aGroupRegulador.filter(regS=>{ return !regS.comIndicacao});
+                        var aQtdComIndicacao = aGroupRegulador.filter(regC => { return regC.comIndicacao }),
+                            aQtdSemIndicacao = aGroupRegulador.filter(regS => { return !regS.comIndicacao });
 
                         var oMeasure = {};
-                      
+
                         var sElement = '{ "REGULADOR": "' + reg.regulador + '","',
                             vTotal = 0;
 
-                            vTotal = aQtdComIndicacao.length + aQtdSemIndicacao.length
+                        vTotal = aQtdComIndicacao.length + aQtdSemIndicacao.length
 
-                         oMeasure={
-                             REGULADOR: reg.regulador,
-                             COM_INDICACAO: aQtdComIndicacao.length,
-                             SEM_INDICACAO: aQtdSemIndicacao.length,
-                             TOTAL: vTotal
-                         };
-                      
+                        oMeasure = {
+                            REGULADOR: reg.regulador,
+                            COM_INDICACAO: aQtdComIndicacao.length,
+                            SEM_INDICACAO: aQtdSemIndicacao.length,
+                            TOTAL: vTotal
+                        };
+
                         aMeasures.push(oMeasure);
 
                     }
@@ -1252,8 +1258,8 @@ sap.ui.define([
                     aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
                     aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
 
-                    var  sComIndicacao = that.getResourceBundle().getText("com_indicacao_txt"),
-                         sSemIndicacao = that.getResourceBundle().getText("sem_indicacao_txt");
+                    var sComIndicacao = that.getResourceBundle().getText("com_indicacao_txt"),
+                        sSemIndicacao = that.getResourceBundle().getText("sem_indicacao_txt");
 
                     aMeasuresConfig.push({ name: sComIndicacao, value: "{COM_INDICACAO}" });
                     aMeasuresConfig.push({ name: sSemIndicacao, value: "{SEM_INDICACAO}" });
@@ -1299,23 +1305,23 @@ sap.ui.define([
                         }
                     }
 
-                      that.hideBusy();
+                    that.hideBusy();
                 },
                 error: function (oError) {
-                     that.hideBusy();
+                    that.hideBusy();
                 }
             });
         },
 
         getComissoesSemRepresentantePorRegulador: function () {
             var oModel = this.getModel(),
-                that = this,               
+                that = this,
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
                 sPath = '/comissoesSemRepresentante';
 
-            oModel.read(sPath, {                
+            oModel.read(sPath, {
                 urlParameters: {
                     "$expand": "regulador"
                 },
@@ -1323,7 +1329,7 @@ sap.ui.define([
                 success: function (oData) {
                     var oResults = oData.results,
                         sSemRegulador = that.getResourceBundle().getText("sem_regulador_txt");
-                   
+
                     var aReguladores = oResults.filter((comissao, index, self) =>
                         index === self.findIndex((t) => (
                             t.regulador === comissao.regulador && t.regulador === comissao.regulador
@@ -1334,15 +1340,15 @@ sap.ui.define([
                         const regulador = aReguladores[i];
 
                         var aComissoesRegulador = oResults.filter(r => { return r.regulador === regulador.regulador });
-                        
-                        if (regulador.regulador) {
-                            aMeasures.push({REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });    
-                        }else{
-                            aMeasures.push({REGULADOR: sSemRegulador, TOTAL: aComissoesRegulador.length });
-                        }
-                        
 
-                    }                   
+                        if (regulador.regulador) {
+                            aMeasures.push({ REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });
+                        } else {
+                            aMeasures.push({ REGULADOR: sSemRegulador, TOTAL: aComissoesRegulador.length });
+                        }
+
+
+                    }
 
                     var assignedContentData = {
                         ComissoesSemRepresentante: aMeasures
@@ -1356,7 +1362,7 @@ sap.ui.define([
                     aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
 
                     oVizFrame.destroyDataset();
-                    oVizFrame.destroyFeeds();                   
+                    oVizFrame.destroyFeeds();
 
                     //New dataset
                     oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
@@ -1380,30 +1386,30 @@ sap.ui.define([
                         values: ["TOTAL"]
                     }));
 
-                      that.hideBusy();
+                    that.hideBusy();
                 },
                 error: function (oError) {
-                     that.hideBusy();
+                    that.hideBusy();
                 }
             });
         },
 
         getComissoesComRepresentantePorRegulador: function () {
             var oModel = this.getModel(),
-                that = this,               
+                that = this,
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
                 sPath = '/comissoesComRepresentante';
 
-            oModel.read(sPath, {                
+            oModel.read(sPath, {
                 urlParameters: {
                     "$expand": "regulador"
                 },
 
                 success: function (oData) {
                     var oResults = oData.results;
-                   
+
                     var aReguladores = oResults.filter((comissao, index, self) =>
                         index === self.findIndex((t) => (
                             t.regulador === comissao.regulador && t.regulador === comissao.regulador
@@ -1414,15 +1420,15 @@ sap.ui.define([
                         const regulador = aReguladores[i];
 
                         var aComissoesRegulador = oResults.filter(r => { return r.regulador.descricao === regulador.regulador.descricao });
-                        
-                        if (regulador.regulador) {
-                            aMeasures.push({REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });    
-                        }else{
-                            aMeasures.push({REGULADOR: regulador.regulador, TOTAL: aComissoesRegulador.length });
-                        }
-                        
 
-                    }                   
+                        if (regulador.regulador) {
+                            aMeasures.push({ REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });
+                        } else {
+                            aMeasures.push({ REGULADOR: regulador.regulador, TOTAL: aComissoesRegulador.length });
+                        }
+
+
+                    }
 
                     var assignedContentData = {
                         ComissoesComRepresentante: aMeasures
@@ -1460,10 +1466,10 @@ sap.ui.define([
                         values: ["TOTAL"]
                     }));
 
-                      that.hideBusy();
+                    that.hideBusy();
                 },
                 error: function (oError) {
-                     that.hideBusy();
+                    that.hideBusy();
                 }
             });
         },
@@ -1713,7 +1719,327 @@ sap.ui.define([
             oSheet.build().finally(function () {
                 oSheet.destroy();
             });
+        },
+
+        _validateField: function (fieldName) {
+
+            var oControl = sap.ui.getCore().byId(fieldName);//this.getView().byId(fieldName);
+            var value;
+
+            if (fieldName.substring(0, 3) === "sel") {
+                value = oControl.getSelectedKey();
+                if (value === "") {
+                    oControl.setValueState("Error");
+                    oControl.setValueStateText(this.geti18nText("campo_obrigatorio_txt"));
+                    sap.m.MessageToast.show(this.geti18nText("campo_obrigatorio_msg"));
+                    return false;
+                }
+            } else {
+                value = oControl.getValue();
+                if (value === "") {
+                    oControl.setValueState("Error");
+                    oControl.setValueStateText(this.geti18nText("campo_obrigatorio_txt"));
+                    sap.m.MessageToast.show(this.geti18nText("campo_obrigatorio_msg"));
+                    return false;
+                }
+            }
+            oControl.setValueState("None");
+            return true;
+        },
+
+        validaInformacoesAlerta: function () {
+
+            var isValid = true;
+
+            if (!this._validateField("dtInicio"))
+                isValid = false;
+
+            if (!this._validateField("txtDescricaoAlerta"))
+                isValid = false;
+
+            return isValid;
+        },
+
+        ///CALENDARIO      
+        onNewAppointment: function (oEvent) {
+
+            var oParams = this.getTemplateNewAppointment();
+            var oEditAlertaModel = new JSONModel(oParams),
+                oDtInicio = sap.ui.getCore().byId("dtInicio"),
+                btnExluirAlerta = sap.ui.getCore().byId("btnExluirAlerta"),
+                mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta");
+
+            oDtInicio.setMinDate(new Date());
+            oDtInicio.setDateValue(new Date());
+            btnExluirAlerta.setEnabled(false);
+            mtCBoxStatusAlerta.setSelectedKeys([]);
+
+            this.getView().setModel(oEditAlertaModel, "EditAlertaModel");
+            this._oDialogDetalhesAlerta.open();
+        },
+
+        getTemplateNewAppointment: function () {
+            var oUser = this.getModel("userLogModel").getData(),
+                opcAlertas = this.byId("pcAlertas");
+
+
+            var oParams = {
+                ID: "",
+                usuario_ID: oUser.userLog.ID,
+                eventos: [],
+                dtInicio: new Date()
+            },
+                oEvento = {
+                    ID: "",
+                    descricao: "",
+                    dtInicio: new Date(),
+                    dtFim: new Date(),
+                    tipo: "",
+                    conteudo: "",
+                    enviaEmail: false,
+                    tentative: false,
+                    concluido: false,
+                    tipoAlerta_ID: "",
+                    alertaUsuario_ID: ""
+                };
+
+            var oBindingRows = opcAlertas.getBindingInfo("rows");
+
+            if (oBindingRows) {
+                var oContexts = oBindingRows.binding.getContexts();
+                if (oContexts) {
+                    var oCalndarioUser = oContexts[0].getObject();
+                    oParams.ID = oCalndarioUser.ID;
+                    oEvento.alertaUsuario_ID = oCalndarioUser.ID;
+                }
+            }
+
+            oParams.eventos.push(oEvento);
+
+            return oParams;
+        },
+
+        handleAppointmentSelect: function (oEvent) {
+            var oAppointment = oEvent.getParameter("appointment");
+            /* bSelected,
+             aAppointments,
+             sValue;*/
+            if (oAppointment) {
+                //bSelected = oAppointment.getSelected();
+                var oBingingContext = oAppointment.getBindingContext(),
+                    oSelPath = oBingingContext.getPath(),
+                    oSelectedAppintment = this.getModel().getObject(oSelPath),
+                    oEditAlertaModel = new JSONModel(oSelectedAppintment),
+                    oDtInicio = sap.ui.getCore().byId("dtInicio"),
+                    btnExluirAlerta = sap.ui.getCore().byId("btnExluirAlerta"),
+                    mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta");
+
+                btnExluirAlerta.setEnabled(true);
+                oDtInicio.setMinDate(new Date());
+                mtCBoxStatusAlerta.setSelectedKeys([]);
+                
+                if (oSelectedAppintment.statusTemas && oSelectedAppintment.statusTemas !== "") {
+                    var aSelectedKeys = oSelectedAppintment.statusTemas.split("|");
+                    if (aSelectedKeys && aSelectedKeys.length > 0) {
+                         mtCBoxStatusAlerta.setSelectedKeys(aSelectedKeys);
+                    }
+                }
+
+                this.getView().setModel(oEditAlertaModel, "EditAlertaModel");
+
+                this._oDialogDetalhesAlerta.open();
+            }
+        },
+
+        onSaveAlertaButtonPress: function (oEvent) {
+            if (this.validaInformacoesAlerta()) {
+                var oRTextEditor = sap.ui.getCore().byId("RTextEditor"),
+                    mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta"),
+                    oEditAlertaModel = this.getView().getModel("EditAlertaModel"),
+                    oModelData = oEditAlertaModel.getData(),
+                    oCalendario = {
+                        ID: oModelData.alertaUsuario_ID ? oModelData.alertaUsuario_ID : oModelData.ID,
+                        usuario_ID: oModelData.usuario_ID ? oModelData.usuario_ID : "",
+                        eventos: []
+                    },
+                    oEvento = {
+                        ID: oModelData.alertaUsuario_ID ? oModelData.ID : "",
+                        descricao: oModelData.descricao,
+                        dtInicio: oModelData.dtInicio,
+                        dtFim: oModelData.dtFim,
+                        tipo: oModelData.tipo,
+                        conteudo: oModelData.conteudo,
+                        enviaEmail: oModelData.enviaEmail,
+                        tentative: false,
+                        concluido: false,
+                        tipoAlerta_ID: oModelData.tipoAlerta_ID,
+                        alertaUsuario_ID: oModelData.alertaUsuario_ID ? oModelData.alertaUsuario_ID : oModelData.ID
+
+                    },
+                    entitySet = "/AlertasUsuario";//EventosAlerta
+
+                //Datas
+                var dtInicio = sap.ui.getCore().byId("dtInicio").getDateValue();
+
+                if (!dtInicio) {
+                    var sdtInicio = sap.ui.getCore().byId("dtInicio").getValue();
+                    sdtInicio = sdtInicio.trim();
+                    if (sdtInicio) {
+                        dataUltimaReuniao = new Date(sdtInicio.substring(3, 5) + "/" +
+                            sdtInicio.substring(0, 2) + "/" +
+                            sdtInicio.substring(6, 10)
+                        );
+                    }
+                }
+
+                oEvento.dtInicio = dtInicio;
+                oEvento.dtInicio = new Date(oEvento.dtInicio.setHours(8));
+                oEvento.dtFim = dtInicio;
+                oEvento.dtFim = new Date(oEvento.dtFim.setHours(18));
+
+                //Status Tema
+                var oSelKeysStatus = mtCBoxStatusAlerta.getSelectedKeys();
+                if (oSelKeysStatus.length > 0) {
+                    oEvento.statusTemas = oSelKeysStatus.join('|');
+                }               
+               
+
+                oCalendario.eventos.push(oEvento);
+
+                if (oCalendario.ID === "") {
+                    //Novo Calendario e Alerta
+                    this.sendCreateCalendarioRequest(entitySet, oCalendario, oEvento);
+                }
+                else {
+                    if (oEvento.ID  === "" ) {
+                    //Possui um calendário mas ainda não possui alertas, cria alerta no calendario do usuario 
+                        var sEntitySet = "/EventosAlerta";
+                        this.sendCreateEventoRequest(sEntitySet, oEvento);
+                    }else{
+                       //Atualiza Alerta
+                        entitySet = "/EventosAlerta(guid'" + oEvento.ID + "')";
+                        this.sendUpdateAlertaRequest(entitySet, oEvento);
+                    }
+
+                }
+            }
+
+
+        },
+
+        onDeleteAlertaButtonPress: function (oEvent) {
+            var sMessage = this.getResourceBundle().getText("confirma_exclusao_alerta_txt"),
+                oEditAlertaModel = this.getView().getModel("EditAlertaModel"),
+                oModelData = oEditAlertaModel.getData(),
+                sIdEvento = oModelData.ID,
+                that = this;
+
+            if (sIdEvento && sIdEvento !== "") {
+
+                MessageBox.warning(
+                    sMessage,
+                    {
+                        actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                        onClose: function (sAction) {
+                            if (sAction === MessageBox.Action.YES) {
+                                that.sendDeleteEvento(sIdEvento);
+                            }
+                        }
+                    });
+
+            }
+
+        },
+
+        onCancelAlerta: function () {
+            this._oDialogDetalhesAlerta.close();
+        },
+
+        sendCreateCalendarioRequest: function (entitySet, oParams, oEvent) {
+
+            var oModel = this.getModel(),
+                that = this,
+                oEvento = oEvent;
+
+            delete oParams.ID;
+            delete oParams.eventos;
+            delete oParams.dtInicio;
+
+            oModel.create(entitySet, oParams, {
+                success: function (oData) {
+
+                    oParams.ID = oData.ID;
+                    oEvent.alertaUsuario_ID = oData.ID;
+                    var sEntitySet = "/EventosAlerta";
+                    that.sendCreateEventoRequest(sEntitySet, oEvento);
+
+                },
+                error: function (oError) {
+                    that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_alerta"));
+                    oModel.refresh();
+                }
+            });
+        },
+
+        sendCreateEventoRequest: function (entitySet, oEvent) {
+
+            var oModel = this.getModel(),
+                that = this;
+
+            delete oEvent.ID;
+
+            oModel.create(entitySet, oEvent, {
+                success: function (oData) {
+                    that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_alerta"));
+                    oEvent.ID = oData.ID;
+                    that.onCancelAlerta();
+                    oModel.refresh();
+                },
+                error: function (oError) {
+                    that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_alerta"));
+                    oModel.refresh();
+                }
+            });
+        },
+
+        sendUpdateAlertaRequest: function (entitySet, oParams) {
+
+            var oModel = this.getModel(),
+                that = this;
+
+            oModel.update(entitySet, oParams, {
+                success: function (oData) {
+                    that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_alerta"));
+                    oModel.refresh();
+                },
+                error: function (oError) {
+                    that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_alerta"));
+                    oModel.refresh();
+                }
+            });
+
+        },
+
+        sendDeleteEvento: function (sIdEvento) {
+
+            var oModel = this.getModel(),
+                entitySet = "/EventosAlerta(guid'" + sIdEvento + "')",
+                that = this;
+
+            oModel.remove(entitySet, {
+                success: function (oData) {
+                    that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_excluir_alerta"));
+                    oModel.refresh();
+                    that._oDialogDetalhesAlerta.close();
+
+                },
+                error: function (oError) {
+                    that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_excluir_alerta"));
+                    oModel.refresh();
+                }
+            });
         }
+
 
     });
 });

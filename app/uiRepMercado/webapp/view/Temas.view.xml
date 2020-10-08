@@ -200,7 +200,10 @@
 			    <ImageContent src="sap-icon://bell" />
 		    </TileContent>
 	    </GenericTile>
-    </IconTabFilter>		
+    </IconTabFilter>   
+	<IconTabFilter id="calendarTab" text="{i18n>calendario_txt}" key="calendariokey">
+       <core:Fragment fragmentName="ps.uiRepMercado.view.fragments.Calendario" type="XML"/>
+    </IconTabFilter>
 </items>
 </IconTabBar>	
 </ScrollContainer>

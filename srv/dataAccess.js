@@ -7,7 +7,19 @@ const qs = require('qs');
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
     const db = await cds.connect.to("db");
-    const { Temas, Historico, Usuarios, ComissoesRepresentante, UsersExtensions, Perfis, PerfilAcoes, Comissoes, AppSettings, Reguladores, CargoClassificacoes } = service.entities;
+    const { Temas,
+        Historico,
+        Usuarios,
+        ComissoesRepresentante,
+        UsersExtensions,
+        Perfis,
+        PerfilAcoes,
+        Comissoes,
+        AppSettings,
+        Reguladores,
+        CargoClassificacoes,
+        TiposAlerta,
+        AlertasUsuario } = service.entities;
 
 
     //Before Events
@@ -19,6 +31,8 @@ module.exports = cds.service.impl(async (service) => {
             xprComissoesIds = {};
 
         const { SELECT } = req.query
+
+        //console.log("Query>>>>",req.query);
 
         aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
         if (aUsers.length > 0) {
@@ -144,6 +158,57 @@ module.exports = cds.service.impl(async (service) => {
 
     });
 
+    service.before("READ", AlertasUsuario, async (req) => {
+        let aUsers = [],
+            usuario = {};
+
+        const { SELECT } = req.query;
+
+        aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
+        if (aUsers.length > 0) {
+            usuario = aUsers[0];
+        }
+
+        if (!SELECT.where) {
+            SELECT.where = [{ ref: ['usuario_ID'] },
+                '=',
+            { val: usuario.ID },];
+        }
+
+    });
+
+    service.before("READ", TiposAlerta, async (req) => {
+        let aUsers = [],
+            usuario = {};
+
+        const { SELECT } = req.query;
+
+        aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
+        if (aUsers.length > 0) {
+            usuario = aUsers[0];
+        }
+
+        if (usuario.perfil_ID !== "ADM") {
+            if (!SELECT.where) {
+               /* SELECT.where = [{ ref: ['perfil_ID'] },
+                    '=',
+                { val: usuario.perfil_ID },
+                    'and',
+                   { ref: ['perfil_ID'] },
+                    '=',
+                { val: null }];*/
+                const where = `perfil_ID ='${usuario.perfil_ID}' or perfil_ID = 'null' `;
+               //console.log("SELECT.where xpr", xpr);
+               const expr = cds.parse.expr(where);
+                SELECT.where =  expr.xpr;
+            }
+            console.log("SELECT.where Tipos Alertas", SELECT.where);
+        }
+
+
+
+    });
+
     service.before("TemasPorRegulador", async (req) => {
 
         const { SELECT } = req.query;
@@ -210,6 +275,23 @@ module.exports = cds.service.impl(async (service) => {
         console.debug('Historico ID:', context.data.ID)
 
     });
+
+    /* service.before("CREATE", TiposAlerta, async (context) => {
+        const TtipoAlertaId = new SequenceHelper({
+            db: db,
+            sequence: "TIPOS_ALERTA_ID",
+            table: "REPRESENTACAOMERCADO_DB_TIPOS_ALERTA",
+            field: "ID"
+        });
+
+        context.data.ID = await TtipoAlertaId.getNextNumber();
+        if (!context.data.ID) {
+            context.data.ID = 1;
+        }
+        //context.data.userAlteracao_ID = context.user.id;
+        console.debug('TIPOS_ALERTA_ID:', context.data.ID)
+
+    });*/
 
     /*service.before("UPDATE", Usuarios, async (context) => {
 
@@ -423,7 +505,7 @@ module.exports = cds.service.impl(async (service) => {
 
     });
 
-    service.on("getUserExtension", async req => {
+    /*service.on("getUserExtension", async req => {
 
         console.log("Key", req.data.ID);
         let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${req.data.ID}')`,
@@ -456,7 +538,7 @@ module.exports = cds.service.impl(async (service) => {
                 }
             });
 
-            console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE",response.data);
+            console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
 
         } catch (error) {
             console.log("ERRO", error)
@@ -467,7 +549,7 @@ module.exports = cds.service.impl(async (service) => {
 
         return oUserEx;
 
-    });
+    });*/
 
     service.on("comissoesSemRepresentante", async req => {
 
@@ -646,11 +728,20 @@ module.exports = cds.service.impl(async (service) => {
             if (userDel.length > 4) {
                 console.log(userDel);
 
-                const delComissoesUsuario = await service.delete(ComissoesRepresentante).where({ usuario_ID: userDel })
-                console.log("Comissoes usuario deletadas", delComissoesUsuario);
+                try {
+                    const delComissoesUsuario = await service.delete(ComissoesRepresentante).where({ usuario_ID: userDel })
+                    console.log("Comissoes usuario deletadas", delComissoesUsuario);
+                } catch (error) {
+                    console.log("Erro ao Excluir Comissoes", error);
+                }
 
-                const delUsuario = await service.delete(Usuarios).where({ ID: userDel });
-                console.log("Usuario deletado", delUsuario);
+                try {
+                    const delUsuario = await service.delete(Usuarios).where({ ID: userDel });
+                    console.log("Usuario deletado", delUsuario);
+                } catch (error) {
+                    console.log("Erro ao Excluir Usuario", error);
+                }
+
 
             }
 
@@ -710,6 +801,33 @@ module.exports = cds.service.impl(async (service) => {
         }
 
     });
+
+    service.on("deleteSelectedTiposAlerta", async req => {
+
+
+        console.log(req.data.ids.split(";"));
+        let aTpAlertaDelete = req.data.ids.split(";");
+        for (let i = 0; i < aTpAlertaDelete.length; i++) {
+            const tpAlertDel = aTpAlertaDelete[i];
+            if (tpAlertDel !== "") {
+
+                try {
+                    console.log(tpAlertDel);
+                    const deTipoAlerta = await service.delete(TiposAlerta).where({ ID: tpAlertDel })
+                    console.log("Tipo de Alerta deletado", deTipoAlerta);
+                } catch (error) {
+                    console.log("Errro ao excluir tipo de Alerta", error);
+                    req.reject(500, error);
+                }
+
+
+
+            }
+
+        }
+
+    });
+
 
 });
 

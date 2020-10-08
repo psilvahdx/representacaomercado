@@ -36,13 +36,13 @@ entity Usuarios : cuid {
         nome             : String;
         telefone         : String;
         cargo            : String;
-        perfil           : Association to Perfis;       
+        perfil           : Association to Perfis;
         comissoes        : Association to many ComissoesRepresentante
                                on comissoes.usuario = $self;
         diretorGeral     : String;
         diretorExecutivo : String;
         matricula        : String;
-        cargoClassif     : Association  to ClassificacaoCargo;
+        cargoClassif     : Association to ClassificacaoCargo;
 }
 
 entity ComissoesRepresentante : cuid {
@@ -108,6 +108,12 @@ entity PerfilAcoes : cuid {
         createTemas         : Boolean;
 }
 
+entity TiposAlerta : cuid {
+    key ID        : UUID;
+        descricao : String;
+        perfil    : Association to Perfis;
+}
+
 entity AppSettings : cuid {
     key ID           : Integer;
         urlApi       : String;
@@ -118,3 +124,25 @@ entity AppSettings : cuid {
         clientSecret : String;
 
 }
+
+entity AlertasUsuario : cuid {
+	key ID      : UUID;
+        usuario : Association to Usuarios;
+		eventos : Association to many EventosAlerta on eventos.alertaUsuario = $self;		
+}	
+
+entity EventosAlerta : cuid {
+    key ID        : UUID;
+        descricao : String;        
+		dtInicio : DateTime null;
+		dtFim : DateTime null;		
+		tipo: String(50);
+		conteudo: LargeString;
+		enviaEmail: Boolean;
+        tentative: Boolean;
+        concluido: Boolean;
+        statusTemas: String(10);
+		tipoAlerta : Association to TiposAlerta;
+		alertaUsuario: Association to AlertasUsuario;
+		
+}	

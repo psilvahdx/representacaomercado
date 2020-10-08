@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+		height="100%"		
+		xmlns:core="sap.ui.core"
+		xmlns:form="sap.ui.layout.form"        
+	    xmlns:unified="sap.ui.unified"
+		xmlns="sap.m"  xmlns:layout="sap.ui.layout">
+        <VBox>
+		<PlanningCalendar
+			id="pcAlertas"
+			startDate="{path: 'CalendarioModel>/startDate'}"
+			rows="{path: '/AlertasUsuario', parameters: {expand: 'usuario,eventos($expand=tipoAlerta)'}}"
+			appointmentsVisualization="Filled"
+			appointmentSelect="handleAppointmentSelect"
+			showEmptyIntervalHeaders="false"
+			stickyHeader="true"
+			showWeekNumbers="false">
+			<toolbarContent>
+				<Title text="{i18n>calendario_txt}" titleStyle="H4"/>                
+                <Button text="{i18n>novo_btn}" type="Emphasized" press="onNewAppointment"/>
+			</toolbarContent>
+			<rows>
+				<PlanningCalendarRow
+					icon="{pic}"
+					title="{usuario/nome}"
+					text="{role}"
+					appointments="{path : 'eventos', templateShareable: true}">					
+					<appointments>
+						<unified:CalendarAppointment
+							startDate="{dtInicio}"
+							endDate="{dtFim}"							
+							title="{tipoAlerta/descricao}"
+							text="{descricao}"
+							type="{tipo}"
+							tentative="{tentative}">
+						</unified:CalendarAppointment>
+					</appointments>					
+				</PlanningCalendarRow>
+			</rows>
+		</PlanningCalendar>		
+	</VBox>
+</core:FragmentDefinition>
