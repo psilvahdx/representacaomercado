@@ -164,6 +164,8 @@ module.exports = cds.service.impl(async (service) => {
 
         const { SELECT } = req.query;
 
+        //console.log("Alertas Usuario Select >>>>>",SELECT);
+
         aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
         if (aUsers.length > 0) {
             usuario = aUsers[0];
@@ -172,10 +174,11 @@ module.exports = cds.service.impl(async (service) => {
         if (!SELECT.where) {
             SELECT.where = [{ ref: ['usuario_ID'] },
                 '=',
-            { val: usuario.ID },];
+            { val: usuario.ID }];
         }
 
     });
+
 
     service.before("READ", TiposAlerta, async (req) => {
         let aUsers = [],
@@ -190,17 +193,9 @@ module.exports = cds.service.impl(async (service) => {
 
         if (usuario.perfil_ID !== "ADM") {
             if (!SELECT.where) {
-               /* SELECT.where = [{ ref: ['perfil_ID'] },
-                    '=',
-                { val: usuario.perfil_ID },
-                    'and',
-                   { ref: ['perfil_ID'] },
-                    '=',
-                { val: null }];*/
                 const where = `perfil_ID ='${usuario.perfil_ID}' or perfil_ID = 'null' `;
-               //console.log("SELECT.where xpr", xpr);
-               const expr = cds.parse.expr(where);
-                SELECT.where =  expr.xpr;
+                const expr = cds.parse.expr(where);
+                SELECT.where = expr.xpr;
             }
             console.log("SELECT.where Tipos Alertas", SELECT.where);
         }
@@ -313,13 +308,55 @@ module.exports = cds.service.impl(async (service) => {
         }
     });*/
 
-    //On Events  
-    service.on("READ", Comissoes, async (context, next) => {
+    service.before("READ", Comissoes, async (req) => {
 
-        const comissoes = await next();
+        let usuario = {},
+            aUsers = [],
+            acomissoesIds = [],
+            aComissoesUsuario = [],
+            xprComissoesIds = {};
+
+        const { SELECT } = req.query;
+
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
+
+        if (aUsers.length > 0) {
+            usuario = aUsers[0];
+            console.log("Usuario:", usuario);
+            //busca comissões para o Usuário
+            aComissoesUsuario = await cds.read(ComissoesRepresentante).where({ usuario_ID: usuario.ID });
+        }
+
+        switch (usuario.perfil_ID) {
+            case "REP":
+            case "VP_DIR":
+                //VP/Diretor e Representante somente visualiza as comissões que esta relacionado
+                acomissoesIds = aComissoesUsuario.map(x => x.comissao_ID);
+                if (acomissoesIds.length > 0) {
+                    const inComissoesID = `ID in (${acomissoesIds.join(',')})`;
+                    console.log("Comissoes ID", inComissoesID);
+                    xprComissoesIds = cds.parse.expr(inComissoesID);
+                    if (!SELECT.where) {
+                        SELECT.where = xprComissoesIds.xpr;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+
+    });
+
+
+    /*service.on("READ", Comissoes, async (context, next) => {
+
+        const comissoes =  await next();
         let usuario = {},
             aReturn = [],
             aUsers = [],
+            aComissoes=[],
             aComissoesUsuario = [];
 
         //Busca dados Usuário logado
@@ -340,7 +377,8 @@ module.exports = cds.service.impl(async (service) => {
             case "REP":
             case "VP_DIR":
                 //Representante somente visualiza as comissões que esta relacionado 
-                aReturn = comissoes.filter(function (comissao_el) {
+                aComissoes = await cds.read(Comissoes);
+                aReturn = aComissoes.filter(function (comissao_el) {
                     return aComissoesUsuario.filter(function (comissUsuario_el) {
                         return comissUsuario_el.comissao_ID == comissao_el.ID;
                     }).length > 0
@@ -350,12 +388,13 @@ module.exports = cds.service.impl(async (service) => {
                 break;
         }
 
-        return aReturn
+        return aReturn;
 
 
 
-    });
+    });*/
 
+    //On Events 
     service.on("READ", UsersExtensions, async (context, next) => {
         console.log("USEREX", context.user.id);
 
@@ -411,6 +450,16 @@ module.exports = cds.service.impl(async (service) => {
                     console.log("PERFIL_AÇÕES:", oPerfilAcao);
                     oUserEx.acoes = oPerfilAcao;
                     oUserEx.acoes_ID = oPerfilAcao.ID;
+                    //Se Diretor Possui Comissões ele pode criar/editar temas para as mesmas
+                    if (oUser.perfil_ID === "VP_DIR") {
+                        const aComissoesUsuario = await cds.read(ComissoesRepresentante).where({ usuario_ID: oUser.ID });
+                        if (aComissoesUsuario.length > 0) {
+                            oUserEx.acoes.createTemas = true;
+                        } else {
+                            oUserEx.acoes.createTemas = false;
+                        }
+                    }
+
                 }
             }
 

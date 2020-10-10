@@ -101,7 +101,7 @@
 										<Title textAlign="Begin" text="{temasView>/worklistTableTitle}"/>                                    
 										<ToolbarSpacer/>
                                         <Button icon="sap-icon://excel-attachment" press="onExport" text="{i18n>exportar_excel_txt}"/>
-										<Button icon="sap-icon://add-document" type="Transparent" 
+										<Button id="btnNewTema" icon="sap-icon://add-document" type="Transparent" 
 												visible="{= ${userLogModel>/userLog/acoes/createTemas}? ${userLogModel>/userLog/acoes/createTemas} : false}"
 												text="{i18n>novo_tema_btn}" press="onCreatePress">
 										<layoutData>

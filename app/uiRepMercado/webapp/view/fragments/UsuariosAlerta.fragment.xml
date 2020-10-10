@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"  xmlns="sap.m">
+    <TableSelectDialog noDataText="{i18n>falha_na_requisi_txt}" multiSelect="true" 
+    confirm="_onDefineUsuariosAlertaPress" title="{i18n>quem_recebe_alerta_txt}" liveChange="_onSearchUsuariosAlerta" items="{
+			path : 'usuariosAlertaModel>/results',
+            sorter : {
+				path : 'nome',
+				descending : false
+			}
+		}">
+        <items>
+            <ColumnListItem>
+                <cells>
+                    <Text text="{usuariosAlertaModel>ID}" />
+                </cells>
+                <cells>
+                    <Text text="{usuariosAlertaModel>nome}" />
+                </cells>
+            </ColumnListItem>
+        </items>
+        <columns>
+            <Column hAlign="Begin" width="20%">
+                <header>
+                    <Text text="{i18n>matricula_txt}" />
+                </header>
+            </Column>
+            <Column hAlign="Begin">
+                <header>
+                    <Text text="{i18n>nome_txt}" />
+                </header>
+            </Column>
+        </columns>
+    </TableSelectDialog>
+</core:FragmentDefinition>

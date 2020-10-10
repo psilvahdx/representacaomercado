@@ -134,9 +134,15 @@ sap.ui.define([
                 oObject = this.getModel("userLogModel").getData(),
                 objectView = this.getView().getModel("objectView");
 
-            if (oObject.userLog.userProfile_ID === "VP_DIR" || oObject.userLog.userProfile_ID === "PRES") {
+            if (oObject.userLog.userProfile_ID === "PRES") {
                 this.setEditMode(false);
                 objectView.setProperty("/isEditMode", false);
+            }
+            if(oObject.userLog.userProfile_ID === "VP_DIR"){
+                if (!oObject.userLog.acoes.createTemas) {
+                    this.setEditMode(false);
+                    objectView.setProperty("/isEditMode", false);
+                }               
             }
 
             txtDescTema.setValueState("None");
@@ -207,9 +213,26 @@ sap.ui.define([
                             oBinding.filter(new Filter("ID", FilterOperator.NE, 1));
                         }
                     }
-                    if (oUserLog.userLog.userProfile_ID === "VP_DIR" || oUserLog.userLog.userProfile_ID === "PRES") {
+                    if (oUserLog.userLog.userProfile_ID === "PRES") {
                         that.setEditMode(false);
                         oViewModel.setProperty("/isEditMode", false);
+                    }
+                    if (oUserLog.userLog.userProfile_ID === "VP_DIR") {
+
+                        that.setEditMode(false);
+                        oViewModel.setProperty("/isEditMode", false); 
+
+                        if (oUserLog.userLog.acoes.createTemas) {                           
+                            var oUsrComissoesModel =  sap.ui.getCore().getModel("comissoesUsuarioModel"),
+                                aUsrComissoes = oUsrComissoesModel.getData().results;
+                            
+                            const find = aUsrComissoes.find(f => f.ID === oData.comissao_ID);
+                            if (find) {
+                               that.setEditMode(true);
+                               oViewModel.setProperty("/isEditMode", true);   
+                            }                            
+                        }                        
+                       
                     }
 
                     oViewModel.refresh();

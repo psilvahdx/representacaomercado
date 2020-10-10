@@ -136,12 +136,15 @@ entity EventosAlerta : cuid {
         descricao : String;        
 		dtInicio : DateTime null;
 		dtFim : DateTime null;		
-		tipo: String(50);
+		tipo: String(50) default 'Type06';
 		conteudo: LargeString;
 		enviaEmail: Boolean;
         tentative: Boolean;
         concluido: Boolean;
         statusTemas: String(10);
+        alertaPessoal: Boolean;
+        perfisQueRecebem: String(50);
+        usuariosQueRecebem: String;
 		tipoAlerta : Association to TiposAlerta;
 		alertaUsuario: Association to AlertasUsuario;
 		

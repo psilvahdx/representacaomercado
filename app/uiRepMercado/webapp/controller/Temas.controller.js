@@ -116,7 +116,25 @@ sap.ui.define([
 
                 });
             }
+            this.getComissoesUsuario();
 
+        },
+
+        getComissoesUsuario: function () {
+            var oModel = this.getModel(),                
+                that = this;
+
+            oModel.read("/Comissoes", {
+                success: function (oData) {
+                    var oComissoesUsuarioModel = new JSONModel(oData);
+                    sap.ui.getCore().setModel(oComissoesUsuarioModel, "comissoesUsuarioModel");
+                },
+                error: function (oError) {
+                    //oOwnerComponent._genericErrorMessage(that.geti18nText("load_representante_erro"));
+                    that.hideBusy();
+                }
+
+            });
         },
 
         /* =========================================================== */
@@ -1754,25 +1772,95 @@ sap.ui.define([
             if (!this._validateField("dtInicio"))
                 isValid = false;
 
+            //cmbTipoAlerta
+            if (!this._validateField("cmbTipoAlerta"))
+                isValid = false;
+
             if (!this._validateField("txtDescricaoAlerta"))
                 isValid = false;
 
             return isValid;
         },
 
-        ///CALENDARIO      
+        ///CALENDARIO 
+        openDialogRepresentanteAlerta: function (oEvent) {
+
+            var oView = this.getView(),
+                oOwnerComponent = this.getOwnerComponent(),
+                oModel = this.getModel(),
+                that = this;
+            this.oDialogUsuariosAlerta = this.getDialogUsuariosAlerta("ps.uiRepMercado.view.fragments.UsuariosAlerta");
+
+            oModel.read("/Usuarios", {
+
+                success: function (oData) {
+
+                    var oUsuariosAlertaModel = new JSONModel(oData);
+                    oView.setModel(oUsuariosAlertaModel, "usuariosAlertaModel");
+                    that._oDialogUsuariosAlerta.open();
+                },
+                error: function (oError) {
+
+                    oOwnerComponent._genericErrorMessage(that.geti18nText("load_representante_erro"));
+                }
+
+            });
+
+        },
+
+        getDialogUsuariosAlerta: function (sFragment) {
+            if (!this._oDialogUsuariosAlerta) {
+                this._oDialogUsuariosAlerta = sap.ui.xmlfragment(sFragment, this);
+                this.getView().addDependent(this._oDialogUsuariosAlerta);
+            }
+
+            return this._oDialogUsuariosAlerta;
+        },
+
+        _onSearchUsuariosAlerta: function (oEvent) {
+            var sValue = oEvent.getParameter("value");
+            var oFilter = new Filter(
+                "nome",
+                FilterOperator.Contains,
+                sValue
+            );
+            var oBinding = oEvent.getSource().getBinding("items");
+            oBinding.filter([oFilter]);
+        },
+
+        _onDefineUsuariosAlertaPress: function (oEvent) {
+
+            var aSelectedItems = oEvent.getParameter("selectedContexts"),
+                oMultiInput = sap.ui.getCore().byId("inpRepresentantesAlerta");
+
+            if (aSelectedItems && aSelectedItems.length > 0) {
+                aSelectedItems.forEach(function (oItem) {
+                    oMultiInput.addToken(new sap.m.Token({
+                        key: oItem.getObject().ID,
+                        text: oItem.getObject().nome
+                    }));
+                });
+            }
+
+        },
+
+
         onNewAppointment: function (oEvent) {
 
             var oParams = this.getTemplateNewAppointment();
             var oEditAlertaModel = new JSONModel(oParams),
                 oDtInicio = sap.ui.getCore().byId("dtInicio"),
                 btnExluirAlerta = sap.ui.getCore().byId("btnExluirAlerta"),
-                mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta");
+                mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta"),
+                mtCBoxPerfisAlerta = sap.ui.getCore().byId("mtCBoxPerfisAlerta"),
+                oMultiInput = sap.ui.getCore().byId("inpRepresentantesAlerta");
 
             oDtInicio.setMinDate(new Date());
             oDtInicio.setDateValue(new Date());
             btnExluirAlerta.setEnabled(false);
             mtCBoxStatusAlerta.setSelectedKeys([]);
+            mtCBoxPerfisAlerta.setSelectedKeys([]);
+            oMultiInput.destroyTokens();
 
             this.getView().setModel(oEditAlertaModel, "EditAlertaModel");
             this._oDialogDetalhesAlerta.open();
@@ -1787,18 +1875,20 @@ sap.ui.define([
                 ID: "",
                 usuario_ID: oUser.userLog.ID,
                 eventos: [],
-                dtInicio: new Date()
+                dtInicio: new Date(),
+                alertaPessoal: true
             },
                 oEvento = {
                     ID: "",
                     descricao: "",
                     dtInicio: new Date(),
                     dtFim: new Date(),
-                    tipo: "",
+                    tipo: "Type06",
                     conteudo: "",
                     enviaEmail: false,
                     tentative: false,
                     concluido: false,
+                    alertaPessoal: true,
                     tipoAlerta_ID: "",
                     alertaUsuario_ID: ""
                 };
@@ -1832,18 +1922,43 @@ sap.ui.define([
                     oEditAlertaModel = new JSONModel(oSelectedAppintment),
                     oDtInicio = sap.ui.getCore().byId("dtInicio"),
                     btnExluirAlerta = sap.ui.getCore().byId("btnExluirAlerta"),
-                    mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta");
+                    mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta"),
+                    mtCBoxPerfisAlerta = sap.ui.getCore().byId("mtCBoxPerfisAlerta"),
+                    oMultiInput = sap.ui.getCore().byId("inpRepresentantesAlerta");
 
                 btnExluirAlerta.setEnabled(true);
                 oDtInicio.setMinDate(new Date());
                 mtCBoxStatusAlerta.setSelectedKeys([]);
-                
+                mtCBoxPerfisAlerta.setSelectedKeys([]);
+                oMultiInput.destroyTokens();
+
                 if (oSelectedAppintment.statusTemas && oSelectedAppintment.statusTemas !== "") {
                     var aSelectedKeys = oSelectedAppintment.statusTemas.split("|");
                     if (aSelectedKeys && aSelectedKeys.length > 0) {
-                         mtCBoxStatusAlerta.setSelectedKeys(aSelectedKeys);
+                        mtCBoxStatusAlerta.setSelectedKeys(aSelectedKeys);
                     }
                 }
+
+                if (oSelectedAppintment.perfisQueRecebem && oSelectedAppintment.perfisQueRecebem !== "") {
+                    var aSelectedPerfilKeys = oSelectedAppintment.perfisQueRecebem.split("|");
+                    if (aSelectedPerfilKeys && aSelectedPerfilKeys.length > 0) {
+                        mtCBoxPerfisAlerta.setSelectedKeys(aSelectedPerfilKeys);
+                    }
+                }
+
+                if (oSelectedAppintment.usuariosQueRecebem && oSelectedAppintment.usuariosQueRecebem !== "") {
+                    var aSelectedUsersKeys = oSelectedAppintment.usuariosQueRecebem.split("|");
+                    for (let i = 0; i < aSelectedUsersKeys.length; i++) {
+                        const element = aSelectedUsersKeys[i];
+                        var oUserData = this.getModel().getData("/Usuarios('" + element + "')");
+                        oMultiInput.addToken(new sap.m.Token({
+                            key: oUserData.ID,
+                            text: oUserData.nome
+                        }));
+                    }
+
+                }
+
 
                 this.getView().setModel(oEditAlertaModel, "EditAlertaModel");
 
@@ -1855,6 +1970,8 @@ sap.ui.define([
             if (this.validaInformacoesAlerta()) {
                 var oRTextEditor = sap.ui.getCore().byId("RTextEditor"),
                     mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta"),
+                    mtCBoxPerfisAlerta = sap.ui.getCore().byId("mtCBoxPerfisAlerta"),
+                    oMultiInput = sap.ui.getCore().byId("inpRepresentantesAlerta"),
                     oEditAlertaModel = this.getView().getModel("EditAlertaModel"),
                     oModelData = oEditAlertaModel.getData(),
                     oCalendario = {
@@ -1867,11 +1984,12 @@ sap.ui.define([
                         descricao: oModelData.descricao,
                         dtInicio: oModelData.dtInicio,
                         dtFim: oModelData.dtFim,
-                        tipo: oModelData.tipo,
+                        tipo: "Type06",
                         conteudo: oModelData.conteudo,
                         enviaEmail: oModelData.enviaEmail,
                         tentative: false,
                         concluido: false,
+                        alertaPessoal: oModelData.alertaPessoal,
                         tipoAlerta_ID: oModelData.tipoAlerta_ID,
                         alertaUsuario_ID: oModelData.alertaUsuario_ID ? oModelData.alertaUsuario_ID : oModelData.ID
 
@@ -1901,8 +2019,24 @@ sap.ui.define([
                 var oSelKeysStatus = mtCBoxStatusAlerta.getSelectedKeys();
                 if (oSelKeysStatus.length > 0) {
                     oEvento.statusTemas = oSelKeysStatus.join('|');
-                }               
-               
+                }
+
+                if (!oEvento.alertaPessoal) {
+
+                    //Perfis que recebem o Alerta
+                    var oSelKeysPerfis = mtCBoxPerfisAlerta.getSelectedKeys();
+                    if (oSelKeysPerfis.length > 0) {
+                        oEvento.perfisQueRecebem = oSelKeysPerfis.join('|');
+                    }
+                    //Usuarios que recebem o Alerta
+                    var oSelKeysUsuarios = oMultiInput.getTokens().map(tx => tx.getProperty("key"));
+                    if (oSelKeysUsuarios.length > 0) {
+                        oEvento.usuariosQueRecebem = oSelKeysUsuarios.join('|');
+                    }
+                    /*for (let i = 0; i < oSelKeysUsuarios.length; i++) {
+                        const element = oSelKeysUsuarios[i];                        
+                    }*/
+                }
 
                 oCalendario.eventos.push(oEvento);
 
@@ -1911,12 +2045,12 @@ sap.ui.define([
                     this.sendCreateCalendarioRequest(entitySet, oCalendario, oEvento);
                 }
                 else {
-                    if (oEvento.ID  === "" ) {
-                    //Possui um calendário mas ainda não possui alertas, cria alerta no calendario do usuario 
+                    if (oEvento.ID === "") {
+                        //Possui um calendário mas ainda não possui alertas, cria alerta no calendario do usuario 
                         var sEntitySet = "/EventosAlerta";
                         this.sendCreateEventoRequest(sEntitySet, oEvento);
-                    }else{
-                       //Atualiza Alerta
+                    } else {
+                        //Atualiza Alerta
                         entitySet = "/EventosAlerta(guid'" + oEvento.ID + "')";
                         this.sendUpdateAlertaRequest(entitySet, oEvento);
                     }
@@ -1964,6 +2098,7 @@ sap.ui.define([
             delete oParams.ID;
             delete oParams.eventos;
             delete oParams.dtInicio;
+            delete oParams.alertaPessoal;
 
             oModel.create(entitySet, oParams, {
                 success: function (oData) {
