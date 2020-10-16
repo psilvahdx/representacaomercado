@@ -857,27 +857,31 @@ module.exports = cds.service.impl(async (service) => {
                                 if (usuario.ID !== oUser.ID) {
                                     const oCalendarioUser = aCalendarioUsers.find(calend => calend.usuario_ID === usuario.ID);
 
-                                    console.log("Id Calendário:", oCalendarioUser.ID);
-                                    const oEventoReplica = {
+                                    if (oCalendarioUser) {
 
-                                        descricao: oEventoOrigem.descricao,
-                                        dtInicio: oEventoOrigem.dtInicio,
-                                        dtFim: oEventoOrigem.dtFim,
-                                        tipo: "Type06",
-                                        conteudo: oEventoOrigem.conteudo,
-                                        enviaEmail: oEventoOrigem.enviaEmail,
-                                        tentative: false,
-                                        concluido: false,
-                                        alertaPessoal: true,
-                                        tipoAlerta_ID: oEventoOrigem.tipoAlerta_ID,
-                                        eventoOrigem_ID: oEventoOrigem.ID,
-                                        alertaUsuario_ID: oCalendarioUser.ID
+                                        console.log("Id Calendário:", oCalendarioUser.ID);
+                                        const oEventoReplica = {
 
-                                    };
+                                            descricao: oEventoOrigem.descricao,
+                                            dtInicio: oEventoOrigem.dtInicio,
+                                            dtFim: oEventoOrigem.dtFim,
+                                            tipo: "Type06",
+                                            conteudo: oEventoOrigem.conteudo,
+                                            enviaEmail: oEventoOrigem.enviaEmail,
+                                            tentative: false,
+                                            concluido: false,
+                                            alertaPessoal: true,
+                                            tipoAlerta_ID: oEventoOrigem.tipoAlerta_ID,
+                                            eventoOrigem_ID: oEventoOrigem.ID,
+                                            alertaUsuario_ID: oCalendarioUser.ID
 
-                                    console.log("Replicando Evento para o calendario do Usuario", usuario.ID);
-                                    const aRowsP = await service.create(EventosAlerta).entries(oEventoReplica);
-                                    console.log("Evento replicado com sucesso para Usuario", usuario.ID);
+                                        };
+
+                                        console.log("Replicando Evento para o calendario do Usuario", usuario.ID);
+                                        const aRowsP = await service.create(EventosAlerta).entries(oEventoReplica);
+                                        console.log("Evento replicado com sucesso para Usuario", usuario.ID);
+
+                                    }
                                 }
 
                             }
@@ -895,13 +899,13 @@ module.exports = cds.service.impl(async (service) => {
                     for (let z = 0; z < aUsuariosQueRecebem.length; z++) {
                         const usuario_ID = aUsuariosQueRecebem[z];
 
-
                         //Não criar novamente o evento para o Usuário ADM Logado
                         if (usuario_ID !== oUser.ID) {
 
                             const oCalendarioUser = aCalendarioUsers.find(calend => calend.usuario_ID === usuario_ID);
 
-                            console.log("Id Calendário:", oCalendarioUser.ID);
+                            if (oCalendarioUser) {
+                                console.log("Id Calendário:", oCalendarioUser.ID);
                             const oEventoReplica = {
 
                                 descricao: oEventoOrigem.descricao,
@@ -922,12 +926,10 @@ module.exports = cds.service.impl(async (service) => {
                             console.log("Replicando Evento para o calendario do Usuario", usuario_ID);
                             const aRowsP = await service.create(EventosAlerta).entries(oEventoReplica);
                             console.log("Evento replicado com sucesso para Usuario", usuario_ID);
-
+                            }                            
                         }
 
-
                     }
-
 
                 }
 
