@@ -33,7 +33,7 @@ xmlns:rte="sap.ui.richtexteditor">
                             <f:formElements>                                                 
                                 <f:FormElement label="{i18n>data_alerta_txt}">
                                     <f:fields>
-                                        <DatePicker id="dtInicio" displayFormat="dd/MM/yyyy" placeholder="{i18n>ph_data_txt}" value="{path: 'EditAlertaModel>/dtInicio', formatter: '.formatter.formatDateShow'}" />
+                                        <DatePicker editable="{EditAlertaModel>/editable}" id="dtInicio" displayFormat="dd/MM/yyyy" placeholder="{i18n>ph_data_txt}" value="{path: 'EditAlertaModel>/dtInicio', formatter: '.formatter.formatDateShow'}" />
                                     </f:fields>
                                 </f:FormElement>                                
                             </f:formElements>
@@ -42,7 +42,7 @@ xmlns:rte="sap.ui.richtexteditor">
                             <f:formElements>
                              <f:FormElement label="{i18n>tipo_alerta_txt}">
                                     <f:fields>
-                                         <ComboBox selectedKey="{EditAlertaModel>/tipoAlerta_ID}" id="cmbTipoAlerta" items="{path:'/TiposAlerta', templateShareable:true}">
+                                         <ComboBox editable="{EditAlertaModel>/editable}" selectedKey="{EditAlertaModel>/tipoAlerta_ID}" id="cmbTipoAlerta" items="{path:'/TiposAlerta', templateShareable:true}">
 									        <items>
 										        <core:Item key="{ID}" text="{descricao}"/>
 									        </items>
@@ -51,12 +51,12 @@ xmlns:rte="sap.ui.richtexteditor">
                                 </f:FormElement> 
                                 <f:FormElement label="{i18n>descricao_txt}">
                                     <f:fields>
-                                        <Input id="txtDescricaoAlerta"  placeholder="{i18n>descricao_alerta_plch}" value="{EditAlertaModel>/descricao}"/>
+                                        <Input editable="{EditAlertaModel>/editable}" id="txtDescricaoAlerta"  placeholder="{i18n>descricao_alerta_plch}" value="{EditAlertaModel>/descricao}"/>
                                     </f:fields>
                                 </f:FormElement>  
                                  <f:FormElement label="{i18n>envia_email_txt}">
                                     <f:fields>
-                                       <Switch state="{EditAlertaModel>/enviaEmail}" 
+                                       <Switch enabled="{EditAlertaModel>/editable}" state="{EditAlertaModel>/enviaEmail}" 
                                         customTextOn="Sim" 
                                        customTextOff="Não">
                                             <layoutData>
@@ -67,7 +67,7 @@ xmlns:rte="sap.ui.richtexteditor">
                                 </f:FormElement> 
                                 <f:FormElement label="{i18n>status_do_tema_txt}" visible="{= ${userLogModel>/userLog/acoes/changeRepresentante}? ${userLogModel>/userLog/acoes/changeRepresentante}: false}">                                   
 									<f:fields>
-										<MultiComboBox id="mtCBoxStatusAlerta" 
+										<MultiComboBox editable="{EditAlertaModel>/editable}" id="mtCBoxStatusAlerta" 
                                         items="{path:'/Status', filters: [{
                                                                             path: 'ID',
                                                                             operator: 'NE',
@@ -82,7 +82,7 @@ xmlns:rte="sap.ui.richtexteditor">
 
                                  <f:FormElement label="{i18n>alerta_pessoal_txt}" visible="{= ${userLogModel>/userLog/acoes/changeRepresentante}? ${userLogModel>/userLog/acoes/changeRepresentante}: false}">
                                     <f:fields>
-                                       <Switch state="{EditAlertaModel>/alertaPessoal}" 
+                                       <Switch enabled="{EditAlertaModel>/editable}" state="{EditAlertaModel>/alertaPessoal}" 
                                         customTextOn="Sim" 
                                        customTextOff="Não">
                                             <layoutData>
@@ -94,7 +94,7 @@ xmlns:rte="sap.ui.richtexteditor">
 
                                 <f:FormElement label="{i18n>quais_perfis_recebem_alerta_txt}" visible="{= ${EditAlertaModel>/alertaPessoal}? false: true}">                                   
 									<f:fields>
-										<MultiComboBox id="mtCBoxPerfisAlerta" 
+										<MultiComboBox editable="{EditAlertaModel>/editable}" id="mtCBoxPerfisAlerta" 
                                         items="{path:'/Perfis', templateShareable:true}">
                                             <items>
                                                 <core:Item key="{ID}" text="{descricao}"/>
@@ -109,7 +109,7 @@ xmlns:rte="sap.ui.richtexteditor">
                                                 type="Text"
 												valueHelpRequest="openDialogRepresentanteAlerta" valueHelpOnly="true" showValueHelp="true"
 												value="{EditAlertaModel>/representante/nome}"/>-->
-                                                <MultiInput id="inpRepresentantesAlerta"
+                                                <MultiInput editable="{EditAlertaModel>/editable}" id="inpRepresentantesAlerta"
                                                             suggestionItems="{
                                                                         path : 'usuariosAlertaModel>/results',
                                                                         sorter : {
@@ -130,11 +130,11 @@ xmlns:rte="sap.ui.richtexteditor">
                     </f:formContainers>
                 </f:Form>
             </VBox>
-            <rte:RichTextEditor id="RTextEditor" width="100%" height="350px" customToolbar="true" showGroupFont="true" showGroupLink="false"
+            <rte:RichTextEditor editable="{EditAlertaModel>/editable}" id="RTextEditor" width="100%" height="350px" customToolbar="true" showGroupFont="true" showGroupLink="false"
 									showGroupInsert="false" editorType="TinyMCE4" value="{EditAlertaModel>/conteudo}"/>
         </content>        
 			<buttons>
-                    <Button text="{i18n>salvar_btn}" type="Emphasized" press="onSaveAlertaButtonPress"/>
+                    <Button enabled="{EditAlertaModel>/editable}" text="{i18n>salvar_btn}" type="Emphasized" press="onSaveAlertaButtonPress"/>
 					<Button id="btnExluirAlerta" text="{i18n>delete_tipo_alerta_btn}" type="Reject" press="onDeleteAlertaButtonPress"/>
 					<Button text="{i18n>voltar_txt}" type="Default" press="onCancelAlerta"/>				
 			</buttons>	

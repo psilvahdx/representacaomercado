@@ -16,7 +16,14 @@
 					"roles": [
 						"authenticated-user"
 					]
-                }
+				},
+				"F0108749":{
+                    "password": "1234",
+					"ID": "F0108749",
+					"roles": [
+						"authenticated-user"
+					]
+				}
 			}
 		}
 	}
