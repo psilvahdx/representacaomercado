@@ -127,7 +127,7 @@ entity AppSettings : cuid {
 
 entity AlertasUsuario : cuid {
 	key ID      : UUID;
-        usuario : Association to Usuarios;
+        usuario : Association to Usuarios @assert.integrity:false;
 		eventos : Association to many EventosAlerta on eventos.alertaUsuario = $self;		
 }	
 
@@ -145,6 +145,7 @@ entity EventosAlerta : cuid {
         alertaPessoal: Boolean;
         perfisQueRecebem: String(50);
         usuariosQueRecebem: String;
+        eventoOrigem_ID: String;
 		tipoAlerta : Association to TiposAlerta;
 		alertaUsuario: Association to AlertasUsuario;
 		

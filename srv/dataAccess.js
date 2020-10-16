@@ -1,3 +1,4 @@
+const { serve } = require('@sap/cds');
 const cds = require('@sap/cds');
 const SapCfAxios = require('sap-cf-axios').default;
 const destination = SapCfAxios('ODATA_COLABORADORES');
@@ -19,7 +20,8 @@ module.exports = cds.service.impl(async (service) => {
         Reguladores,
         CargoClassificacoes,
         TiposAlerta,
-        AlertasUsuario } = service.entities;
+        AlertasUsuario,
+        EventosAlerta } = service.entities;
 
 
     //Before Events
@@ -271,43 +273,6 @@ module.exports = cds.service.impl(async (service) => {
 
     });
 
-    /* service.before("CREATE", TiposAlerta, async (context) => {
-        const TtipoAlertaId = new SequenceHelper({
-            db: db,
-            sequence: "TIPOS_ALERTA_ID",
-            table: "REPRESENTACAOMERCADO_DB_TIPOS_ALERTA",
-            field: "ID"
-        });
-
-        context.data.ID = await TtipoAlertaId.getNextNumber();
-        if (!context.data.ID) {
-            context.data.ID = 1;
-        }
-        //context.data.userAlteracao_ID = context.user.id;
-        console.debug('TIPOS_ALERTA_ID:', context.data.ID)
-
-    });*/
-
-    /*service.before("UPDATE", Usuarios, async (context) => {
-
-        let usuario = {},
-            aUsers = [];
-
-        //Busca dados Usuário logado
-        console.log(context.user);
-        aUsers = await cds.read(Usuarios).where({ ID: context.user.id });
-
-        if (aUsers.length > 0) {
-            usuario = aUsers[0];
-            console.log(usuario);
-            if (usuario.perfil_ID !== "ADM") {
-                context.reject(403, "Usuário não autorizado");
-            }
-        } else {
-            context.reject(403, "Usuário não autorizado");
-        }
-    });*/
-
     service.before("READ", Comissoes, async (req) => {
 
         let usuario = {},
@@ -348,51 +313,6 @@ module.exports = cds.service.impl(async (service) => {
 
 
     });
-
-
-    /*service.on("READ", Comissoes, async (context, next) => {
-
-        const comissoes =  await next();
-        let usuario = {},
-            aReturn = [],
-            aUsers = [],
-            aComissoes=[],
-            aComissoesUsuario = [];
-
-        //Busca dados Usuário logado
-        aUsers = await cds.read(Usuarios).where({ ID: context.user.id });
-
-        if (aUsers.length > 0) {
-            usuario = aUsers[0];
-            console.log("Usuario:", usuario);
-            //busca comissões para o Usuário
-            aComissoesUsuario = await cds.read(ComissoesRepresentante).where({ usuario_ID: usuario.ID });
-        }
-
-        switch (usuario.perfil_ID) {
-            case "ADM":
-            case "PRES":
-                aReturn = comissoes;
-                break;
-            case "REP":
-            case "VP_DIR":
-                //Representante somente visualiza as comissões que esta relacionado 
-                aComissoes = await cds.read(Comissoes);
-                aReturn = aComissoes.filter(function (comissao_el) {
-                    return aComissoesUsuario.filter(function (comissUsuario_el) {
-                        return comissUsuario_el.comissao_ID == comissao_el.ID;
-                    }).length > 0
-                });
-                break;
-            default:
-                break;
-        }
-
-        return aReturn;
-
-
-
-    });*/
 
     //On Events 
     service.on("READ", UsersExtensions, async (context, next) => {
@@ -476,18 +396,7 @@ module.exports = cds.service.impl(async (service) => {
         }
 
         //############## Chama Api de Hierarquia #################################
-        //Busca dados Usuário logado
-        let oAppSettings = {};
-        const aAppSettings = await cds.read(AppSettings).where({ ID: 1 });
-        if (aAppSettings.length > 0) {
-            oAppSettings = aAppSettings[0];
-        }
-
-        console.log("App Settings>>>>", oAppSettings);
-
-        //Busca Token       
-        let ret_token = "",
-            matricula = "";
+        let matricula = "";
         const re = /\S+@\S+\.\S+/;
 
         if (re.test(oUserEx.ID)) {
@@ -496,87 +405,52 @@ module.exports = cds.service.impl(async (service) => {
             matricula = oUserEx.ID;
         }
 
+        if (matricula === "P0646683") {
+            //Usuario Porto
+            matricula = oUser.matricula;
+        }
 
-        ret_token = await axios({
-            method: 'post',
-            url: oAppSettings.urlToken,
-            headers: {
-                'Content-Type': "application/x-www-form-urlencoded"
-            },
-            data: qs.stringify({
-                client_id: oAppSettings.clientID,
-                client_secret: oAppSettings.clientSecret,
-                grant_type: "client_credentials"
-            })
-        }).then(function (response) {
-            console.log("FUNCIONOU?: ", response.data.access_token);
-            return response.data.access_token;
+        const oResponse = await getColaborador(matricula).then(ret_api_hierarquia => {
 
-        }).catch(function (error) {
-            console.log("Chamei, mas deu erro =(", error);
+            if (ret_api_hierarquia && ret_api_hierarquia.Nome_Funcionario) {
+                oUserEx.nomeColaborador = ret_api_hierarquia.Nome_Funcionario;
+                oUserEx.cargo = ret_api_hierarquia.Nome_Cargo_Funcionario;
+                oUserEx.emailFuncionario = ret_api_hierarquia.Email_Funcionario;
+                oUserEx.centroDeCustoColab = ret_api_hierarquia.Codigo_CentroCusto_Funcionario;
+                oUserEx.departamento = ret_api_hierarquia.Nome_Area_Funcionario;
+                oUserEx.gerencia = ret_api_hierarquia.Nome_Gerente;
+                oUserEx.centroDeCustoGerencia = "";
+                oUserEx.coordenador = ret_api_hierarquia.Nome_Coordenador;
+                oUserEx.matriculaCoordenador = ret_api_hierarquia.Cadastro_Coordenador;
+                oUserEx.emailCoordenador = "";
+                oUserEx.gerente = ret_api_hierarquia.Nome_Gerente;
+                oUserEx.diretorExecutivo = ret_api_hierarquia.Nome_Superintendente;
+                oUserEx.superintendencia = ret_api_hierarquia.Nome_Superintendente;
+                oUserEx.diretorGeral = ret_api_hierarquia.Nome_Vice_Presidente;
+                oUserEx.diretor = ret_api_hierarquia.Nome_Vice_Presidente;
+            }
+
+            console.log("Usr API hierarquia", oUserEx);
+
+            if (context.data.ID) {
+                return oUserEx;
+            }
+            else {
+                aUsersEx.push(oUserEx);
+                return aUsersEx;
+            }
+
         });
-        //Chama API de Hierarquia
 
-        const ret_api_hierarquia = await
-            axios({
-                method: 'get',
-                url: `${oAppSettings.urlApi}?login=${matricula}`,
-                headers: {
-                    'Authorization': `Bearer ${ret_token}`
-                }
-            }).then(function (response) {
-                console.log("Chamou API de Hierarquia com Token?: ", response.data);
-                return response.data;
-            }).catch(function (error) {
-                console.log("Erro na Busca de Hierarquia:", error);
-            });
-
-        //Complementa dados Usuário com retorno Api de Hierarquia
-        if (ret_api_hierarquia && ret_api_hierarquia.nomeColaborador) {
-            oUserEx.nomeColaborador = ret_api_hierarquia.nomeColaborador;
-            oUserEx.cargo = ret_api_hierarquia.cargo;
-            oUserEx.diretor = ret_api_hierarquia.diretor;
-            oUserEx.gerencia = ret_api_hierarquia.gerencia;
-            oUserEx.superintendencia = ret_api_hierarquia.superintendencia;
-            oUserEx.diretorGeral = ret_api_hierarquia.diretor;
-            oUserEx.diretorExecutivo = ret_api_hierarquia.superintendencia;
-        }
-        console.log("Retorno:", oUserEx);
-        if (context.data.ID) {
-            return oUserEx;
-        }
-        else {
-            aUsersEx.push(oUserEx);
-            return aUsersEx;
-        }
-
+        return oResponse;
         //################################################################ 
 
     });
 
-    /*service.on("getUserExtension", async req => {
+    async function getColaborador(matricula) {
 
-        console.log("Key", req.data.ID);
-        let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${req.data.ID}')`,
-            oUserEx = {
-                ID: "",
-                userProfile_ID: "",
-                nomeColaborador: "",
-                cargo: "",
-                telefone: "",
-                emailFuncionario: "",
-                centroDeCustoColab: "",
-                departamento: "",
-                gerencia: "",
-                centroDeCustoGerencia: "",
-                coordenador: "",
-                matriculaCoordenador: "",
-                emailCoordenador: "",
-                gerente: "",
-                superintendencia: "",
-                diretor: "",
-                userProfile: {}
-            };
+        let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${matricula}')`,
+            oColaborador = {};
 
         try {
             const response = await destination({
@@ -589,16 +463,16 @@ module.exports = cds.service.impl(async (service) => {
 
             console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
 
+            oColaborador = response.data.d;
+
         } catch (error) {
-            console.log("ERRO", error)
+
+            console.log("ERRO ODATA_COLABORADORES_DESTINATION", error.message);
         }
 
+        return oColaborador;
 
-        //console.log("Response", response);        
-
-        return oUserEx;
-
-    });*/
+    }
 
     service.on("comissoesSemRepresentante", async req => {
 
@@ -769,58 +643,84 @@ module.exports = cds.service.impl(async (service) => {
 
     service.on("deleteSelectedUsers", async req => {
 
+        let aUsers = [],
+            oUser = {};
 
-        console.log(req.data.ids.split(";"));
-        let aUsersDelete = req.data.ids.split(";");
-        for (let i = 0; i < aUsersDelete.length; i++) {
-            const userDel = aUsersDelete[i];
-            if (userDel.length > 4) {
-                console.log(userDel);
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
+        if (aUsers.length > 0) {
+            oUser = aUsers[0];
+        }
 
-                try {
-                    const delComissoesUsuario = await service.delete(ComissoesRepresentante).where({ usuario_ID: userDel })
-                    console.log("Comissoes usuario deletadas", delComissoesUsuario);
-                } catch (error) {
-                    console.log("Erro ao Excluir Comissoes", error);
+        if (oUser.perfil_ID === "ADM") {
+            console.log(req.data.ids.split(";"));
+            let aUsersDelete = req.data.ids.split(";");
+            for (let i = 0; i < aUsersDelete.length; i++) {
+                const userDel = aUsersDelete[i];
+                if (userDel.length > 4) {
+                    console.log(userDel);
+
+                    try {
+                        const delComissoesUsuario = await service.delete(ComissoesRepresentante).where({ usuario_ID: userDel })
+                        console.log("Comissoes usuario deletadas", delComissoesUsuario);
+                    } catch (error) {
+                        console.log("Erro ao Excluir Comissoes", error);
+                    }
+
+                    try {
+                        const delUsuario = await service.delete(Usuarios).where({ ID: userDel });
+                        console.log("Usuario deletado", userDel);
+                    } catch (error) {
+                        console.log("Erro ao Excluir Usuario", error);
+                    }
+
+
                 }
-
-                try {
-                    const delUsuario = await service.delete(Usuarios).where({ ID: userDel });
-                    console.log("Usuario deletado", delUsuario);
-                } catch (error) {
-                    console.log("Erro ao Excluir Usuario", error);
-                }
-
 
             }
-
+        } else {
+            req.reject(403, "Não Autorizado");
         }
+
 
     });
 
 
     service.on("deleteSelectedReguladores", async req => {
 
+        let aUsers = [],
+            oUser = {};
 
-        console.log(req.data.ids.split(";"));
-        let aReguDelete = req.data.ids.split(";");
-        for (let i = 0; i < aReguDelete.length; i++) {
-            const reguDel = aReguDelete[i];
-            if (reguDel !== "") {
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
+        if (aUsers.length > 0) {
+            oUser = aUsers[0];
+        }
 
-                try {
-                    console.log(reguDel);
-                    const deRegulador = await service.delete(Reguladores).where({ ID: reguDel })
-                    console.log("Regulador deletado", deRegulador);
-                } catch (error) {
-                    console.log("Errro ao excluir Regulaodr", error);
-                    req.reject(400, error);
+        if (oUser.perfil_ID === "ADM") {
+
+            console.log(req.data.ids.split(";"));
+            let aReguDelete = req.data.ids.split(";");
+            for (let i = 0; i < aReguDelete.length; i++) {
+                const reguDel = aReguDelete[i];
+                if (reguDel !== "") {
+
+                    try {
+                        console.log(reguDel);
+                        const deRegulador = await service.delete(Reguladores).where({ ID: reguDel })
+                        console.log("Regulador deletado", deRegulador);
+                    } catch (error) {
+                        console.log("Errro ao excluir Regulaodr", error);
+                        req.reject(400, error);
+                    }
+
+
+
                 }
 
-
-
             }
-
+        } else {
+            req.reject(403, "Não Autorizado");
         }
 
     });
@@ -828,51 +728,210 @@ module.exports = cds.service.impl(async (service) => {
 
     service.on("deleteSelectedComissoes", async req => {
 
+        let aUsers = [],
+            oUser = {};
 
-        console.log(req.data.ids.split(";"));
-        let aComissoesDelete = req.data.ids.split(";");
-        for (let i = 0; i < aComissoesDelete.length; i++) {
-            const comissaoDel = aComissoesDelete[i];
-            if (comissaoDel !== "") {
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
+        if (aUsers.length > 0) {
+            oUser = aUsers[0];
+        }
 
-                try {
-                    console.log(comissaoDel);
-                    const delComissao = await service.delete(Comissoes).where({ ID: comissaoDel })
-                    console.log("Comissao deletada", delComissao);
-                } catch (error) {
-                    console.log("Errro ao excluir Comissao", error);
-                    req.reject(400, error);
+        if (oUser.perfil_ID === "ADM") {
+
+
+            console.log(req.data.ids.split(";"));
+            let aComissoesDelete = req.data.ids.split(";");
+            for (let i = 0; i < aComissoesDelete.length; i++) {
+                const comissaoDel = aComissoesDelete[i];
+                if (comissaoDel !== "") {
+
+                    try {
+                        console.log(comissaoDel);
+                        const delComissao = await service.delete(Comissoes).where({ ID: comissaoDel })
+                        console.log("Comissao deletada", delComissao);
+                    } catch (error) {
+                        console.log("Errro ao excluir Comissao", error);
+                        req.reject(400, error);
+                    }
+
+
                 }
 
-
             }
-
+        } else {
+            req.reject(403, "Não Autorizado");
         }
+
 
     });
 
     service.on("deleteSelectedTiposAlerta", async req => {
 
+        let aUsers = [],
+            oUser = {};
 
-        console.log(req.data.ids.split(";"));
-        let aTpAlertaDelete = req.data.ids.split(";");
-        for (let i = 0; i < aTpAlertaDelete.length; i++) {
-            const tpAlertDel = aTpAlertaDelete[i];
-            if (tpAlertDel !== "") {
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios).where({ ID: req.user.id });
+        if (aUsers.length > 0) {
+            oUser = aUsers[0];
+        }
 
-                try {
-                    console.log(tpAlertDel);
-                    const deTipoAlerta = await service.delete(TiposAlerta).where({ ID: tpAlertDel })
-                    console.log("Tipo de Alerta deletado", deTipoAlerta);
-                } catch (error) {
-                    console.log("Errro ao excluir tipo de Alerta", error);
-                    req.reject(500, error);
+        if (oUser.perfil_ID === "ADM") {
+
+            console.log(req.data.ids.split(";"));
+            let aTpAlertaDelete = req.data.ids.split(";");
+            for (let i = 0; i < aTpAlertaDelete.length; i++) {
+                const tpAlertDel = aTpAlertaDelete[i];
+                if (tpAlertDel !== "") {
+
+                    try {
+                        console.log(tpAlertDel);
+                        const deTipoAlerta = await service.delete(TiposAlerta).where({ ID: tpAlertDel })
+                        console.log("Tipo de Alerta deletado", deTipoAlerta);
+                    } catch (error) {
+                        console.log("Errro ao excluir tipo de Alerta", error);
+                        req.reject(500, error);
+                    }
+
                 }
 
+            }
+        } else {
+            req.reject(403, "Não Autorizado");
+        }
+
+    });
+
+    service.on("replicaEventoAlerta", async req => {
+
+        let aUsers = [],
+            aCalendarioUsers = [],
+            aPerfisQueRecebem = [],
+            aUsuariosQueRecebem = [],
+            aEventosAlerta = [],
+            oEventoOrigem = {},
+            oUser = {};
 
 
+        aUsers = await cds.read(Usuarios);//.where({ ID:  req.user.id });
+        aCalendarioUsers = await cds.read(AlertasUsuario);
+        aEventosAlerta = await cds.read(EventosAlerta).where({ ID: req.data.idEvento });
+        //Busca dados Usuário logado
+        if (aUsers.length > 0) {
+            oUser = aUsers.find(user => user.ID === req.user.id);
+        }
+        if (aEventosAlerta.length > 0) {
+            oEventoOrigem = aEventosAlerta[0];
+        }
+
+        console.log("Calendários Recuperados:", aCalendarioUsers.length);
+
+        if (oUser.perfil_ID === "ADM") {
+
+            //Verifica se é uma Criação ou Alteração do Evento
+            if (!req.data.bCreate) {
+                //Exclui os eventos onde há relação com o Evento Origem
+                console.log("Exclui os eventos onde há relação com o Evento Origem", oEventoOrigem.ID);
+                const delEvents = await cds.delete(EventosAlerta).where({ eventoOrigem_ID: oEventoOrigem.ID });
+                console.log("Eventos excluidos com sucesso", oEventoOrigem.ID);
             }
 
+            if (!oEventoOrigem.alertaPessoal) {
+
+                aPerfisQueRecebem = req.data.perfisQueRecebem.split("|");
+                aUsuariosQueRecebem = req.data.usuariosQueRecebem.split("|");
+
+                if (aPerfisQueRecebem.length > 0) {
+                    //Replica o Alerta para todos os Usuários dos Perfis informados  
+                    for (let i = 0; i < aPerfisQueRecebem.length; i++) {
+                        const perfil = aPerfisQueRecebem[i];
+                        console.log("Perfis Que irão receber o Alerta", aPerfisQueRecebem);
+                        var usersPorPerfil = aUsers.filter(usr => { return usr.perfil_ID === perfil });
+
+                        if (usersPorPerfil.length > 0) {
+
+                            for (let x = 0; x < usersPorPerfil.length; x++) {
+                                const usuario = usersPorPerfil[x];
+                                //Não criar novamente o evento para o Usuário ADM Logado
+                                if (usuario.ID !== oUser.ID) {
+                                    const oCalendarioUser = aCalendarioUsers.find(calend => calend.usuario_ID === usuario.ID);
+
+                                    console.log("Id Calendário:", oCalendarioUser.ID);
+                                    const oEventoReplica = {
+
+                                        descricao: oEventoOrigem.descricao,
+                                        dtInicio: oEventoOrigem.dtInicio,
+                                        dtFim: oEventoOrigem.dtFim,
+                                        tipo: "Type06",
+                                        conteudo: oEventoOrigem.conteudo,
+                                        enviaEmail: oEventoOrigem.enviaEmail,
+                                        tentative: false,
+                                        concluido: false,
+                                        alertaPessoal: true,
+                                        tipoAlerta_ID: oEventoOrigem.tipoAlerta_ID,
+                                        eventoOrigem_ID: oEventoOrigem.ID,
+                                        alertaUsuario_ID: oCalendarioUser.ID
+
+                                    };
+
+                                    console.log("Replicando Evento para o calendario do Usuario", usuario.ID);
+                                    const aRowsP = await service.create(EventosAlerta).entries(oEventoReplica);
+                                    console.log("Evento replicado com sucesso para Usuario", usuario.ID);
+                                }
+
+                            }
+
+
+                        }
+
+                    }
+
+                }
+
+                if (aUsuariosQueRecebem.length > 0) {
+                    //Replica o Alerta para todos os Usuários informados
+                    console.log("Usuarios Que irão receber o Alerta", aUsuariosQueRecebem)
+                    for (let z = 0; z < aUsuariosQueRecebem.length; z++) {
+                        const usuario_ID = aUsuariosQueRecebem[z];
+
+
+                        //Não criar novamente o evento para o Usuário ADM Logado
+                        if (usuario_ID !== oUser.ID) {
+
+                            const oCalendarioUser = aCalendarioUsers.find(calend => calend.usuario_ID === usuario_ID);
+
+                            console.log("Id Calendário:", oCalendarioUser.ID);
+                            const oEventoReplica = {
+
+                                descricao: oEventoOrigem.descricao,
+                                dtInicio: oEventoOrigem.dtInicio,
+                                dtFim: oEventoOrigem.dtFim,
+                                tipo: "Type06",
+                                conteudo: oEventoOrigem.conteudo,
+                                enviaEmail: oEventoOrigem.enviaEmail,
+                                tentative: false,
+                                concluido: false,
+                                alertaPessoal: true,
+                                tipoAlerta_ID: oEventoOrigem.tipoAlerta_ID,
+                                eventoOrigem_ID: oEventoOrigem.ID,
+                                alertaUsuario_ID: oCalendarioUser.ID
+
+                            };
+
+                            console.log("Replicando Evento para o calendario do Usuario", usuario_ID);
+                            const aRowsP = await service.create(EventosAlerta).entries(oEventoReplica);
+                            console.log("Evento replicado com sucesso para Usuario", usuario_ID);
+
+                        }
+
+
+                    }
+
+
+                }
+
+            }
         }
 
     });

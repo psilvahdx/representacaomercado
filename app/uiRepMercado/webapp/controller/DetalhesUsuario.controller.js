@@ -36,6 +36,7 @@ sap.ui.define([
             this.byId("btnSalvarUser").setEnabled(false);
             this.getRouter().getRoute("detalheUsuario").attachPatternMatched(this._onObjectMatched, this);
             this.setModel(oViewModel, "detUserView");
+            this.idUser = "";
         },
         /* =========================================================== */
         /* event handlers                                              */
@@ -65,6 +66,8 @@ sap.ui.define([
         _onObjectMatched: function (oEvent) {
             var sObjectId = oEvent.getParameter("arguments").idUser,
                 oObject = this.getModel("userLogModel").getData();
+
+            this.idUser = sObjectId;
 
             if (oObject.userLog.userProfile_ID !== "ADM") {
                 this.getRouter().navTo("temasList");
@@ -437,7 +440,8 @@ sap.ui.define([
 
             if (this.validaInformacoes()) {
                 oViewModel.setProperty("/busy", true);
-                if (oParams.ID === "") {
+                //if (oParams.ID === "") {
+                if(this.idUser ==="New"){
                     //Novo Usuário
                     this.saveUsuario(oParams, oViewModel, entitySet);
                 }
@@ -479,8 +483,10 @@ sap.ui.define([
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_usuario"));
                     oParams.ID = oData.ID;
+                    that.idUser =  oData.ID;
                     oViewModel.setProperty("/busy", false);
                     that.saveComissoesUsuario(oParams);
+                    that.sendCreateCalendarioRequest({usuario_ID: oData.ID});
                 },
                 error: function (oError) {
                     that.getOwnerComponent()._genericErrorMessage(that.geti18nText("erro_salvar_usuario"));
@@ -529,6 +535,21 @@ sap.ui.define([
                 },
                 error: function (oError) {
                     oModel.refresh();
+                }
+            });
+        },
+
+        sendCreateCalendarioRequest: function (oParams) {
+
+            var oModel = this.getModel(),
+                entitySet = "/AlertasUsuario";
+
+            oModel.create(entitySet, oParams, {
+                success: function (oData) {
+
+                },
+                error: function (oError) {                   
+                    
                 }
             });
         }

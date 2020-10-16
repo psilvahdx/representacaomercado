@@ -7,11 +7,12 @@
         <VBox>
 		<PlanningCalendar
 			id="pcAlertas"
+			viewKey="Day"
 			startDate="{path: 'CalendarioModel>/startDate'}"
 			rows="{path: '/AlertasUsuario', parameters: {expand: 'usuario,eventos($expand=tipoAlerta)'}}"
 			appointmentsVisualization="Filled"
 			appointmentSelect="handleAppointmentSelect"
-			showEmptyIntervalHeaders="false"
+			showEmptyIntervalHeaders="false"			
 			stickyHeader="true"
 			showWeekNumbers="false">
 			<toolbarContent>

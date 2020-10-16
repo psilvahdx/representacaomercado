@@ -1744,7 +1744,7 @@ sap.ui.define([
             var oControl = sap.ui.getCore().byId(fieldName);//this.getView().byId(fieldName);
             var value;
 
-            if (fieldName.substring(0, 3) === "sel") {
+            if (fieldName.substring(0, 3) === "cmb") {
                 value = oControl.getSelectedKey();
                 if (value === "") {
                     oControl.setValueState("Error");
@@ -1876,7 +1876,8 @@ sap.ui.define([
                 usuario_ID: oUser.userLog.ID,
                 eventos: [],
                 dtInicio: new Date(),
-                alertaPessoal: true
+                alertaPessoal: true,
+                editable: true
             },
                 oEvento = {
                     ID: "",
@@ -1910,7 +1911,8 @@ sap.ui.define([
         },
 
         handleAppointmentSelect: function (oEvent) {
-            var oAppointment = oEvent.getParameter("appointment");
+            var oAppointment = oEvent.getParameter("appointment"),
+                oUser = this.getModel("userLogModel").getData();
             /* bSelected,
              aAppointments,
              sValue;*/
@@ -1918,13 +1920,15 @@ sap.ui.define([
                 //bSelected = oAppointment.getSelected();
                 var oBingingContext = oAppointment.getBindingContext(),
                     oSelPath = oBingingContext.getPath(),
-                    oSelectedAppintment = this.getModel().getObject(oSelPath),
-                    oEditAlertaModel = new JSONModel(oSelectedAppintment),
+                    oSelectedAppintment = this.getModel().getObject(oSelPath),                    
                     oDtInicio = sap.ui.getCore().byId("dtInicio"),
                     btnExluirAlerta = sap.ui.getCore().byId("btnExluirAlerta"),
                     mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta"),
                     mtCBoxPerfisAlerta = sap.ui.getCore().byId("mtCBoxPerfisAlerta"),
                     oMultiInput = sap.ui.getCore().byId("inpRepresentantesAlerta");
+
+                    oSelectedAppintment.editable = true;
+              
 
                 btnExluirAlerta.setEnabled(true);
                 oDtInicio.setMinDate(new Date());
@@ -1959,12 +1963,20 @@ sap.ui.define([
 
                 }
 
+                if (oSelectedAppintment.eventoOrigem_ID) {                   
+                    oSelectedAppintment.editable = false;
+                     btnExluirAlerta.setEnabled(false);
+                   if (oUser.userLog.userProfile_ID === "ADM") {
+                      oSelectedAppintment.editable = true;
+                   } 
+                }
 
+                var oEditAlertaModel = new JSONModel(oSelectedAppintment);
                 this.getView().setModel(oEditAlertaModel, "EditAlertaModel");
 
                 this._oDialogDetalhesAlerta.open();
             }
-        },
+        },       
 
         onSaveAlertaButtonPress: function (oEvent) {
             if (this.validaInformacoesAlerta()) {
@@ -2023,6 +2035,9 @@ sap.ui.define([
 
                 if (!oEvento.alertaPessoal) {
 
+                    oEvento.usuariosQueRecebem = "";
+                    oEvento.perfisQueRecebem = "";
+
                     //Perfis que recebem o Alerta
                     var oSelKeysPerfis = mtCBoxPerfisAlerta.getSelectedKeys();
                     if (oSelKeysPerfis.length > 0) {
@@ -2033,9 +2048,7 @@ sap.ui.define([
                     if (oSelKeysUsuarios.length > 0) {
                         oEvento.usuariosQueRecebem = oSelKeysUsuarios.join('|');
                     }
-                    /*for (let i = 0; i < oSelKeysUsuarios.length; i++) {
-                        const element = oSelKeysUsuarios[i];                        
-                    }*/
+                   
                 }
 
                 oCalendario.eventos.push(oEvento);
@@ -2127,6 +2140,9 @@ sap.ui.define([
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_alerta"));
                     oEvent.ID = oData.ID;
+
+                    that.replicaEventoAlertaRequest({idEvento: oData.ID,  perfisQueRecebem: oData.perfisQueRecebem, usuariosQueRecebem: oData.usuariosQueRecebem, bCreate: true });
+
                     that.onCancelAlerta();
                     oModel.refresh();
                 },
@@ -2137,6 +2153,43 @@ sap.ui.define([
             });
         },
 
+        replicaEventoAlertaRequest: function(oParams){
+         
+              var oModel = this.getModel(),
+                sEntitySet = "/replicaEventoAlerta";
+            
+
+            oModel.create(sEntitySet, oParams, {
+                success: function (oData) {
+
+                },
+                error: function (oError) {
+                  
+                }
+            });
+
+
+        },
+
+        replicaAlteracaoEventoRequest: function(oParams){
+         
+              var oModel = this.getModel(),
+                sEntitySet = "/replicaEventoAlerta";
+            
+
+            oModel.create(sEntitySet, oParams, {
+                success: function (oData) {
+
+                },
+                error: function (oError) {
+                  
+                }
+            });
+
+
+        },
+
+
         sendUpdateAlertaRequest: function (entitySet, oParams) {
 
             var oModel = this.getModel(),
@@ -2145,6 +2198,7 @@ sap.ui.define([
             oModel.update(entitySet, oParams, {
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_alerta"));
+                    that.replicaAlteracaoEventoRequest({idEvento: oData.ID,  perfisQueRecebem: oData.perfisQueRecebem, usuariosQueRecebem: oData.usuariosQueRecebem,  bCreate: false });
                     oModel.refresh();
                 },
                 error: function (oError) {
