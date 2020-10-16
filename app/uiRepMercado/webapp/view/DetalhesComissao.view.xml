@@ -33,7 +33,7 @@
                     <f:formContainers>
                         <f:FormContainer title="{i18n>dados_pessoais_usuario_title}">
                             <f:formElements>
-                                <f:FormElement label="{i18n>comissaoId}">
+                                <f:FormElement visible="false" label="{i18n>comissaoId}">
                                     <f:fields>
                                         <Input value="{ID}" id="txtIdComissao" enabled="false"/>
                                     </f:fields>
@@ -61,7 +61,7 @@
 				<content>					
 					<ToolbarSpacer width=""/>
 					<Button text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editComissaoModel>/isEditMode}"/>
-					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+					<Button text="{i18n>voltar_txt}" type="Default" press="onCancel"/>
 				</content>
 			</OverflowToolbar>
 		</footer>

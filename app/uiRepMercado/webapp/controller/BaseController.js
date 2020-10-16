@@ -1,3 +1,6 @@
+// @ts-nocheck
+/* eslint-disable no-undef */
+/* eslint-disable @sap/ui5-jsdocs/no-jsdoc */
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",
@@ -54,7 +57,15 @@ sap.ui.define([
 			} else {
 				return null;
 			}
-		},
+        },
+        
+        showBusy: function(){
+            sap.ui.core.BusyIndicator.show();
+        },
+
+        hideBusy: function(){
+            sap.ui.core.BusyIndicator.hide();
+        },
 
 		geti18nText1: function (k, r) {
 			if (this.getResourceBundle()) {

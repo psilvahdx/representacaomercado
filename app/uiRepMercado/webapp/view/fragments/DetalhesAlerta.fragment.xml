@@ -1,0 +1,142 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"  xmlns="sap.m" 
+xmlns:f="sap.ui.layout.form"   
+xmlns:mvc="sap.ui.core.mvc"
+xmlns:rte="sap.ui.richtexteditor">
+<Dialog stretch="false" resizable="true" draggable="true" title="{i18n>editar_alerta_title}">
+<content>
+
+        <VBox class="sapUiSmallMargin">
+
+                <f:Form id="formCadAlerta"
+                    editable="true">
+                    <f:title>
+                        <core:Title text="{i18n>editar_alerta_title}" />
+                    </f:title>
+                    <f:layout>
+                        <f:ResponsiveGridLayout
+                            labelSpanXL="4"
+                            labelSpanL="4"
+                            labelSpanM="4"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="2"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            columnsXL="1"
+                            columnsL="1"
+                            columnsM="1"
+                            singleContainerFullSize="false" />
+                    </f:layout>
+                    <f:formContainers>
+                    <f:FormContainer title="{i18n>data_alerta_txt}">
+                            <f:formElements>                                                 
+                                <f:FormElement label="{i18n>data_alerta_txt}">
+                                    <f:fields>
+                                        <DatePicker editable="{EditAlertaModel>/editable}" id="dtInicio" displayFormat="dd/MM/yyyy" placeholder="{i18n>ph_data_txt}" value="{path: 'EditAlertaModel>/dtInicio', formatter: '.formatter.formatDateShow'}" />
+                                    </f:fields>
+                                </f:FormElement>                                
+                            </f:formElements>
+                        </f:FormContainer>  
+                        <f:FormContainer title="{i18n>definicoes_txt}">
+                            <f:formElements>
+                             <f:FormElement label="{i18n>tipo_alerta_txt}">
+                                    <f:fields>
+                                         <ComboBox editable="{EditAlertaModel>/editable}" selectedKey="{EditAlertaModel>/tipoAlerta_ID}" id="cmbTipoAlerta" items="{path:'/TiposAlerta', templateShareable:true}">
+									        <items>
+										        <core:Item key="{ID}" text="{descricao}"/>
+									        </items>
+								        </ComboBox>
+                                    </f:fields>
+                                </f:FormElement> 
+                                <f:FormElement label="{i18n>descricao_txt}">
+                                    <f:fields>
+                                        <Input editable="{EditAlertaModel>/editable}" id="txtDescricaoAlerta"  placeholder="{i18n>descricao_alerta_plch}" value="{EditAlertaModel>/descricao}"/>
+                                    </f:fields>
+                                </f:FormElement>  
+                                 <f:FormElement label="{i18n>envia_email_txt}">
+                                    <f:fields>
+                                       <Switch enabled="{EditAlertaModel>/editable}" state="{EditAlertaModel>/enviaEmail}" 
+                                        customTextOn="Sim" 
+                                       customTextOff="Não">
+                                            <layoutData>
+                                                <FlexItemData growFactor="1" />
+                                            </layoutData>
+                                        </Switch>
+                                    </f:fields>
+                                </f:FormElement> 
+                                <f:FormElement label="{i18n>status_do_tema_txt}" visible="{= ${userLogModel>/userLog/acoes/changeRepresentante}? ${userLogModel>/userLog/acoes/changeRepresentante}: false}">                                   
+									<f:fields>
+										<MultiComboBox editable="{EditAlertaModel>/editable}" id="mtCBoxStatusAlerta" 
+                                        items="{path:'/Status', filters: [{
+                                                                            path: 'ID',
+                                                                            operator: 'NE',
+                                                                            value1: '4' 
+                                                                        }] , templateShareable:true}">
+                                            <items>
+                                                <core:Item key="{ID}" text="{descricao}"/>
+                                             </items>
+                                        </MultiComboBox>
+									</f:fields>
+								</f:FormElement> 
+
+                                 <f:FormElement label="{i18n>alerta_pessoal_txt}" visible="{= ${userLogModel>/userLog/acoes/changeRepresentante}? ${userLogModel>/userLog/acoes/changeRepresentante}: false}">
+                                    <f:fields>
+                                       <Switch enabled="{EditAlertaModel>/editable}" state="{EditAlertaModel>/alertaPessoal}" 
+                                        customTextOn="Sim" 
+                                       customTextOff="Não">
+                                            <layoutData>
+                                                <FlexItemData growFactor="1" />
+                                            </layoutData>
+                                        </Switch>
+                                    </f:fields>
+                                </f:FormElement> 
+
+                                <f:FormElement label="{i18n>quais_perfis_recebem_alerta_txt}" visible="{= ${EditAlertaModel>/alertaPessoal}? false: true}">                                   
+									<f:fields>
+										<MultiComboBox editable="{EditAlertaModel>/editable}" id="mtCBoxPerfisAlerta" 
+                                        items="{path:'/Perfis', templateShareable:true}">
+                                            <items>
+                                                <core:Item key="{ID}" text="{descricao}"/>
+                                             </items>
+                                        </MultiComboBox>
+									</f:fields>
+								</f:FormElement> 
+
+                                <f:FormElement label="{i18n>quem_recebe_alerta_txt}" visible="{= ${EditAlertaModel>/alertaPessoal}? false: true}">                                   
+									<f:fields>
+										<!--<Input  id="inpRepresentantesAlerta"
+                                                type="Text"
+												valueHelpRequest="openDialogRepresentanteAlerta" valueHelpOnly="true" showValueHelp="true"
+												value="{EditAlertaModel>/representante/nome}"/>-->
+                                                <MultiInput editable="{EditAlertaModel>/editable}" id="inpRepresentantesAlerta"
+                                                            suggestionItems="{
+                                                                        path : 'usuariosAlertaModel>/results',
+                                                                        sorter : {
+                                                                            path : 'nome',
+                                                                            descending : false
+                                                                        }
+                                                                    }"
+                                                            valueHelpRequest="openDialogRepresentanteAlerta"
+                                                            valueHelpOnly="true">
+                                                            <core:Item key="{ID}" text="{nome}" />
+                                                        </MultiInput>
+									</f:fields>
+								</f:FormElement>    
+
+
+                            </f:formElements>
+                        </f:FormContainer>                        
+                    </f:formContainers>
+                </f:Form>
+            </VBox>
+            <rte:RichTextEditor editable="{EditAlertaModel>/editable}" id="RTextEditor" width="100%" height="350px" customToolbar="true" showGroupFont="true" showGroupLink="false"
+									showGroupInsert="false" editorType="TinyMCE4" value="{EditAlertaModel>/conteudo}"/>
+        </content>        
+			<buttons>
+                    <Button enabled="{EditAlertaModel>/editable}" text="{i18n>salvar_btn}" type="Emphasized" press="onSaveAlertaButtonPress"/>
+					<Button id="btnExluirAlerta" text="{i18n>delete_tipo_alerta_btn}" type="Reject" press="onDeleteAlertaButtonPress"/>
+					<Button text="{i18n>voltar_txt}" type="Default" press="onCancelAlerta"/>				
+			</buttons>	
+</Dialog>
+</core:FragmentDefinition>

@@ -47,7 +47,7 @@
 												<Label text="{i18n>detalhamento_discussao_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<TextArea value="{EditTemaModel>/detalheDiscussao}"  rows="4" cols="20" maxLength="0" wrapping="None" enabled="true" placeholder="{i18n>ph_det_discussao_txt}"/>
+												<TextArea id="txtDetDisc" value="{EditTemaModel>/detalheDiscussao}"  rows="4" cols="20" maxLength="0" wrapping="None" enabled="true" placeholder="{i18n>ph_det_discussao_txt}"/>
 											</form:fields>
 										</form:FormElement>
 										<form:FormElement>
@@ -55,7 +55,7 @@
 												<Label text="{i18n>principais_impactos_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<TextArea value="{EditTemaModel>/principaisImpactos}" rows="4" cols="20" maxLength="0" wrapping="None" enabled="true" placeholder="{i18n>ph_pincipais_ipactos_txt}"/>
+												<TextArea id="txtPrincImpact" value="{EditTemaModel>/principaisImpactos}" rows="4" cols="20" maxLength="0" wrapping="None" enabled="true" placeholder="{i18n>ph_pincipais_ipactos_txt}"/>
 											</form:fields>
 										</form:FormElement>
 									</form:formElements>
@@ -68,7 +68,7 @@
 												<Label text="{i18n>status_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<ComboBox selectedKey="{EditTemaModel>/status_ID}" items="{path:'/Status', templateShareable:true}" editable="true" enabled="true" >
+												<ComboBox id="cmbStatus" selectedKey="{EditTemaModel>/status_ID}" items="{path:'/Status', templateShareable:true}" editable="true" enabled="true" >
 													<items>
 														<core:Item key="{ID}" text="{descricao}"/>													
 													</items>
@@ -80,7 +80,9 @@
 												<Label text="{i18n>criticidade_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<ComboBox id="cmbCriticidade" selectedKey="{EditTemaModel>/criticidade_ID}" items="{path:'/Criticidades', templateShareable:true}" editable="true" enabled="true" >
+												<ComboBox id="cmbCriticidade" selectedKey="{EditTemaModel>/criticidade_ID}" 
+                                                items="{path:'/Criticidades', templateShareable:true}" 
+                                                editable="{= ${userLogModel>/userLog/acoes/isCadastroVisible}? ${userLogModel>/userLog/acoes/isCadastroVisible} : false}" enabled="true" >
 													<items>
 														<core:Item key="{ID}" text="{descricao}"/>													
 													</items>
@@ -92,12 +94,7 @@
 												<Label text="{i18n>regulador_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-                                                <Input  value="{EditTemaModel>/regulador/descricao}" editable="false"/>
-												<!--<ComboBox selectedKey="{EditTemaModel>/regulador_ID}" items="{path:'/Reguladores', templateShareable:true}" editable="true" enabled="true" >
-													<items>
-														<core:Item key="{ID}" text="{descricao}"/>													
-													</items>
-												</ComboBox>-->
+                                                <Input  value="{EditTemaModel>/regulador/descricao}" editable="false"/>												
 											</form:fields>
 										</form:FormElement>
 									</form:formElements>
@@ -197,10 +194,11 @@
 												<Label text="{i18n>nome_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<Input type="Text"
+												<Input  id="inpRepresentante"
+                                                        type="Text"
 														valueHelpRequest="openDialogRepresentante" valueHelpOnly="true" showValueHelp="true"
 														value="{EditTemaModel>/representante/nome}"  
-                                                        editable="{userLogModel>/userLog/acoes/changeRepresentante}"/>
+                                                        editable="{= ${userLogModel>/userLog/acoes/changeRepresentante}? ${userLogModel>/userLog/acoes/changeRepresentante}: false}"/>
 											</form:fields>
 										</form:FormElement>
 									</form:formElements>
@@ -219,7 +217,7 @@
 									</form:formElements>
 									<form:title/>
 								</form:FormContainer>
-								<form:FormContainer visible="true">
+								<form:FormContainer visible="false">
 									<form:formElements>
 										<form:FormElement>
 											<form:label>
@@ -263,7 +261,7 @@
 												<Label text="{i18n>comissao_txt}" design="Standard" width="100%"   />
 											</form:label>
 											<form:fields>
-												<Input type="Text" value="{EditTemaModel>/comissao/descricao}"
+												<Input id="inpComissao" type="Text" value="{EditTemaModel>/comissao/descricao}"
 														valueHelpOnly="true"  valueHelpRequest="openDialogComissao" showValueHelp="true"
 														enabled="true" />
 											</form:fields>
@@ -311,26 +309,44 @@
 					<l:VerticalLayout width="100%">
 						<l:content>
 							<List id="lstHistorico"  backgroundDesign="Solid" growing="true" growingThreshold="20" growingScrollToLoad="true" items="{path:'/Historico', sorter:{path:'ultimoRegistro', descending: true},  parameters: {expand: 'userAlteracao,criticidade,status'}, templateShareable:true}">
-								<items>
-									<ObjectListItem
-											title="{path: 'ultimoRegistro', formatter: '.formatter.dateTime'}"
-											type="Active"
-											press="onHistListItemPress">
-										<firstStatus>
-											<ObjectStatus
-													text="{status/descricao}"
-													state="{path: 'status/ID', formatter:'.formatter.corStatus'}" />
-										</firstStatus>
-                                        <secondStatus>
-                                            <ObjectStatus
+								    <CustomListItem press="onHistListItemPress" type="Active">
+                                        <content>
+                                            <HBox>
+                                                <VBox class="sapUiContentPadding">
+                                                    <ObjectIdentifier title="{path: 'ultimoRegistro', formatter: '.formatter.dateTime'}" />
+                                                </VBox>
+                                            </HBox>
+                                            <HBox>
+                                                <VBox class="sapUiSmallMarginBegin" alignItems="End">                                                     
+                                                    <ObjectAttribute title="{i18n>autor_nome_txt}"  />                                                     
+                                                    <ObjectAttribute title="{i18n>status_txt}"  />   
+                                                    <ObjectAttribute title="{i18n>criticidade_txt}"/> 
+                                                    <ObjectAttribute title="{i18n>ultima_reuniao_txt}"  />                                                     
+                                                    <ObjectAttribute title="{i18n>log_atividade_txt}" class="sapUiSmallMarginTopBottom" />                                
+                                                </VBox> 
+                                                <VBox class="sapUiSmallMarginBegin">
+                                                    <ObjectAttribute  text="{userAlteracao/nome}" />                                                     
+                                                    <ObjectStatus                                                        
+                                                        text="{status/descricao}"
+                                                        state="{path: 'status/ID', formatter:'.formatter.corStatus'}" />   
+                                                    <ObjectStatus                                                     
                                                     text="{criticidade/descricao}"
-                                                    state="{path: 'criticidade/ID', formatter:'.formatter.corCriticidade'}" />
-                                        </secondStatus>
-										<ObjectAttribute title="{i18n>autor_nome_txt}" text="{userAlteracao/nome}" /> 
-										<ObjectAttribute title="{i18n>ultima_reuniao_txt}" text="{path: 'dataUltimaReuniao', formatter: '.formatter.formatDateShow'}" />          			
-									</ObjectListItem>	
-
-								</items>
+                                                    state="{path: 'criticidade/ID', formatter:'.formatter.corCriticidade'}" />  
+                                                    <ObjectAttribute text="{path: 'dataUltimaReuniao', formatter: '.formatter.formatDateShow'}" /> 
+                                                </VBox>                                               
+                                            </HBox>
+                                           <HBox>
+                                                <VBox  class="sapUiSmallMarginBegin">                                                     
+                                                    <ObjectAttribute text="{descAlterda}" />     
+                                                    <ObjectAttribute text="{statusAlterado}" />       
+                                                    <ObjectAttribute text="{detalheAlterado}" /> 
+                                                    <ObjectAttribute text="{princImpAlterado}" /> 
+                                                    <ObjectAttribute text="{dtUltimaReuniaoAlterado}" />   	
+                                                    <ObjectAttribute text="{comissaoAlterado}" /> 
+                                                </VBox>
+                                            </HBox>
+                                        </content>
+                                    </CustomListItem>
 							</List>
 						</l:content>
 					</l:VerticalLayout>
@@ -348,7 +364,7 @@
 			            </ToggleButton>					
 					<ToolbarSpacer width=""/>
 					<Button text="{i18n>registrar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{objectView>/isEditMode}"/>
-					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+					<Button text="{i18n>voltar_txt}" type="Default" press="onCancel"/>
 				</content>
 			</OverflowToolbar>
 		</footer>

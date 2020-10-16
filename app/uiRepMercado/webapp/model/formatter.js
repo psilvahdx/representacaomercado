@@ -32,6 +32,14 @@ sap.ui.define([
 				pattern: "dd/MM/yyyy HH:mm:ss"
 			});
 			return oDateFormat.format(new Date(oDate));
+        },
+        
+        dateTimeUTC: function (oDate) {
+			if (oDate === null) return "";
+			var oDateFormat = DateFormat.getDateTimeInstance({
+				pattern: "dd/MM/yyyy HH:mm:ss"
+			});
+			return oDateFormat.format(new Date(oDate),true);
 		},
 
 		formatDateShow: function (oDate) {
@@ -39,6 +47,16 @@ sap.ui.define([
 				pattern: "dd/MM/yyyy"
 			});
 			return oDate && oDateInstance.format(new Date(oDate));
+        },
+
+        formatDateShortMonthYear: function (oDate) {
+			var oDateInstance = DateFormat.getDateInstance({
+				pattern: "MMM / yyyy",
+                source: {
+                    pattern: "MM/yyyy"
+                }
+			});
+			return oDate && oDateInstance.format(new Date(oDate), true);
         },
 
         corCriticidade: function(oValue){
@@ -71,13 +89,13 @@ sap.ui.define([
             switch (sIconCriticidade) {
                
              case 1:
-                    sIconCriticidade = "sap-icon://status-negative";
+                    sIconCriticidade = "sap-icon://circle-task";
                     break;
              case 2:
-                    sIconCriticidade = "sap-icon://status-critical";
+                    sIconCriticidade = "sap-icon://up";
                     break;
              case 3:
-                    sIconCriticidade = "sap-icon://status-positive";
+                    sIconCriticidade = "sap-icon://border";
                     break;
                 default:
                     break;

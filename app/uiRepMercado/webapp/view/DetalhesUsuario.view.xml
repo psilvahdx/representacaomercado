@@ -3,7 +3,7 @@
 		xmlns="sap.m"
 		xmlns:mvc="sap.ui.core.mvc"
 		xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
-	<Page showHeader="true" title="{i18n>cadastro_usuario_title}" showFooter="true" showNavButton="true" 
+	<Page showHeader="true" visible="{userLogModel>/userLog/acoes/isCadastroVisible}" title="{i18n>cadastro_usuario_title}" showFooter="true" showNavButton="true" 
     enableScrolling="true" navButtonPress="_onPageNavButtonPress" busy="{detUserView>/busy}">
 		<content>
 
@@ -35,12 +35,12 @@
                             <f:formElements>
                                 <f:FormElement label="{i18n>matricula_usuario_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/ID}" id="txtIdUser" liveChange="onInputIdChange"/>
+                                        <Input maxLength="8" placeholder="F0000000" value="{EditUsuarioModel>/ID}" id="txtIdUser" liveChange="onInputIdChange"/>
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>nome_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/nome}" />                                        
+                                        <Input id="txtNomeUser" value="{EditUsuarioModel>/nome}" />                                        
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>perfil_txt}">
@@ -58,17 +58,26 @@
                             <f:formElements>
                                 <f:FormElement label="{i18n>cargo_porto_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/cargo}" />
+                                        <Input id="txtCargoUser" value="{EditUsuarioModel>/cargo}" />
                                     </f:fields>
                                 </f:FormElement>
-                                <f:FormElement label="{i18n>diretor_geral_txt}">
+                                 <f:FormElement label="{i18n>cargo_classif_txt}">
+                                    <f:fields>                                        
+                                        <ComboBox selectedKey="{EditUsuarioModel>/cargoClassif_ID}" id="cmbCargoClassif" items="{path:'/CargoClassificacoes', templateShareable:true}">
+									        <items>
+										        <core:Item key="{ID}" text="{descricao}"/>
+									        </items>
+								        </ComboBox>
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>diretor_vp_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/diretorGeral}" />
+                                        <Input id="txtDiretorGeralUser" value="{EditUsuarioModel>/diretorGeral}" />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>diretor_executivo_txt}">
                                     <f:fields>
-                                        <Input value="{EditUsuarioModel>/diretorExecutivo}" />
+                                        <Input id="txtDiretorExecutivoUser" value="{EditUsuarioModel>/diretorExecutivo}" />
                                     </f:fields>
                                 </f:FormElement>
                             </f:formElements>
@@ -117,8 +126,8 @@
 			<OverflowToolbar width="100%">
 				<content>					
 					<ToolbarSpacer width=""/>
-					<Button text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editUserView>/isEditMode}"/>
-					<Button text="{i18n>cancelar_btn}" type="Default" press="onCancel"/>
+					<Button id="btnSalvarUser" text="{i18n>salvar_btn}" type="Emphasized" press="onSaveButtonPress" enabled="{editUserView>/isEditMode}"/>
+					<Button text="{i18n>voltar_txt}" type="Default" press="onCancel"/>                   
 				</content>
 			</OverflowToolbar>
 		</footer>

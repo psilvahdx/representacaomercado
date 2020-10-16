@@ -1,3 +1,6 @@
+// @ts-nocheck
+/* eslint-disable no-undef */
+/* eslint-disable @sap/ui5-jsdocs/no-jsdoc */
 sap.ui.define([
 	"./BaseController"
 ], function (BaseController) {
@@ -10,5 +13,4 @@ sap.ui.define([
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 		}
 	});
-
 });

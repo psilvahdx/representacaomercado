@@ -13,10 +13,61 @@ service FullSerice {
     entity Perfis                 as projection on db.Perfis;
     entity PerfilAcoes            as projection on db.PerfilAcoes;
     entity Usuarios               as projection on db.Usuarios;
+    entity CargoClassificacoes    as projection on db.ClassificacaoCargo;
     entity Temas                  as projection on db.Temas;
     entity Historico              as projection on db.Historico;
     entity ComissoesRepresentante as projection on db.ComissoesRepresentante;
     entity AppSettings            as projection on db.AppSettings;
+    entity TiposAlerta            as projection on db.TiposAlerta;
+    entity EventosAlerta          as projection on db.EventosAlerta;
+    entity AlertasUsuario         as projection on db.AlertasUsuario;
+
+
+    view TemasPorRegulador() as
+        select from db.Temas {
+            key substr(
+                    primeiroRegistro, 1, 4
+                ) || '-' || substr(
+                    primeiroRegistro, 6, 2
+                ) || '-01T00:00:00Z' as mesAno               : DateTime,
+            key regulador.descricao  as descRegulador,
+                count(
+                    ID
+                )                    as qtdTemasPorRegulador : Integer
+        }
+        group by
+            primeiroRegistro,
+            regulador.descricao;
+
+    view TemasPorCriticidade() as
+        select from db.Temas {
+            key substr(
+                    primeiroRegistro, 1, 4
+                ) || '-' || substr(
+                    primeiroRegistro, 6, 2
+                ) || '-01T00:00:00Z'  as mesAno                 : DateTime,
+            key criticidade.descricao as descCriticidade,
+                count(
+                    ID
+                )                     as qtdTemasPorCriticidade : Integer
+        }
+        group by
+            primeiroRegistro,
+            criticidade.descricao;
+
+    entity RepresentacoesMercado {
+        key ID           : Integer;
+            comIndicacao : Boolean;
+            comissao     : String;
+            regulador    : String;
+    };
+
+    entity RepresentacoesPorCargo {
+        key ID        : Integer;
+            cargo     : String;
+            comissao  : String;
+            regulador : String;
+    };
 
     entity UsersExtensions {
         key ID                    : String;
@@ -40,6 +91,18 @@ service FullSerice {
             acoes                 : Association to PerfilAcoes;
     }
 
-    function getUserData(id : String) returns String;
+    action deleteSelectedUsers(ids : String);
+    action deleteSelectedReguladores(ids : String);
+    action deleteSelectedComissoes(ids : String);
+    action deleteSelectedTiposAlerta(ids : String);
+
+    action replicaEventoAlerta(idEvento: String,  perfisQueRecebem: String, usuariosQueRecebem: String,  bCreate: Boolean );    
+
+    function comissoesSemRepresentante() returns array of Comissoes;
+    function comissoesComRepresentante() returns array of Comissoes;
+    function representacoesMercado() returns array of RepresentacoesMercado;
+    function representacoesPorCargo() returns array of RepresentacoesPorCargo;
+    function getUserExtension(ID : String) returns UsersExtensions;
+
 
 }

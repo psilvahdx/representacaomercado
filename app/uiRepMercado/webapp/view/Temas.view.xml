@@ -1,5 +1,5 @@
 <mvc:View xmlns:mvc="sap.ui.core.mvc"
-		controllerName="ps.uiRepMercado.controller.Temas"
+		controllerName="ps.uiRepMercado.controller.Temas"  xmlns:form="sap.ui.layout.form"
 		xmlns:f="sap.f" xmlns:variants="sap.ui.comp.variants" xmlns="sap.m" xmlns:filterbar="sap.ui.comp.filterbar" xmlns:core="sap.ui.core">
 	<ScrollContainer
 			height="100%"
@@ -12,39 +12,81 @@
 				expanded="{device>/isNoPhone}">
 			<items>
 				<IconTabFilter text="{i18n>pesquisa_temas_txt}" key="pesquisaTemaskey">	
-					<filterbar:FilterBar id="ListReportFilterBar" useToolbar="false" showGoOnFB="true" searchEnabled="true" search="onSearch"> 
-						<filterbar:filterItems>
-							<filterbar:FilterItem label="{i18n>tema_txt}" name="fltTema">
-								<filterbar:control>                                                                                       
-									<Input type="Text" placeholder="{i18n>SearchTema}" value="{filterModel>/temas/tema}"  />
-							</filterbar:control>
-						</filterbar:FilterItem>
-						<filterbar:FilterItem label="{i18n>status_txt}" name="fltStatus">
-							<filterbar:control>
-								<MultiComboBox id="mtCBoxStatus" items="{path:'/Status', templateShareable:true}">
-									<items>
-										<core:Item key="{ID}" text="{descricao}"/>
-									</items>
-								</MultiComboBox>
-							</filterbar:control>
-						</filterbar:FilterItem>
-						<filterbar:FilterItem label="{i18n>comissao_txt}" name="fltComissoes">
-							<filterbar:control>
-								<MultiComboBox id="mtCBoxComissoes" items="{path : '/Comissoes',
-									sorter : {
-									path : 'descricao',
-									descending : false
-									}
-									}">
-									<items>
-										<core:Item key="{ID}" text="{descricao}"/>
-									</items>
-								</MultiComboBox>
-							</filterbar:control>
-						</filterbar:FilterItem>
-					</filterbar:filterItems>
-				</filterbar:FilterBar>
+                    <VBox class="sapUiCompFilterBar">
 
+                    <form:Form>
+									<form:formContainers>
+										<form:FormContainer>
+											<form:formElements>
+												<form:FormElement>
+                                                    <form:label>
+                                                       <Label text="{i18n>tema_txt}" design="Standard" width="100%"   />
+                                                    </form:label>
+													<form:fields>
+														<Input type="Text" placeholder="{i18n>SearchTema}" value="{filterModel>/temas/tema}"  />
+													</form:fields>
+												</form:FormElement>
+											</form:formElements>                                            
+										</form:FormContainer>   
+                                        <form:FormContainer>
+                                             <form:FormElement>
+                                                    <form:label>
+                                                       <Label text="{i18n>status_txt}" design="Standard" width="100%"   />
+                                                    </form:label>
+													<form:fields>
+														<MultiComboBox id="mtCBoxStatus" items="{path:'/Status', templateShareable:true}">
+                                                            <items>
+                                                                <core:Item key="{ID}" text="{descricao}"/>
+                                                            </items>
+                                                        </MultiComboBox>
+													</form:fields>
+												</form:FormElement>
+                                        </form:FormContainer>      
+                                        <form:FormContainer>
+                                            <form:FormElement>
+                                                    <form:label>
+                                                       <Label text="{i18n>comissao_txt}" design="Standard" width="100%"   />
+                                                    </form:label>
+													<form:fields>
+														<MultiComboBox id="mtCBoxComissoes" items="{path : '/Comissoes',
+                                                            sorter : {
+                                                            path : 'descricao',
+                                                            descending : false
+                                                            }
+                                                            }">
+                                                            <items>
+                                                                <core:Item key="{ID}" text="{descricao}"/>
+                                                            </items>
+                                                        </MultiComboBox>
+													</form:fields>
+												</form:FormElement>
+                                        </form:FormContainer>                                      
+									</form:formContainers>
+									<form:layout>
+										<form:ResponsiveGridLayout 	labelSpanXL="4"
+										labelSpanL="12"
+										labelSpanM="12"
+										labelSpanS="12"
+										adjustLabelSpan="false"
+										emptySpanXL="0"
+										emptySpanL="0"
+										emptySpanM="0"
+										emptySpanS="0"
+										columnsXL="3"
+										columnsL="3"
+										columnsM="3"
+										singleContainerFullSize="false"/>
+									</form:layout>
+								</form:Form>
+								<OverflowToolbar  width="auto" height="46px" design="Transparent">
+									<content >
+										<ToolbarSpacer width=""/>
+                                        <Button id="btnClearFilter" text="{i18n>limpar_filtro_btn}" press="onClearFilter"/>
+                                        <Button id="btnFiltrar" text="{i18n>pesquisar_btn}" type="Emphasized" press="onSearch"/>										
+									</content>
+								</OverflowToolbar>
+							
+                    </VBox>	
 
 				<VBox fitContainer="true">
 					<items>
@@ -58,8 +100,9 @@
 									<content>
 										<Title textAlign="Begin" text="{temasView>/worklistTableTitle}"/>                                    
 										<ToolbarSpacer/>
-										<Button icon="sap-icon://add-document" type="Transparent" 
-												visible="{userLogModel>/userLog/acoes/createTemas}"
+                                        <Button icon="sap-icon://excel-attachment" press="onExport" text="{i18n>exportar_excel_txt}"/>
+										<Button id="btnNewTema" icon="sap-icon://add-document" type="Transparent" 
+												visible="{= ${userLogModel>/userLog/acoes/createTemas}? ${userLogModel>/userLog/acoes/createTemas} : false}"
 												text="{i18n>novo_tema_btn}" press="onCreatePress">
 										<layoutData>
 											<OverflowToolbarLayoutData moveToOverflow="true"/>
@@ -84,7 +127,7 @@
 									<Text text="{i18n>comissao_short_txt}" width="auto"/>
 								</header>
 							</Column>
-							<Column width="30%" demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
+							<Column width="25%" demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
 								<header>
 									<Text text="{i18n>tema_txt}" width="auto"/>
 								</header>
@@ -129,16 +172,17 @@
 				</items>
 			</VBox>	
 		</IconTabFilter>
-		<IconTabFilter text="{i18n>representacao_mercado_txt}" key="dashBoardskey" visible="{userLogModel>/userLog/acoes/isDashBoardVisible}">
+	<IconTabFilter id="dashBoardTab" text="{i18n>indicadores_txt}" key="dashBoardskey" visible="false">
+        	<core:Fragment fragmentName="ps.uiRepMercado.view.fragments.DashBoard" type="XML"/>
 	</IconTabFilter>
-	<IconTabFilter text="{i18n>cadastros_txt}" key="cadastroskey" visible="{userLogModel>/userLog/acoes/isCadastroVisible}">
+	<IconTabFilter id="cadTab" text="{i18n>cadastros_txt}" key="cadastroskey" visible="false">
         <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>cadastro_usuarios_title}"
 		subheader="" press="onCadUserTilePress">
 		    <TileContent footer="{i18n>cadastro_usuarios_footer}">
 			    <ImageContent src="sap-icon://user-edit" />
 		    </TileContent>
 	    </GenericTile>
-        <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>cadastro_reguladores_title}"
+         <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>cadastro_reguladores_title}"
 		subheader="" press="onCadReguladoresTilePress">
 		    <TileContent footer="{i18n>cadastro_reguladores_footer}">
 			    <ImageContent src="sap-icon://write-new-document" />
@@ -150,7 +194,16 @@
 			    <ImageContent src="sap-icon://request" />
 		    </TileContent>
 	    </GenericTile>
-    </IconTabFilter>		
+        <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" header="{i18n>cadastro_tipos_alerta_title}"
+		subheader="" press="onCadTiposAlertaTilePress">
+		    <TileContent footer="{i18n>cadastro_tipos_alerta_footer}">
+			    <ImageContent src="sap-icon://bell" />
+		    </TileContent>
+	    </GenericTile>
+    </IconTabFilter>   
+	<IconTabFilter id="calendarTab" text="{i18n>calendario_txt}" key="calendariokey">
+       <core:Fragment fragmentName="ps.uiRepMercado.view.fragments.Calendario" type="XML"/>
+    </IconTabFilter>
 </items>
 </IconTabBar>	
 </ScrollContainer>

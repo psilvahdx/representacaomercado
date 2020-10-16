@@ -34,7 +34,8 @@ sap.ui.define([
             this.setModel(models.createFilterModel(), "filterModel");
             // set Usuário logado
             this.setModel(models.createUserModel(), "userLogModel");
-           
+            // set Criterios de Avaliação (Criticidade) Selecionados
+            this.setModel(models.createAvaliacaoSelectedModel(),"AvaliacaoSelectedModel");     
 			// create the views based on the url/hash
 			this.getRouter().initialize();
 		},
@@ -49,7 +50,8 @@ sap.ui.define([
 			this._oErrorHandler.destroy();
 			// call the base component's destroy function
 			UIComponent.prototype.destroy.apply(this, arguments);
-		},
+        },       
+        
 
 		/**
 		 * This method can be called to determine whether the sapUiSizeCompact or sapUiSizeCozy
