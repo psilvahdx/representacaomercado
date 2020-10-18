@@ -294,7 +294,7 @@ module.exports = cds.service.impl(async (service) => {
         }
 
         switch (usuario.perfil_ID) {
-            case "REP":
+            case "REP":              
             case "VP_DIR":
                 //VP/Diretor e Representante somente visualiza as comissões que esta relacionado
                 acomissoesIds = aComissoesUsuario.map(x => x.comissao_ID);
@@ -305,6 +305,8 @@ module.exports = cds.service.impl(async (service) => {
                     if (!SELECT.where) {
                         SELECT.where = xprComissoesIds.xpr;
                     }
+                }else{
+                    req.reject(400,"Sem Comissões Atribuidas");
                 }
                 break;
             default:
