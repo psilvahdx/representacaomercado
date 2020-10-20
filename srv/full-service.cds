@@ -63,10 +63,11 @@ service FullSerice {
     };
 
     entity RepresentacoesPorCargo {
-        key ID        : Integer;
-            cargo     : String;
-            comissao  : String;
-            regulador : String;
+        key ID             : Integer;
+            cargo          : String;
+            comissao       : String;
+            regulador      : String;
+            ultimoRegistro : DateTime;
     };
 
     entity UsersExtensions {
@@ -95,13 +96,12 @@ service FullSerice {
     action deleteSelectedReguladores(ids : String);
     action deleteSelectedComissoes(ids : String);
     action deleteSelectedTiposAlerta(ids : String);
-
-    action replicaEventoAlerta(idEvento: String,  perfisQueRecebem: String, usuariosQueRecebem: String,  bCreate: Boolean );    
-
+    action replicaEventoAlerta(idEvento : String, perfisQueRecebem : String, usuariosQueRecebem : String, bCreate : Boolean);
     function comissoesSemRepresentante() returns array of Comissoes;
     function comissoesComRepresentante() returns array of Comissoes;
     function representacoesMercado() returns array of RepresentacoesMercado;
     function representacoesPorCargo() returns array of RepresentacoesPorCargo;
+    function getRepresentacoesPorCargo() returns array of RepresentacoesPorCargo;
     function getUserExtension(ID : String) returns UsersExtensions;
 
 

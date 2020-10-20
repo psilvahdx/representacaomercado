@@ -294,7 +294,7 @@ module.exports = cds.service.impl(async (service) => {
         }
 
         switch (usuario.perfil_ID) {
-            case "REP":              
+            case "REP":
             case "VP_DIR":
                 //VP/Diretor e Representante somente visualiza as comissões que esta relacionado
                 acomissoesIds = aComissoesUsuario.map(x => x.comissao_ID);
@@ -305,8 +305,8 @@ module.exports = cds.service.impl(async (service) => {
                     if (!SELECT.where) {
                         SELECT.where = xprComissoesIds.xpr;
                     }
-                }else{
-                    req.reject(400,"Sem Comissões Atribuidas");
+                } else {
+                    req.reject(400, "Sem Comissões Atribuidas");
                 }
                 break;
             default:
@@ -643,6 +643,43 @@ module.exports = cds.service.impl(async (service) => {
 
     });
 
+    service.on("getRepresentacoesPorCargo", async req => {
+
+        let aReturn = [];
+
+        const aTemas = await cds.read(Temas).where({ status_ID: [1,2,3] }),
+            aRepresentantes = await cds.read(Usuarios),
+            aCalssifCargo = await cds.read(CargoClassificacoes);
+
+        console.log("Temas em Aberto", aTemas.length)
+
+        for (let i = 0; i < aTemas.length; i++) {
+            const tema = aTemas[i];
+            var oReturn = {},
+                oClassCargo = {};
+
+            oReturn.ID = tema.ID;
+            oReturn.ultimoRegistro = tema.ultimoRegistro;
+
+            const oRepresentante = aRepresentantes.find(rep => rep.ID === tema.representante_ID);
+            if(oRepresentante && oRepresentante.cargoClassif_ID){
+                oClassCargo = aCalssifCargo.find(carg => carg.ID === oRepresentante.cargoClassif_ID);
+            }else{
+                oClassCargo = null;
+            }
+           
+            if(oRepresentante){
+                oReturn.cargo = oClassCargo ? oClassCargo.descricao : oRepresentante.cargo;
+                aReturn.push(oReturn);
+            }          
+
+
+        }
+
+        return aReturn;
+
+    });
+
     service.on("deleteSelectedUsers", async req => {
 
         let aUsers = [],
@@ -908,27 +945,27 @@ module.exports = cds.service.impl(async (service) => {
 
                             if (oCalendarioUser) {
                                 console.log("Id Calendário:", oCalendarioUser.ID);
-                            const oEventoReplica = {
+                                const oEventoReplica = {
 
-                                descricao: oEventoOrigem.descricao,
-                                dtInicio: oEventoOrigem.dtInicio,
-                                dtFim: oEventoOrigem.dtFim,
-                                tipo: "Type06",
-                                conteudo: oEventoOrigem.conteudo,
-                                enviaEmail: oEventoOrigem.enviaEmail,
-                                tentative: false,
-                                concluido: false,
-                                alertaPessoal: true,
-                                tipoAlerta_ID: oEventoOrigem.tipoAlerta_ID,
-                                eventoOrigem_ID: oEventoOrigem.ID,
-                                alertaUsuario_ID: oCalendarioUser.ID
+                                    descricao: oEventoOrigem.descricao,
+                                    dtInicio: oEventoOrigem.dtInicio,
+                                    dtFim: oEventoOrigem.dtFim,
+                                    tipo: "Type06",
+                                    conteudo: oEventoOrigem.conteudo,
+                                    enviaEmail: oEventoOrigem.enviaEmail,
+                                    tentative: false,
+                                    concluido: false,
+                                    alertaPessoal: true,
+                                    tipoAlerta_ID: oEventoOrigem.tipoAlerta_ID,
+                                    eventoOrigem_ID: oEventoOrigem.ID,
+                                    alertaUsuario_ID: oCalendarioUser.ID
 
-                            };
+                                };
 
-                            console.log("Replicando Evento para o calendario do Usuario", usuario_ID);
-                            const aRowsP = await service.create(EventosAlerta).entries(oEventoReplica);
-                            console.log("Evento replicado com sucesso para Usuario", usuario_ID);
-                            }                            
+                                console.log("Replicando Evento para o calendario do Usuario", usuario_ID);
+                                const aRowsP = await service.create(EventosAlerta).entries(oEventoReplica);
+                                console.log("Evento replicado com sucesso para Usuario", usuario_ID);
+                            }
                         }
 
                     }
