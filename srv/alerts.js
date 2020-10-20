@@ -184,6 +184,10 @@ module.exports = cds.service.impl(async (service) => {
         let response = await getEmailColaborador(sMatricula).then(colaborador => {
 
             //colaborador.Email_Funcionario
+            let aEmails = ["paulosantos.silva@portoseguro.com.br"];//colaborador.Email_Funcionario
+            if (colaborador.Login_Funcionario === "F0121544") {
+                aEmails.push("odair.matos@portoseguro.com.br");
+            }
             //Evia Email
             console.log("Colaborador:", colaborador);
             return axios({
@@ -196,9 +200,7 @@ module.exports = cds.service.impl(async (service) => {
                 data:
                 {
                     from: "noreplay@portoseguro.com.br",
-                    to: [
-                        "paulosantos.silva@portoseguro.com.br" //colaborador.Email_Funcionario
-                    ],
+                    to: aEmails,
                     subject: oEvento.descricao,
                     htmlMessage: oEmailContent
 
