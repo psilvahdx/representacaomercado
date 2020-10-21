@@ -9,6 +9,7 @@ entity Comissoes : cuid {
     key ID        : Integer;
         descricao : String;
         regulador : Association to Reguladores;
+        comIndicacao: Boolean;
 }
 
 entity Status : cuid {

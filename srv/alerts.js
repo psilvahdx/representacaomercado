@@ -7,7 +7,13 @@ const qs = require('qs');
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
     const db = await cds.connect.to("db");
-    const { Temas, Historico, AlertasUsuario, EventosAlerta, AppSettings } = service.entities;
+    const {
+        Temas,
+        Historico,
+        AlertasUsuario,
+        EventosAlerta,
+        AppSettings
+    } = service.entities;
 
     service.on("atualizaStatusTemas", async (context) => {
 
@@ -39,7 +45,12 @@ module.exports = cds.service.impl(async (service) => {
                         //Alera Status para Sem Atualização
                         const dUltimoRegistro = dateFormat(dToday, "isoDateTime");
                         console.log("Atualizando Tema ID:", tema.ID);
-                        const affectedRows = await service.update(Temas).set({ status_ID: 2, ultimoRegistro: dUltimoRegistro }).where({ ID: tema.ID });
+                        const affectedRows = await service.update(Temas).set({
+                            status_ID: 2,
+                            ultimoRegistro: dUltimoRegistro
+                        }).where({
+                            ID: tema.ID
+                        });
                         console.log("Tema Atualizado");
                         nTemasAtualizados = nTemasAtualizados + 1;
                         console.log("affectedRows:", affectedRows);
@@ -102,7 +113,10 @@ module.exports = cds.service.impl(async (service) => {
         const dToday = new Date();
         let nTotalEnvios = 0,
             aCalendarios = await cds.read(AlertasUsuario),
-            aEventos = await cds.read(EventosAlerta).where({ concluido: false, enviaEmail: true });
+            aEventos = await cds.read(EventosAlerta).where({
+                concluido: false,
+                enviaEmail: true
+            });
 
         for (let i = 0; i < aEventos.length; i++) {
             const evento = aEventos[i];
@@ -127,31 +141,55 @@ module.exports = cds.service.impl(async (service) => {
                         let aStatusTema = evento.statusTemas.split("|");
                         console.log("Enviar email para temas com os Status", aStatusTema);
 
-                        var aTemasRepresentante = await cds.read(Temas).where({ representante_ID: oCalendarioUser.usuario_ID, status_ID: aStatusTema });
+                        var aTemasRepresentante = await cds.read(Temas).where({
+                            representante_ID: oCalendarioUser.usuario_ID,
+                            status_ID: aStatusTema
+                        });
                         if (aTemasRepresentante && aTemasRepresentante.length > 0) {
 
-                            //Dispara Email do evento para o Usuário
-                            const emailTemasEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
+                            try {
+                                //Dispara Email do evento para o Usuário
+                                const emailTemasEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
 
-                            if (emailTemasEnviado) {
-                                nTotalEnvios++;
-                                //Atualiza Evento para Concluído
-                                const evntTemas = await cds.update(EventosAlerta).set({ concluido: true }).where({ ID: evento.ID });
+                                if (emailTemasEnviado) {
+                                    nTotalEnvios++;
+                                    //Atualiza Evento para Concluído
+                                    const evntTemas = await cds.update(EventosAlerta).set({
+                                        concluido: true
+                                    }).where({
+                                        ID: evento.ID
+                                    });
+                                }
+
+                            } catch (error) {
+                                console.log("Erro Envio Email ID Evento:", evento.ID);
                             }
+
 
                         }
 
 
                     } else {
 
-                        //Dispara Email do evento para o Usuário
-                        const emailEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
+                        try {
+                            //Dispara Email do evento para o Usuário
+                            const emailEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
 
-                        if (emailEnviado) {
-                            nTotalEnvios++;
-                            //Atualiza Evento para Concluído
-                            const evnt = await cds.update(EventosAlerta).set({ concluido: true }).where({ ID: evento.ID });
+                            if (emailEnviado) {
+                                nTotalEnvios++;
+                                //Atualiza Evento para Concluído
+                                const evnt = await cds.update(EventosAlerta).set({
+                                    concluido: true
+                                }).where({
+                                    ID: evento.ID
+                                });
+                            }
+                        } catch (error) {
+                            console.log("Erro Envio Email ID Evento:", evento.ID);
+
                         }
+
+
 
                     }
 
@@ -168,7 +206,9 @@ module.exports = cds.service.impl(async (service) => {
     async function enviaEmailEvento(oEvento, sMatricula) {
 
         let oAppSettings = {};
-        const aAppSettings = await cds.read(AppSettings).where({ ID: 2 });
+        const aAppSettings = await cds.read(AppSettings).where({
+            ID: 2
+        });
         if (aAppSettings.length > 0) {
             oAppSettings = aAppSettings[0];
         }
@@ -179,12 +219,15 @@ module.exports = cds.service.impl(async (service) => {
         });
         console.log("token recuperado:", token);
         console.log("conteudo email", oEvento.conteudo);
-        var oEmailContent = oEvento.conteudo.replace("\"", "'");
+        var oEmailContent = "";
+        if (oEvento.conteudo) {
+            oEmailContent = oEvento.conteudo.replace("\"", "'");
+        }
 
         let response = await getEmailColaborador(sMatricula).then(colaborador => {
 
             //colaborador.Email_Funcionario
-            let aEmails = ["paulosantos.silva@portoseguro.com.br"];//colaborador.Email_Funcionario
+            let aEmails = ["paulosantos.silva@portoseguro.com.br"]; //colaborador.Email_Funcionario
             if (colaborador.Login_Funcionario === "F0121544") {
                 aEmails.push("odair.matos@portoseguro.com.br");
             }
@@ -197,8 +240,7 @@ module.exports = cds.service.impl(async (service) => {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                data:
-                {
+                data: {
                     from: "noreplay@portoseguro.com.br",
                     to: aEmails,
                     subject: oEvento.descricao,
