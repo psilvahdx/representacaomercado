@@ -39,11 +39,31 @@ sap.ui.define([
                 this.getRouter().navTo("temasList");
             }
 
-            oTableBinding.attachChange(function () {
+           /* oTableBinding.attachChange(function () {
                 var sRowCount = this.getView().byId("tblComissoes").getItems().length;
                 this.getView().getModel("comissoesView").setProperty("/comissoesRowCount", sRowCount);
-            }.bind(this));
-            this.getView().getModel().refresh();
+            }.bind(this));*/
+            //this.getView().getModel().refresh();
+            this.onClearFilter();
+        },
+
+        onUpdateFinished: function (oEvent) {
+            // update the worklist's object counter after the table update
+            var sTitle,
+                sMessage,
+                that = this,
+                oTable = oEvent.getSource(),
+                iTotalItems = oEvent.getParameter("total");
+            // only update the counter if the length is final and
+            // the table is not empty
+            if (iTotalItems && oTable.getBinding("items").isLengthFinal()) {
+                //sTitle = this.getResourceBundle().getText("usuariosTableTitleCount", [iTotalItems]);
+                this.getView().getModel("comissoesView").setProperty("/comissoesRowCount", iTotalItems);
+            } else {
+               // sTitle = this.getResourceBundle().getText("usuariosTableTitle");
+               this.getView().getModel("comissoesView").setProperty("/comissoesRowCount", 0);
+                sMessage = this.getResourceBundle().getText("nenhum_registro_encontrado_cadastro");
+            }            
         },
 
         getUserData: function () {
@@ -85,6 +105,7 @@ sap.ui.define([
             this.getView().byId("filterDesc").setValue("");
             this.getView().getModel("comissoesView").setProperty("/reguladorFilterId", null);
             this.getView().getModel("comissoesView").setProperty("/reguladorFilter", "");
+            this.getView().byId("cBoxComIndicacao").setSelectedKey("0");
 
             this.onSearch();
         },
@@ -92,6 +113,7 @@ sap.ui.define([
         onSearch: function () {
             var oTableBinding = this.getView().byId("tblComissoes").getBinding("items"),
                 sDescFilter = this.getView().byId("filterDesc").getValue(),
+                sClassificacao = this.getView().byId("cBoxComIndicacao").getSelectedKey(),
                 sReguladorFilter = this.getView().getModel("comissoesView").getProperty("/reguladorFilterId"),
                 bAnd = false,
                 aFilters = [];
@@ -105,6 +127,17 @@ sap.ui.define([
             if (sReguladorFilter) {
                 aFilters.push(new Filter("regulador_ID", FilterOperator.EQ, sReguladorFilter));
                 bAnd = true;
+            }
+            if (sClassificacao) {
+                if (sClassificacao === "1") {//Com Indicação
+                    aFilters.push(new Filter("comIndicacao", FilterOperator.EQ, true)); 
+                    bAnd = true;
+                }
+                if (sClassificacao === "2") {//Sem Indicação
+                    aFilters.push(new Filter("comIndicacao", FilterOperator.EQ, false)); 
+                    bAnd = true;
+                }
+                
             }
 
             oTableBinding.filter(new Filter(aFilters, bAnd));
@@ -250,6 +283,14 @@ sap.ui.define([
                 label: oI18n.getText("descricao"),
                 property: 'regulador/descricao',
                 type: EdmType.String
+            });
+
+            aCols.push({
+                label: oI18n.getText("indicacao_txt"),
+                property: 'comIndicacao',
+                type: EdmType.Boolean,
+                trueValue: oI18n.getText("com_indicacao_txt"),
+                falseValue: oI18n.getText("sem_indicacao_txt")
             });
 
 
