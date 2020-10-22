@@ -39,6 +39,11 @@ sap.ui.define([
                     perfil: [],
                     calssficCargo: [],
                     comissoes: []
+                },
+                dashBoard:{
+                    porPeriodo: true,
+                    porMeses: false,
+                    selectedDates:[]
                 }
             });
         },

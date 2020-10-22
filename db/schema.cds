@@ -76,7 +76,7 @@ entity Temas : cuid {
 }
 
 entity Historico : cuid {
-    key ID                      : Integer;
+    key ID                      : UUID;
         idTema                  : Integer;
         descricao               : String;
         status                  : Association to Status;

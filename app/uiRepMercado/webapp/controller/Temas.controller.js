@@ -57,6 +57,20 @@ sap.ui.define([
             odtrPeriodo.setDateValue(new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()));
             odtrPeriodo.setSecondDateValue(vToday);
 
+            //Filtros Iniciais
+            var //oDPComissPorReg = this.byId("DPComissPorReg"),
+                oDPRepPorCargo = this.byId("DPRepPorCargo"),
+                oDPTemasPorRegCritic = this.byId("DPTemasPorRegCritic");
+            
+            //oDPComissPorReg.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            //oDPComissPorReg.setDateValue(vToday);
+            
+            oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            oDPRepPorCargo.setDateValue(vToday);
+
+            oDPTemasPorRegCritic.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+
+
             //this.getOwnerComponent().setBusy(true);
             this.showBusy();
 
@@ -348,6 +362,40 @@ sap.ui.define([
             }
         },
 
+        handleChange: function (oEvent) {
+			var oDP = oEvent.getSource(),
+				//sValue = oEvent.getParameter("value"),
+				bValid = oEvent.getParameter("valid");
+			
+			if (bValid) {
+				oDP.setValueState("None");
+			} else {
+				oDP.setValueState("Error");
+			}
+        },
+        
+        onAddMesesTemasPorRegCritic: function(oEvent){
+
+            var ofilterModel = this.getModel("filterModel"),
+	            oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
+
+            var oDPTemasPorRegCritic = this.byId("DPTemasPorRegCritic");
+
+            if (oDPTemasPorRegCritic.getDateValue()) {
+              
+                oFilterDashBoard.selectedDates.push({Date: oDPTemasPorRegCritic.getDateValue()});
+                oDPTemasPorRegCritic.setValue("");
+                ofilterModel.refresh();
+            }
+        },
+
+        onClearMesesTemasPorRegCritic: function(){
+            var ofilterModel = this.getModel("filterModel"),
+            oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
+            oFilterDashBoard.selectedDates = ([]);
+            ofilterModel.refresh();
+        },
+
         onSearchDashBoard: function (oEvent) {
             this._bindChart();
         },
@@ -355,10 +403,25 @@ sap.ui.define([
         onClearDashBoardFilter: function () {
 
             var odtrPeriodo = this.byId("dtrPeriodo"),
+                //oDPComissPorReg = this.byId("DPComissPorReg"),
+                oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 vToday = new Date();
+
+                var ofilterModel = this.getModel("filterModel"),
+                oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
+                oFilterDashBoard.selectedDates = ([]);
+                oFilterDashBoard.porPeriodo = true;
+                ofilterModel.refresh();
+            
             odtrPeriodo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
             odtrPeriodo.setDateValue(new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()));
             odtrPeriodo.setSecondDateValue(vToday);
+            
+            //oDPComissPorReg.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+           // oDPComissPorReg.setDateValue(vToday);
+            
+            oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            oDPRepPorCargo.setDateValue(vToday);
 
             this._bindChart();
         },
@@ -373,7 +436,39 @@ sap.ui.define([
                 oVizFrameComissSemRep = this.getView().byId("idVizFrameComissSemRep"),
                 oVizFrameComissComRep = this.getView().byId("idVizFrameComissComRep"),
                 oVizFrameRepMercado = this.getView().byId("idVizFrameRepMercado"),
-                oVizFrameRepPorCargo = this.getView().byId("idVizFrameRepPorCargo");
+                oVizFrameRepPorCargo = this.getView().byId("idVizFrameRepPorCargo"),
+                ofilterModel = this.getModel("filterModel");
+            
+            var aPrimaryAxis = ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],                
+                aColorPalette = [
+                "sapUiChartPaletteSemanticNeutralDark2",
+                "sapUiChartPaletteSequentialHue1Light3",
+                "sapUiChartPaletteSequentialHue1Light2",
+                "sapUiChartPaletteSequentialHue1Light1",
+                "sapUiChartPaletteSequentialHue1",
+                "sapUiChartPaletteSequentialHue1Dark1",
+                "sapUiChartPaletteSequentialHue1Dark2",
+                "sapUiChartPaletteSequentialNeutralLight3",
+                "sapUiChartPaletteSequentialNeutralLight2",
+                "sapUiChartPaletteSequentialNeutralLight1",
+                "sapUiChartPaletteSequentialNeutral",
+                "sapUiChartPaletteSequentialNeutralDark1",
+                "sapUiChartPaletteSequentialNeutralDark2"
+            ],
+            aColorPaletteDonut = [                
+                "sapUiChartPaletteSequentialHue1Light3",
+                "sapUiChartPaletteSequentialHue1Light2",
+                "sapUiChartPaletteSequentialHue1Light1",
+                "sapUiChartPaletteSequentialHue1",
+                "sapUiChartPaletteSequentialHue1Dark1",
+                "sapUiChartPaletteSequentialHue1Dark2",
+                "sapUiChartPaletteSequentialNeutralLight3",
+                "sapUiChartPaletteSequentialNeutralLight2",
+                "sapUiChartPaletteSequentialNeutralLight1",
+                "sapUiChartPaletteSequentialNeutral",
+                "sapUiChartPaletteSequentialNeutralDark1",
+                "sapUiChartPaletteSequentialNeutralDark2"
+            ];;
 
             this.showBusy();
             //Temas Por Regulador
@@ -385,23 +480,9 @@ sap.ui.define([
                         showTotal: true
                     },
                     dataShape: {
-                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                        primaryAxis: aPrimaryAxis
                     },
-                    colorPalette: [
-                        "sapUiChartPaletteSemanticNeutralDark2",
-                        "sapUiChartPaletteSequentialHue1Light3",
-                        "sapUiChartPaletteSequentialHue1Light2",
-                        "sapUiChartPaletteSequentialHue1Light1",
-                        "sapUiChartPaletteSequentialHue1",
-                        "sapUiChartPaletteSequentialHue1Dark1",
-                        "sapUiChartPaletteSequentialHue1Dark2",
-                        "sapUiChartPaletteSequentialNeutralLight3",
-                        "sapUiChartPaletteSequentialNeutralLight2",
-                        "sapUiChartPaletteSequentialNeutralLight1",
-                        "sapUiChartPaletteSequentialNeutral",
-                        "sapUiChartPaletteSequentialNeutralDark1",
-                        "sapUiChartPaletteSequentialNeutralDark2"
-                    ]
+                    colorPalette: aColorPalette
                 },
                 valueAxis: {
                     label: {
@@ -442,23 +523,9 @@ sap.ui.define([
                         showTotal: true
                     },
                     dataShape: {
-                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                        primaryAxis: aPrimaryAxis
                     },
-                    colorPalette: [
-                        "sapUiChartPaletteSemanticNeutralDark2",
-                        "sapUiChartPaletteSequentialHue1Light3",
-                        "sapUiChartPaletteSequentialHue1Light2",
-                        "sapUiChartPaletteSequentialHue1Light1",
-                        "sapUiChartPaletteSequentialHue1",
-                        "sapUiChartPaletteSequentialHue1Dark1",
-                        "sapUiChartPaletteSequentialHue1Dark2",
-                        "sapUiChartPaletteSequentialNeutralLight3",
-                        "sapUiChartPaletteSequentialNeutralLight2",
-                        "sapUiChartPaletteSequentialNeutralLight1",
-                        "sapUiChartPaletteSequentialNeutral",
-                        "sapUiChartPaletteSequentialNeutralDark1",
-                        "sapUiChartPaletteSequentialNeutralDark2"
-                    ]
+                    colorPalette: aColorPalette
                 },
                 valueAxis: {
                     label: {
@@ -500,23 +567,9 @@ sap.ui.define([
                         showTotal: true
                     },
                     dataShape: {
-                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                        primaryAxis: aPrimaryAxis
                     },
-                    colorPalette: [
-                        "sapUiChartPaletteSemanticNeutralDark2",
-                        "sapUiChartPaletteSequentialHue1Light3",
-                        "sapUiChartPaletteSequentialHue1Light2",
-                        "sapUiChartPaletteSequentialHue1Light1",
-                        "sapUiChartPaletteSequentialHue1",
-                        "sapUiChartPaletteSequentialHue1Dark1",
-                        "sapUiChartPaletteSequentialHue1Dark2",
-                        "sapUiChartPaletteSequentialNeutralLight3",
-                        "sapUiChartPaletteSequentialNeutralLight2",
-                        "sapUiChartPaletteSequentialNeutralLight1",
-                        "sapUiChartPaletteSequentialNeutral",
-                        "sapUiChartPaletteSequentialNeutralDark1",
-                        "sapUiChartPaletteSequentialNeutralDark2"
-                    ]
+                    colorPalette: aColorPalette
                 },
                 legendGroup: {
                     layout: {
@@ -563,23 +616,9 @@ sap.ui.define([
                         showTotal: true
                     },
                     dataShape: {
-                        primaryAxis: ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"]
+                        primaryAxis: aPrimaryAxis
                     },
-                    colorPalette: [
-                        "sapUiChartPaletteSemanticNeutralDark2",
-                        "sapUiChartPaletteSequentialHue1Light3",
-                        "sapUiChartPaletteSequentialHue1Light2",
-                        "sapUiChartPaletteSequentialHue1Light1",
-                        "sapUiChartPaletteSequentialHue1",
-                        "sapUiChartPaletteSequentialHue1Dark1",
-                        "sapUiChartPaletteSequentialHue1Dark2",
-                        "sapUiChartPaletteSequentialNeutralLight3",
-                        "sapUiChartPaletteSequentialNeutralLight2",
-                        "sapUiChartPaletteSequentialNeutralLight1",
-                        "sapUiChartPaletteSequentialNeutral",
-                        "sapUiChartPaletteSequentialNeutralDark1",
-                        "sapUiChartPaletteSequentialNeutralDark2"
-                    ]
+                    colorPalette: aColorPalette
                 },
                 legendGroup: {
                     layout: {
@@ -625,20 +664,7 @@ sap.ui.define([
                         visible: true,
                         type: "value"
                     },
-                    colorPalette: [
-                        "sapUiChartPaletteSequentialHue1Light3",
-                        "sapUiChartPaletteSequentialHue1Light2",
-                        "sapUiChartPaletteSequentialHue1Light1",
-                        "sapUiChartPaletteSequentialHue1",
-                        "sapUiChartPaletteSequentialHue1Dark1",
-                        "sapUiChartPaletteSequentialHue1Dark2",
-                        "sapUiChartPaletteSequentialNeutralLight3",
-                        "sapUiChartPaletteSequentialNeutralLight2",
-                        "sapUiChartPaletteSequentialNeutralLight1",
-                        "sapUiChartPaletteSequentialNeutral",
-                        "sapUiChartPaletteSequentialNeutralDark1",
-                        "sapUiChartPaletteSequentialNeutralDark2"
-                    ]
+                    colorPalette: aColorPaletteDonut
                 },
                 legendGroup: {
                     layout: {
@@ -687,20 +713,7 @@ sap.ui.define([
                         position: 'inside'
                         //showTotal: true
                     },
-                    colorPalette: [
-                        "sapUiChartPaletteSequentialHue1Light3",
-                        "sapUiChartPaletteSequentialHue1Light2",
-                        "sapUiChartPaletteSequentialHue1Light1",
-                        "sapUiChartPaletteSequentialHue1",
-                        "sapUiChartPaletteSequentialHue1Dark1",
-                        "sapUiChartPaletteSequentialHue1Dark2",
-                        "sapUiChartPaletteSequentialNeutralLight3",
-                        "sapUiChartPaletteSequentialNeutralLight2",
-                        "sapUiChartPaletteSequentialNeutralLight1",
-                        "sapUiChartPaletteSequentialNeutral",
-                        "sapUiChartPaletteSequentialNeutralDark1",
-                        "sapUiChartPaletteSequentialNeutralDark2"
-                    ]
+                    colorPalette: aColorPaletteDonut
                 },
                 legendGroup: {
                     layout: {
@@ -764,45 +777,277 @@ sap.ui.define([
             oPopOverRepPorCargo.setFormatString(formatPattern.STANDARDFLOAT);
 
 
+            //Filters
             var aFilter = [],
-                odtrPeriodo = this.byId("dtrPeriodo");
+                aRepPorCargoFilter = [],
+                //aComissPorRegFilter = [],
+                odtrPeriodo = this.byId("dtrPeriodo"),
+                //oDPComissPorReg = this.byId("DPComissPorReg"),
+                oDPRepPorCargo = this.byId("DPRepPorCargo"),
+                vToday = new Date();
 
-            if (odtrPeriodo.getDateValue()) {
+                var oDashBoardFilter = ofilterModel.getProperty("/dashBoard");
 
-                var vMinDate = odtrPeriodo.getDateValue(),
-                    vMaxDate = new Date(odtrPeriodo.getSecondDateValue().getFullYear(), odtrPeriodo.getSecondDateValue().getMonth() + 1, 0);
-                aFilter.push(new Filter({
-                    path: "primeiroRegistro",
+                if(oDashBoardFilter.porPeriodo){
+                   
+                    if (odtrPeriodo.getDateValue()) {
+
+                        var vMinDate = odtrPeriodo.getDateValue(),
+                            vMaxDate = new Date(odtrPeriodo.getSecondDateValue().getFullYear(), odtrPeriodo.getSecondDateValue().getMonth() + 1, 0);
+                        aFilter.push(new Filter({
+                            path: "ultimoRegistro",
+                            operator: FilterOperator.BT,
+                            value1: vMinDate,
+                            value2: vMaxDate
+                        }));
+                    } else {
+        
+                        var vMinDate = new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()),
+                            vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
+        
+                        aFilter.push(new Filter({
+                            path: "ultimoRegistro",
+                            operator: FilterOperator.BT,
+                            value1: vMinDate,
+                            value2: vMaxDate
+                        }));
+                        
+        
+                    }
+
+                }else{
+                    //Filtro Por Meses Selecionados
+                    var aSelDates = oDashBoardFilter.selectedDates;
+                    if (aSelDates.length > 0) {
+                        for (let index = 0; index < aSelDates.length; index++) {
+                            const oDate = aSelDates[index].Date;
+                            
+                            var vMinDate = new Date(oDate.getFullYear(), oDate.getMonth(), 1),
+                                vMaxDate = new Date(oDate.getFullYear(), oDate.getMonth() + 1, 0);
+        
+                        aFilter.push(new Filter({
+                            path: "ultimoRegistro",
+                            operator: FilterOperator.BT,
+                            value1: vMinDate,
+                            value2: vMaxDate
+                        }));
+
+
+                        }
+                    }
+                }
+
+            
+            //Filtros Representações Por Cargo
+            if(oDPRepPorCargo.getDateValue()){
+                var vMinDate = new Date(oDPRepPorCargo.getDateValue().getFullYear(), oDPRepPorCargo.getDateValue().getMonth(), 1),
+                    vMaxDate = new Date(oDPRepPorCargo.getDateValue().getFullYear(), oDPRepPorCargo.getDateValue().getMonth() + 1, 0);
+                aRepPorCargoFilter.push(new Filter({
+                    path: "ultimoRegistro",
                     operator: FilterOperator.BT,
                     value1: vMinDate,
                     value2: vMaxDate
                 }));
-            } else {
+            }else{
 
-                var vToday = new Date(),
-                    vMinDate = new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()),
+                var vMinDate = new Date(vToday.getFullYear(), vToday.getMonth(), 1),
                     vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
 
+                aRepPorCargoFilter.push(new Filter({
+                                        path: "ultimoRegistro",
+                                        operator: FilterOperator.BT,
+                                        value1: vMinDate,
+                                        value2: vMaxDate
+                                    }));
 
-                aFilter.push(new Filter({
-                    path: "primeiroRegistro",
+            } 
+            //Filtros Comissões Por Regulador
+            /*if(oDPComissPorReg.getDateValue()){
+                var vMinDate = new Date(oDPComissPorReg.getDateValue().getFullYear(), oDPComissPorReg.getDateValue().getMonth(), 1),
+                    vMaxDate = new Date(oDPComissPorReg.getDateValue().getFullYear(), oDPComissPorReg.getDateValue().getMonth() + 1, 0);
+                aComissPorRegFilter.push(new Filter({
+                    path: "ultimoRegistro",
                     operator: FilterOperator.BT,
                     value1: vMinDate,
                     value2: vMaxDate
                 }));
+            }else{
 
-            }
+                var vMinDate = new Date(vToday.getFullYear(), vToday.getMonth(), 1),
+                    vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
+
+                aComissPorRegFilter.push(new Filter({
+                                        path: "ultimoRegistro",
+                                        operator: FilterOperator.BT,
+                                        value1: vMinDate,
+                                        value2: vMaxDate
+                                    }));
+
+            }  */
+            
+            //Desconsidera Temas Encerrados
+            aFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
+            aRepPorCargoFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
+           // aComissPorRegFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
 
             this.getTemasPorRegulador(aFilter);
             this.getTemasPorCriticidade(aFilter);
 
             if (oObjectUser.userLog.userProfile_ID !== "REP") {
-                this.getRepresentacoesPorCargo();
+                //this.getRepresentacoesPorCargo();
+                this.getRepresentacoesPorCargoH(aRepPorCargoFilter);
                 this.getRepresentacoesNoMercado();
                 this.getComissoesSemRepresentantePorRegulador();
                 this.getComissoesComRepresentantePorRegulador();
             }
 
+        },
+
+        getRepresentacoesPorCargoH: function(aFilter){
+
+            var oModel = this.getModel(),
+                that = this,
+                aMeasures = [],
+                aDimensions = [],
+                aMeasuresConfig = [],
+                sPath = '/Historico';
+
+            oModel.read(sPath, {
+                filters: [aFilter],
+                urlParameters: {
+                    "$expand": "representante",
+                    "$select": "idTema,ultimoRegistro"
+                },
+
+                success: function (oData) {
+                    var oResults = oData.results;
+
+                    for (let i = 0; i < oResults.length; i++) {
+                        const element = oResults[i];
+                        element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
+                    }
+
+                    var aDates = oResults.filter((tema, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+                        ))
+                    );
+
+                    for (let i = 0; i < aDates.length; i++) {
+                        const tema = aDates[i];
+
+                        var aGroupMonth = oResults.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+
+                        var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                            ))
+                        );
+
+                        var oMeasure = {};
+
+                        var aCargosMes = aGroupTemasMonth.filter((temaCargo, index, self) =>
+                            index === self.findIndex((t) => (
+                                t.representante.cargo === temaCargo.representante.cargo && t.representante.cargo === temaCargo.representante.cargo
+                            ))
+                        );
+
+                        var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
+                            vTotal = 0;
+
+                        for (let z = 0; z < aCargosMes.length; z++) {
+                            const element = aCargosMes[z];
+
+                            var aGrouprepresentante = aGroupTemasMonth.filter(r => { return r.representante.cargo === element.representante.cargo });
+                            vTotal += aGrouprepresentante.length;
+                            sElement += element.representante.cargo + '": ' + aGrouprepresentante.length;
+                            if (z !== aCargosMes.length - 1) {
+                                sElement += ',"';
+                            }
+
+                            aMeasuresConfig.push({ name: element.representante.cargo, value: '{' + element.representante.cargo + '}' });
+
+                        }
+
+                        sElement += ',"TOTAL": ' + vTotal + ' }';
+
+
+
+                        oMeasure = JSON.parse(sElement);
+                        aMeasures.push(oMeasure);
+
+                    }
+
+                    for (let dts = 0; dts < aMeasures.length; dts++) {
+                        const element = aMeasures[dts];
+                        element.MESANO = new Date(element.MESANO);
+                    }
+
+                    var assignedContentData = {
+                        RepresentacoesPorCargo: aMeasures
+                    };
+                    var oVizFrame = that.getView().byId("idVizFrameRepPorCargo"),
+                        dataModel = new JSONModel(assignedContentData);
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({ name: "MESANO", value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }" });
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+
+
+                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.name === measure.name && t.name === measure.name
+                        ))
+                    );
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();
+
+                    var oSorter = new sap.ui.model.Sorter("MESANO", false);
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/RepresentacoesPorCargo",
+                            sorter: oSorter
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "categoryAxis",
+                        type: "Dimension",
+                        values: ["MESANO"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "valueAxis",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+
+                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
+                        const element = aMeasuresConfig[ax];
+
+                        if (element.name !== "TOTAL") {
+                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                                uid: "valueAxis",
+                                type: "Measure",
+                                values: [element.name]
+                            }));
+                        }
+                    }
+
+                    that.hideBusy();
+                },
+                error: function (oError) {
+                    that.hideBusy();
+                }
+            });
         },
 
         getTemasPorRegulador: function (aFilter) {
@@ -812,13 +1057,13 @@ sap.ui.define([
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = '/Temas';
+                sPath = '/Historico';
 
             oModel.read(sPath, {
                 filters: [aFilter],
                 urlParameters: {
                     "$expand": "regulador",
-                    "$select": "primeiroRegistro"
+                    "$select": "idTema,ultimoRegistro"
                 },
 
                 success: function (oData) {
@@ -826,35 +1071,41 @@ sap.ui.define([
 
                     for (let i = 0; i < oResults.length; i++) {
                         const element = oResults[i];
-                        element.primeiroRegistro = new Date(element.primeiroRegistro.getFullYear(), element.primeiroRegistro.getMonth(), 1);
+                        element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
                     }
 
                     var aDates = oResults.filter((tema, index, self) =>
                         index === self.findIndex((t) => (
-                            t.primeiroRegistro.toString() === tema.primeiroRegistro.toString() && t.primeiroRegistro.toString() === tema.primeiroRegistro.toString()
+                            t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
                         ))
                     );
 
                     for (let i = 0; i < aDates.length; i++) {
                         const tema = aDates[i];
 
-                        var aGroupMonth = oResults.filter(r => { return r.primeiroRegistro.toString() === tema.primeiroRegistro.toString() });
+                        var aGroupMonth = oResults.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+
+                        var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                            ))
+                        );
 
                         var oMeasure = {};
 
-                        var aReguladoresMes = aGroupMonth.filter((tema, index, self) =>
+                        var aReguladoresMes = aGroupTemasMonth.filter((tema, index, self) =>
                             index === self.findIndex((t) => (
                                 t.regulador.descricao === tema.regulador.descricao && t.regulador.descricao === tema.regulador.descricao
                             ))
                         );
 
-                        var sElement = '{ "MESANO": "' + tema.primeiroRegistro + '","',
+                        var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
                             vTotal = 0;
 
                         for (let z = 0; z < aReguladoresMes.length; z++) {
                             const element = aReguladoresMes[z];
 
-                            var aGroupRegulador = aGroupMonth.filter(r => { return r.regulador.descricao === element.regulador.descricao });
+                            var aGroupRegulador = aGroupTemasMonth.filter(r => { return r.regulador.descricao === element.regulador.descricao });
                             vTotal += aGroupRegulador.length;
                             sElement += element.regulador.descricao + '": ' + aGroupRegulador.length;
                             if (z !== aReguladoresMes.length - 1) {
@@ -955,13 +1206,13 @@ sap.ui.define([
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = '/Temas';
+                sPath = '/Historico';
 
             oModel.read(sPath, {
                 filters: [aFilter],
                 urlParameters: {
                     "$expand": "criticidade",
-                    "$select": "primeiroRegistro"
+                    "$select": "idTema,ultimoRegistro"
                 },
 
                 success: function (oData) {
@@ -969,35 +1220,41 @@ sap.ui.define([
 
                     for (let i = 0; i < oResults.length; i++) {
                         const element = oResults[i];
-                        element.primeiroRegistro = new Date(element.primeiroRegistro.getFullYear(), element.primeiroRegistro.getMonth(), 1);
+                        element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
                     }
 
                     var aDates = oResults.filter((tema, index, self) =>
                         index === self.findIndex((t) => (
-                            t.primeiroRegistro.toString() === tema.primeiroRegistro.toString() && t.primeiroRegistro.toString() === tema.primeiroRegistro.toString()
+                            t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
                         ))
                     );
 
                     for (let i = 0; i < aDates.length; i++) {
                         const tema = aDates[i];
 
-                        var aGroupMonth = oResults.filter(r => { return r.primeiroRegistro.toString() === tema.primeiroRegistro.toString() });
+                        var aGroupMonth = oResults.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+
+                        var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                            ))
+                        );
 
                         var oMeasure = {};
 
-                        var aCriticidadeMes = aGroupMonth.filter((tema, index, self) =>
+                        var aCriticidadeMes = aGroupTemasMonth.filter((tema, index, self) =>
                             index === self.findIndex((t) => (
                                 t.criticidade.descricao === tema.criticidade.descricao && t.criticidade.descricao === tema.criticidade.descricao
                             ))
                         );
 
-                        var sElement = '{ "MESANO": "' + tema.primeiroRegistro + '","',
+                        var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
                             vTotal = 0;
 
                         for (let z = 0; z < aCriticidadeMes.length; z++) {
                             const element = aCriticidadeMes[z];
 
-                            var aGroupCriticidade = aGroupMonth.filter(r => { return r.criticidade.descricao === element.criticidade.descricao });
+                            var aGroupCriticidade = aGroupTemasMonth.filter(r => { return r.criticidade.descricao === element.criticidade.descricao });
                             vTotal += aGroupCriticidade.length;
                             sElement += element.criticidade.descricao + '": ' + aGroupCriticidade.length;
                             if (z !== aCriticidadeMes.length - 1) {
@@ -1767,7 +2024,8 @@ sap.ui.define([
 
         validaInformacoesAlerta: function () {
 
-            var isValid = true;
+            var isValid = true,
+                swtEnviaEmail = sap.ui.getCore().byId("swtEnviaEmail");
 
             if (!this._validateField("dtInicio"))
                 isValid = false;
@@ -1778,6 +2036,14 @@ sap.ui.define([
 
             if (!this._validateField("txtDescricaoAlerta"))
                 isValid = false;
+
+            if (swtEnviaEmail.getState()) {
+                var oRTextEditor = sap.ui.getCore().byId("RTextEditor");
+                if (oRTextEditor.getValue() === "") {
+                    sap.m.MessageToast.show(this.geti18nText("campo_obrigatorio_msg"));
+                    isValid = false; 
+                }
+            }
 
             return isValid;
         },

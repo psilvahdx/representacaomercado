@@ -70,6 +70,12 @@ service FullSerice {
             ultimoRegistro : DateTime;
     };
 
+     entity RepresentacoesPorCargoH {
+        key ID             : UUID;
+            cargo          : String;           
+            ultimoRegistro : DateTime;
+    };
+
     entity UsersExtensions {
         key ID                    : String;
             nomeColaborador       : String;
@@ -101,7 +107,7 @@ service FullSerice {
     function comissoesComRepresentante() returns array of Comissoes;
     function representacoesMercado() returns array of RepresentacoesMercado;
     function representacoesPorCargo() returns array of RepresentacoesPorCargo;
-    function getRepresentacoesPorCargo() returns array of RepresentacoesPorCargo;
+    function getRepresentacoesPorCargo() returns array of RepresentacoesPorCargoH;
     function getUserExtension(ID : String) returns UsersExtensions;
 
 

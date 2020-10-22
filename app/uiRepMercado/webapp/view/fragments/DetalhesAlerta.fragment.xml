@@ -56,7 +56,7 @@ xmlns:rte="sap.ui.richtexteditor">
                                 </f:FormElement>  
                                  <f:FormElement label="{i18n>envia_email_txt}">
                                     <f:fields>
-                                       <Switch enabled="{EditAlertaModel>/editable}" state="{EditAlertaModel>/enviaEmail}" 
+                                       <Switch id="swtEnviaEmail" enabled="{EditAlertaModel>/editable}" state="{EditAlertaModel>/enviaEmail}" 
                                         customTextOn="Sim" 
                                        customTextOff="Não">
                                             <layoutData>

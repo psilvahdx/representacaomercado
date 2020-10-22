@@ -169,14 +169,20 @@ sap.ui.define([
             var oContext = oEvent.getSource().getBindingContext(),
                 oViewModel = this.getView().getModel("objectView"),
                 lstHistorico = this.byId("lstHistorico"),
-                oObject = this.getModel().getObject(oContext.getPath());
-            this._bindView("/Historico(" + oObject.ID + ")");
+                oObject = this.getModel().getObject(oContext.getPath());            
 
-            oViewModel.setProperty("/isEditMode", false);
+           /* oViewModel.setProperty("/isEditMode", false);
             if (lstHistorico.getItems()[0]._active) {
                 oViewModel.setProperty("/isEditMode", true);
             }
-            oViewModel.refresh();
+            oViewModel.refresh();*/
+
+            if (!lstHistorico.getItems()[0]._active) {
+                this._bindView("/Historico(" + oObject.ID + ")",true);
+            }else{
+                this._bindView("/Historico(" + oObject.ID + ")");
+            }
+            
             this.onTogglePress(oEvent);
         },
 
@@ -186,7 +192,7 @@ sap.ui.define([
 		 * @param {string} sObjectPath path to the object to be bound
 		 * @private
 		 */
-        _bindView: function (sObjectPath) {
+        _bindView: function (sObjectPath, isHistorico) {
             var oModel = this.getModel(),
                 that = this,
                 oCmbStatus = this.byId("cmbStatus"),
@@ -234,6 +240,11 @@ sap.ui.define([
                         }                        
                        
                     }
+
+                    if (isHistorico) {                      
+                        oViewModel.setProperty("/isEditMode", false); 
+                        that.setEditMode(false);                       
+                    }                    
 
                     oViewModel.refresh();
                 },
