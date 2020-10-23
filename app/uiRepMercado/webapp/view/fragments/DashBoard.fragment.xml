@@ -190,7 +190,7 @@
 					<form:content>
 						<!--Indicações/representantes por Cargo-->
 						<viz:VizFrame width="100%" id="idVizFrameRepPorCargo" uiConfig="{applicationSet:'fiori'}"
-							vizType='stacked_combination'>
+							vizType='column'>
 							<viz:dataset>
 								<viz.data:FlattenedDataset>
 									<viz.data:dimensions>
