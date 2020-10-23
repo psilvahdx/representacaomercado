@@ -103,9 +103,9 @@
 								<Text text="{i18n>comissaoId}"  />
 							</header>
 						</Column>
-						<Column demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
+						<Column width="70%" demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">
 							<header>
-								<Text text="{i18n>descricao}" width="50%"  />
+								<Text text="{i18n>descricao}"   />
 							</header>
 						</Column>
 						<Column demandPopin="true" popinDisplay="Inline" minScreenWidth="Desktop">

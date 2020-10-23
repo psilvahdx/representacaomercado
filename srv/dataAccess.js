@@ -54,7 +54,7 @@ module.exports = cds.service.impl(async (service) => {
             acomissoesIds = aComissoesUsuario.map(x => x.comissao_ID);
             if (acomissoesIds.length > 0) {
                 const inComissoesID = `comissao_ID in (${acomissoesIds.join(',')})`;
-                console.log("Comissoes ID", inComissoesID);
+                //console.log("Comissoes ID", inComissoesID);
                 xprComissoesIds = cds.parse.expr(inComissoesID);
             }
         }
@@ -64,12 +64,12 @@ module.exports = cds.service.impl(async (service) => {
 
                 if (SELECT.where) {
                     //Realizou filtro na tela
-                    console.log("BEFORE TEMAS: Where", SELECT.where);
+                    //console.log("BEFORE TEMAS: Where", SELECT.where);
 
                     if (acomissoesIds.length > 0) {
                         //Representante somente visualiza Temas para as comissões que esta relacionado
                         SELECT.where.push(...['and', '(', xprComissoesIds, ')']);
-                        console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
                     } else {
                         //Representante sem Temas e Comissões
                         req.reject(404, "Representante sem Comissões");
@@ -101,7 +101,7 @@ module.exports = cds.service.impl(async (service) => {
                 //visualização dos temas e painéis de sua responsabilidade
                 if (SELECT.where) {
                     //Realizou filtro na tela
-                    console.log("BEFORE TEMAS: Where", SELECT.where);
+                   // console.log("BEFORE TEMAS: Where", SELECT.where);
 
                     if (acomissoesIds.length > 0) {
                         //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
@@ -135,7 +135,7 @@ module.exports = cds.service.impl(async (service) => {
                             },
                             ')', ')'
                         ]);
-                        console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where.push(...['and', '(', {
@@ -167,7 +167,7 @@ module.exports = cds.service.impl(async (service) => {
                             },
                             ')'
                         ]);
-                        console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                        //console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
                     }
 
 
@@ -257,7 +257,7 @@ module.exports = cds.service.impl(async (service) => {
                 break;
             case "ADM":
             case "PRES":
-                console.log("Adm/Pres", SELECT.where);
+                //console.log("Adm/Pres", SELECT.where);
                 break;
             default:
                 req.reject(404, "Usuário não autorizado");
@@ -319,7 +319,7 @@ module.exports = cds.service.impl(async (service) => {
                 const expr = cds.parse.expr(where);
                 SELECT.where = expr.xpr;
             }
-            console.log("SELECT.where Tipos Alertas", SELECT.where);
+            //console.log("SELECT.where Tipos Alertas", SELECT.where);
         }
 
 
@@ -331,7 +331,7 @@ module.exports = cds.service.impl(async (service) => {
         const {
             SELECT
         } = req.query;
-        console.log("SELECT Temas por Regulador: >>>>", SELECT);
+        //console.log("SELECT Temas por Regulador: >>>>", SELECT);
 
         if (SELECT.where) {
             console.log("Sem Filtros", SELECT.query);
@@ -365,7 +365,7 @@ module.exports = cds.service.impl(async (service) => {
         });
         context.data.ID = await reguladorId.getNextNumber();
 
-        console.log("USUARIO >>>>>>>>>", context.user.id);
+       // console.log("USUARIO >>>>>>>>>", context.user.id);
     });
 
     service.before("CREATE", Comissoes, async (context) => {
@@ -378,7 +378,7 @@ module.exports = cds.service.impl(async (service) => {
         context.data.ID = await comissaoId.getNextNumber();
     });
 
-    service.before("CREATE", Historico, async (context) => {
+   /* service.before("CREATE", Historico, async (context) => {
         const histTemaId = new SequenceHelper({
             db: db,
             sequence: "HISTORICO_ID",
@@ -393,7 +393,7 @@ module.exports = cds.service.impl(async (service) => {
         context.data.userAlteracao_ID = context.user.id;
         console.debug('Historico ID:', context.data.ID)
 
-    });
+    });*/
 
     service.before("READ", Comissoes, async (req) => {
 
@@ -433,7 +433,7 @@ module.exports = cds.service.impl(async (service) => {
                 acomissoesIds = aComissoesUsuario.map(x => x.comissao_ID);
                 if (acomissoesIds.length > 0) {
                     const inComissoesID = `ID in (${acomissoesIds.join(',')})`;
-                    console.log("Comissoes ID", inComissoesID);
+                    //console.log("Comissoes ID", inComissoesID);
                     xprComissoesIds = cds.parse.expr(inComissoesID);
                     if (!SELECT.where) {
                         SELECT.where = xprComissoesIds.xpr;
@@ -490,6 +490,32 @@ module.exports = cds.service.impl(async (service) => {
 
     });
 
+    service.before("DELETE", EventosAlerta, async req =>{
+        let aUsers = [],
+        oUser = {};
+
+            //Busca dados Usuário logado
+            aUsers = await cds.read(Usuarios).where({
+                ID: req.user.id
+            });
+            if (aUsers.length > 0) {
+                oUser = aUsers[0];
+            }
+
+            if (oUser.perfil_ID === "ADM") {
+                //Exclui os eventos onde há relação com o Evento Origem
+                if (req.data.ID) {
+                    console.log("Exclui os eventos onde há relação com o Evento Origem", req.data.ID);
+                    const delEvents = await cds.delete(EventosAlerta).where({
+                        eventoOrigem_ID: req.data.ID
+                    });
+                    console.log("Eventos excluidos com sucesso", req.data.ID);
+                }
+                
+            }
+
+    });
+
 
     //On Events 
     service.on("READ", Comissoes, async (req, next) => {
@@ -524,9 +550,9 @@ module.exports = cds.service.impl(async (service) => {
     });
 
     service.on("READ", UsersExtensions, async (context, next) => {
-        console.log("USEREX", context.user.id);
+       // console.log("USEREX", context.user.id);
 
-        console.log("Key", context.data.ID);
+       // console.log("Key", context.data.ID);
         let aUsers = [],
             aUserProfile = [],
             oUserProfile = {},
@@ -566,7 +592,7 @@ module.exports = cds.service.impl(async (service) => {
         });
         if (aUsers.length > 0) {
             oUser = aUsers[0];
-            console.log("USUARIO:", oUser);
+           // console.log("USUARIO:", oUser);
             //Busca Perfil do Usuário Logado
             aUserProfile = await cds.read(Perfis).where({
                 ID: oUser.perfil_ID
@@ -675,7 +701,7 @@ module.exports = cds.service.impl(async (service) => {
                 }
             });
 
-            console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
+            //console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
 
             oColaborador = response.data.d;
 
@@ -859,7 +885,11 @@ module.exports = cds.service.impl(async (service) => {
 
         let aReturn = [];
 
-        const aTemas = await cds.read(Temas).where({
+        let oFilter = req._.req.query; 
+
+        console.log("Filtro:",oFilter);
+
+        const aTemas = await cds.read(Historico).where({
                 status_ID: [1, 2, 3]
             }),
             aRepresentantes = await cds.read(Usuarios),
@@ -908,7 +938,7 @@ module.exports = cds.service.impl(async (service) => {
         }
 
         if (oUser.perfil_ID === "ADM") {
-            console.log(req.data.ids.split(";"));
+           // console.log(req.data.ids.split(";"));
             let aUsersDelete = req.data.ids.split(";");
             for (let i = 0; i < aUsersDelete.length; i++) {
                 const userDel = aUsersDelete[i];
@@ -960,20 +990,20 @@ module.exports = cds.service.impl(async (service) => {
 
         if (oUser.perfil_ID === "ADM") {
 
-            console.log(req.data.ids.split(";"));
+            //console.log(req.data.ids.split(";"));
             let aReguDelete = req.data.ids.split(";");
             for (let i = 0; i < aReguDelete.length; i++) {
                 const reguDel = aReguDelete[i];
                 if (reguDel !== "") {
 
                     try {
-                        console.log(reguDel);
+                        //console.log(reguDel);
                         const deRegulador = await service.delete(Reguladores).where({
                             ID: reguDel
                         })
                         console.log("Regulador deletado", deRegulador);
                     } catch (error) {
-                        console.log("Errro ao excluir Regulaodr", error);
+                        console.log("Errro ao excluir Regulador", error);
                         req.reject(400, error);
                     }
 
@@ -1005,14 +1035,14 @@ module.exports = cds.service.impl(async (service) => {
         if (oUser.perfil_ID === "ADM") {
 
 
-            console.log(req.data.ids.split(";"));
+            //console.log(req.data.ids.split(";"));
             let aComissoesDelete = req.data.ids.split(";");
             for (let i = 0; i < aComissoesDelete.length; i++) {
                 const comissaoDel = aComissoesDelete[i];
                 if (comissaoDel !== "") {
 
                     try {
-                        console.log(comissaoDel);
+                        //console.log(comissaoDel);
                         const delComissao = await service.delete(Comissoes).where({
                             ID: comissaoDel
                         })
@@ -1048,14 +1078,14 @@ module.exports = cds.service.impl(async (service) => {
 
         if (oUser.perfil_ID === "ADM") {
 
-            console.log(req.data.ids.split(";"));
+            //console.log(req.data.ids.split(";"));
             let aTpAlertaDelete = req.data.ids.split(";");
             for (let i = 0; i < aTpAlertaDelete.length; i++) {
                 const tpAlertDel = aTpAlertaDelete[i];
                 if (tpAlertDel !== "") {
 
                     try {
-                        console.log(tpAlertDel);
+                        //console.log(tpAlertDel);
                         const deTipoAlerta = await service.delete(TiposAlerta).where({
                             ID: tpAlertDel
                         })
@@ -1073,6 +1103,7 @@ module.exports = cds.service.impl(async (service) => {
         }
 
     });
+    
 
     service.on("replicaEventoAlerta", async req => {
 

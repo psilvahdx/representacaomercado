@@ -86,7 +86,7 @@ module.exports = cds.service.impl(async (service) => {
         context.reply(oLog);
     });
 
-    service.before("CREATE", Historico, async (context) => {
+   /* service.before("CREATE", Historico, async (context) => {
         const histTemaId = new SequenceHelper({
             db: db,
             sequence: "HISTORICO_ID",
@@ -101,7 +101,7 @@ module.exports = cds.service.impl(async (service) => {
         context.data.userAlteracao_ID = null;
         console.debug('Historico ID:', context.data.ID)
 
-    });
+    });*/
 
     //disparaEmailsAlerta
     service.on("disparaEmailsAlerta", async (context) => {
@@ -149,16 +149,20 @@ module.exports = cds.service.impl(async (service) => {
 
                             try {
                                 //Dispara Email do evento para o Usuário
-                                const emailTemasEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
+                                if (evento.conteudo) {
+                                    const emailTemasEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
 
-                                if (emailTemasEnviado) {
-                                    nTotalEnvios++;
-                                    //Atualiza Evento para Concluído
-                                    const evntTemas = await cds.update(EventosAlerta).set({
-                                        concluido: true
-                                    }).where({
-                                        ID: evento.ID
-                                    });
+                                    if (emailTemasEnviado) {
+                                        nTotalEnvios++;
+                                        //Atualiza Evento para Concluído
+                                        console.log("Atualiza Evento para Concluido ID:", evento.ID);
+                                        const evntTemas = await cds.update(EventosAlerta).set({
+                                            concluido: true
+                                        }).where({
+                                            ID: evento.ID
+                                        });
+                                        console.log("Evento Atualizado com Sucesso:", evento.ID);
+                                    }
                                 }
 
                             } catch (error) {
@@ -173,17 +177,23 @@ module.exports = cds.service.impl(async (service) => {
 
                         try {
                             //Dispara Email do evento para o Usuário
+                            if (evento.conteudo) {
+                                
                             const emailEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
 
                             if (emailEnviado) {
                                 nTotalEnvios++;
                                 //Atualiza Evento para Concluído
+                                console.log("Atualiza Evento para Concluido ID:", evento.ID);
                                 const evnt = await cds.update(EventosAlerta).set({
                                     concluido: true
                                 }).where({
                                     ID: evento.ID
                                 });
+                                console.log("Evento Atualizado com Sucesso:", evento.ID);
                             }
+                        }
+
                         } catch (error) {
                             console.log("Erro Envio Email ID Evento:", evento.ID);
 
@@ -218,7 +228,7 @@ module.exports = cds.service.impl(async (service) => {
             return token;
         });
         console.log("token recuperado:", token);
-        console.log("conteudo email", oEvento.conteudo);
+        //console.log("conteudo email", oEvento.conteudo);
         var oEmailContent = "";
         if (oEvento.conteudo) {
             oEmailContent = oEvento.conteudo.replace("\"", "'");
@@ -278,7 +288,7 @@ module.exports = cds.service.impl(async (service) => {
                 }
             });
 
-            console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
+            //console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
 
             oColaborador = response.data.d;
 
