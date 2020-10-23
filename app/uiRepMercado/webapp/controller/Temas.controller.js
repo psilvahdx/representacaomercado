@@ -483,6 +483,11 @@ sap.ui.define([
                     },
                     colorPalette: aColorPalette
                 },
+                legendGroup: {
+                    layout: {
+                        position: "bottom"
+                    }
+                },
                 valueAxis: {
                     label: {
                         formatString: formatPattern.SHORTFLOAT
@@ -525,6 +530,11 @@ sap.ui.define([
                         primaryAxis: aPrimaryAxis
                     },
                     colorPalette: aColorPalette
+                }, 
+                legendGroup: {
+                    layout: {
+                        position: "bottom"
+                    }
                 },
                 valueAxis: {
                     label: {
@@ -1591,6 +1601,124 @@ sap.ui.define([
                 }
             });
         },
+
+        //Download PDF
+        onSavePDF: function() {
+            var oUser = this.getModel("userLogModel").getData();
+            //Step 1: Export chart content to svg
+            var oVizFrame = this.getView().byId("idVizFrame"),
+            oVizFrameComissSemRep = this.getView().byId("idVizFrameComissSemRep"),
+            oVizFrameComissComRep = this.getView().byId("idVizFrameComissComRep"),
+            oVizFrameRepPorCargo  = this.getView().byId("idVizFrameRepPorCargo"),            
+            oVizFrameTemasPorCriticidade = this.getView().byId("idVizFrameTemasPorCriticidade"),
+            oVizFrameCompComTemas = this.getView().byId("idVizFrameCompComTemas");
+            var sSVG = oVizFrame.exportToSVGString({
+              width: 800,
+              height: 600
+            });
+            var sSVG = {},
+                sSVGTemasPorCriticidade = {},
+                sSVGCompComTemas = {},
+                sSVGComissSemRep = {},
+                sSVGComissComRep = {},
+                sSVGRepPorCargo = {};
+            
+            var oPDF = new jsPDF();
+            var oCanvasHTML = document.createElement("canvas");
+            var oCanvasHTMLComissSemRep = document.createElement("canvas");
+            var oCanvasHTMLComissComRep  = document.createElement("canvas");
+            var oCanvasHTMLRepPorCargo = document.createElement("canvas");
+            var oCanvasHTMLTemasPorReg = document.createElement("canvas");
+            var oCanvasHTMLTemasPorCriticidade = document.createElement("canvas");
+            var oCanvasHTMLCompComTemas = document.createElement("canvas");
+            
+            //Temas Por regulador
+             sSVG = oVizFrame.exportToSVGString({
+                width: 800,
+                height: 600
+              });
+              
+              sSVGTemasPorCriticidade = oVizFrameTemasPorCriticidade.exportToSVGString({
+                width: 800,
+                height: 600
+              });
+          
+              sSVGCompComTemas = oVizFrameCompComTemas.exportToSVGString({
+                width: 800,
+                height: 600
+              });
+
+              sSVG = sSVG.replace(/translate /gm, "translate");
+              sSVGTemasPorCriticidade = sSVGTemasPorCriticidade.replace(/translate /gm, "translate");
+              sSVGCompComTemas = sSVGCompComTemas.replace(/translate /gm, "translate");  
+              
+            if (oUser.userLog.userProfile_ID !== "REP") {
+                sSVGComissSemRep =  oVizFrameComissSemRep.exportToSVGString({
+                    width: 800,
+                    height: 600
+                  });
+                sSVGComissComRep =  oVizFrameComissComRep.exportToSVGString({
+                    width: 800,
+                    height: 600
+                  });
+                sSVGRepPorCargo = oVizFrameRepPorCargo.exportToSVGString({
+                    width: 800,
+                    height: 600
+                  });
+            
+                  sSVGComissSemRep = sSVGComissSemRep.replace(/translate /gm, "translate");
+                  sSVGComissComRep = sSVGComissComRep.replace(/translate /gm, "translate");
+                  sSVGRepPorCargo = sSVGRepPorCargo.replace(/translate /gm, "translate");
+
+                
+
+                  canvg(oCanvasHTMLComissSemRep, sSVGComissSemRep);
+                  canvg(oCanvasHTMLComissComRep, sSVGComissComRep);
+                  canvg(oCanvasHTMLRepPorCargo, sSVGRepPorCargo);
+
+                  canvg(oCanvasHTMLTemasPorReg, sSVG); // add SVG content to Canvas           
+                  canvg(oCanvasHTMLTemasPorCriticidade, sSVGTemasPorCriticidade);
+                  canvg(oCanvasHTMLCompComTemas, sSVGCompComTemas);
+
+                 // STEP 3: Get dataURL for content in Canvas as PNG/JPEG
+                    var sImageData = oCanvasHTMLComissSemRep.toDataURL("image/png");
+                    var sImageData2 = oCanvasHTMLComissComRep.toDataURL("image/png");
+                    var sImageData3 = oCanvasHTMLRepPorCargo.toDataURL("image/png");
+                    var sImageData4 = oCanvasHTMLTemasPorReg.toDataURL("image/png");
+                    var sImageData5 = oCanvasHTMLTemasPorCriticidade.toDataURL("image/png");
+                    var sImageData6 = oCanvasHTMLCompComTemas.toDataURL("image/png");
+            
+                    // STEP 4: Create PDF using library jsPDF                    
+                    oPDF.addImage(sImageData, "PNG", 15, 20, 180, 100);
+                    oPDF.addImage(sImageData2, "PNG", 15, 150, 180, 100);                   
+                    oPDF.addPage();                    
+                    oPDF.addImage(sImageData3, "PNG", 15, 0, 180, 160);
+                    oPDF.addImage(sImageData4, "PNG", 15, 130, 180, 160);
+                    oPDF.addPage();
+                    oPDF.addImage(sImageData5, "PNG", 15, 15, 180, 160);
+                    oPDF.addImage(sImageData6, "PNG", 15, 150, 180, 160);
+                    oPDF.save("Indicadores.pdf");
+            } else{
+                
+                canvg(oCanvasHTMLTemasPorReg, sSVG); // add SVG content to Canvas           
+                canvg(oCanvasHTMLTemasPorCriticidade, sSVGTemasPorCriticidade);
+                canvg(oCanvasHTMLCompComTemas, sSVGCompComTemas);
+
+                var sImageData7 = oCanvasHTMLTemasPorReg.toDataURL("image/png");
+                var sImageData8 = oCanvasHTMLTemasPorCriticidade.toDataURL("image/png");
+                var sImageData9 = oCanvasHTMLCompComTemas.toDataURL("image/png");
+
+                oPDF.addImage(sImageData7, "PNG", 15, 10, 180, 140);                
+                oPDF.addImage(sImageData8, "PNG", 15, 150, 180, 140);
+                oPDF.addPage();
+                oPDF.addImage(sImageData9, "PNG", 15, 10, 180, 160);
+                oPDF.save("Indicadores.pdf");
+
+            }     
+           
+           
+          },
+      
 
         //EXPORT EXCEL
         createColumnConfig: function (aSelectedColumns) {
