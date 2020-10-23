@@ -10,7 +10,9 @@
 						<form:Form>
 							<form:formContainers>
 								<!--Filtros Representações por Cargo-->
-								<form:FormContainer title="{i18n>representacoes_por_cargo_title}">
+								<form:FormContainer 
+								visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}"
+								title="{i18n>representacoes_por_cargo_title}">
 									<form:formElements>
 										<form:FormElement>
 											<form:label>
@@ -23,8 +25,7 @@
 										</form:FormElement>
 									</form:formElements>
 								</form:FormContainer>
-								<!--Filtros temas por regulador e por Criticidade-->
-								<!--{filterModel>/dashBoard/porPeriodo-->
+								<!--Filtros temas por regulador e por Criticidade-->								
 								<form:FormContainer title="{i18n>temas_por_regulador_e_criticidade}">
 									<form:formElements>
 										<form:FormElement>
@@ -87,6 +88,21 @@
 											</form:fields>
 										</form:FormElement>
 
+									</form:formElements>
+								</form:FormContainer>
+								<!--Filtros Comparativos com Temas-->
+								<form:FormContainer 
+								title="{i18n>comparativos_com_temas_title}">
+									<form:formElements>
+										<form:FormElement>
+											<form:label>
+												<Label text="{i18n>periodo_txt}" design="Standard" width="100%" />
+											</form:label>
+											<form:fields>
+												<DatePicker id="DPCompComTemas" displayFormat="MM/yyyy"
+													change="handleChange" />
+											</form:fields>
+										</form:FormElement>
 									</form:formElements>
 								</form:FormContainer>
 							</form:formContainers>
@@ -252,17 +268,15 @@
 				</form:SimpleForm>
 
 				<form:SimpleForm maxContainerCols="2" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4"
-					emptySpanL="0" emptySpanM="0" columnsL="2" columnsM="2"
-					visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}">
+					emptySpanL="0" emptySpanM="0" columnsL="2" columnsM="2" >
 					<form:content>
-						<!--Quantidade de Representações no Mercado-->
-						<viz:VizFrame width="100%" id="idVizFrameRepMercado" uiConfig="{applicationSet:'fiori'}"
-							vizType='stacked_combination'>
+						<!--Comparativo com Temas-->
+						<viz:VizFrame width="100%" id="idVizFrameCompComTemas" uiConfig="{applicationSet:'fiori'}"
+							vizType='column'>
 							<viz:dataset>
 								<viz.data:FlattenedDataset>
 									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
-										<viz.data:DimensionDefinition name="descRegulador" value="{descRegulador}" />
+										<viz.data:DimensionDefinition name="Data" value="{MESANO}" />										
 									</viz.data:dimensions>
 									<viz.data:measures>
 										<viz.data:MeasureDefinition name="Quantidade de Temas"

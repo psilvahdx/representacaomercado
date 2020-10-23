@@ -4,7 +4,7 @@ ID;descricao;regulador_ID
 3;Comissão Atuarial - CAT (CNSeg);1
 4;Comissão Atuarial de Capitalização - CAT (FENACAP);1
 5;Comissão Contábil - CCON (FENASAÚDE);2
-6;Comissão das Comissões - CC (FENACAP);
+6;Comissão das Comissões - CC (FENACAP);4
 7;Comissão de Administração e Finanças - CAF (CNSeg);1
 8;Comissão de Administração e Finanças de Capitalização - CAF (FENACAP);1
 9;Comissão de Assuntos Assistenciais - CAAS (FENASAÚDE);2
@@ -38,7 +38,7 @@ ID;descricao;regulador_ID
 37;Comissão de Ouvidoria - COUV (CNSeg);1
 38;Comissão de Pessoas (ACREFI);3
 39;Comissão de PLD-FT (ACREFI);3
-40;Comissão de Prevenção à Fraude e Formalização (ACREFI);
+40;Comissão de Prevenção à Fraude e Formalização (ACREFI);4
 41;Comissão de Prevenção e Combate à Fraude - CPCF (CNSeg);1
 42;Comissão de Processos e Tecnologia da Informação - CPTI (CNSeg);1
 43;Comissão de Produto por Sobrevivência - CPS  (FENAPREVI);1
@@ -47,15 +47,15 @@ ID;descricao;regulador_ID
 46;Comissão de Recursos Humanos - CRH (CNSeg);1
 47;Comissão de Relacionamento com Clientes e Ouvidoria (ACREFI);
 48;Comissão de Relacionamento com Prestadores - CRP (FENASAÚDE);2
-49;Comissão de Relações de Consumo - CRC (CNSeg);
+49;Comissão de Relações de Consumo - CRC (CNSeg);4
 50;Comissão de Responsabilidade Civil Geral - CRCG (FENSEG);1
 51;Comissão de Resseguro - CR (CNSeg);1
 52;Comissão de Riscos de Crédito e Garantia - CRC FenSeg (CNSeg);1
-53;Comissão de Riscos de Engenharia - CRE (FENSEG);
-54;Comissão de Riscos Patrimoniais Grandes Riscos - CRP Grandes Riscos (FENSEG);
+53;Comissão de Riscos de Engenharia - CRE (FENSEG);4
+54;Comissão de Riscos Patrimoniais Grandes Riscos - CRP Grandes Riscos (FENSEG);4
 55;Comissão de Riscos Patrimoniais Massificados - CRP Massificados (FENSEG);1
-56;Comissão de Seguro Garantia Estendida e Afinidades - CGE (FENSEG);
-57;Comissão de Seguro Habitacional - CSH (FENSEG);
+56;Comissão de Seguro Garantia Estendida e Afinidades - CGE (FENSEG);4
+57;Comissão de Seguro Habitacional - CSH (FENSEG);4
 58;Comissão de Seguro Rural - CSR (FENSEG);1
 59;Comissão de Seguros Inclusivos - CS Inclusivos (CNSeg);1
 60;Comissão de Serviços da Fenseg (FENSEG);1
@@ -63,36 +63,36 @@ ID;descricao;regulador_ID
 62;Comissão de Sustentabilidade e Inovação - CSI (CNSeg);1
 63;Comissão de Tecnologia da Informação de Capitalização - CTI (FENACAP);1
 64;Comissão de Transportes - CT (FENSEG);1
-65;Comissão de Varejo (ACREFI);
+65;Comissão de Varejo (ACREFI);4
 66;Comissão de Veículos (ACREFI);3
 67;Comissão Gestora do SIDE - CGSIDE  (FENAPREVI);1
 68;Comissão Jurídica de Capitalização - CAJ (CNseg);1
 69;Comissão Jurídica de Capitalização - CAJ (FENACAP);1
 70;Comissão Permanente de Assuntos Governamentais - CPAG (CNSeg);
 71;Comissão Técnica de Saúde - CTEC (FENASAÚDE);1
-72;Comissão Temática de Assuntos Jurídicos (ABRAPP);
-73;Comissão Temática de Atuária (ABRAPP);
-74;Comissão Temática de Comunicação e Marketing (ABRAPP);
-75;Comissão Temática de Contabilidade (ABRAPP);
-76;Comissão Temática de Educação (ABRAPP);
-77;Comissão Temática de Governança (ABRAPP);
-78;Comissão Temática de Investimentos (ABRAPP);
-79;Comissão Temática de Investimentos Imobiliários (ABRAPP);
-80;Comissão Temática de Recursos Humanos (ABRAPP);
-81;Comissão Temática de Relacionamento com o Participante (ABRAPP);
-82;Comissão Temática de Seguridade (ABRAPP);
-83;Comissão Temática de Sustentabilidade (ABRAPP);
-84;Comissão Temática de Tecnologia da Informação? (ABRAPP);
+72;Comissão Temática de Assuntos Jurídicos (ABRAPP);4
+73;Comissão Temática de Atuária (ABRAPP);4
+74;Comissão Temática de Comunicação e Marketing (ABRAPP);4
+75;Comissão Temática de Contabilidade (ABRAPP);4
+76;Comissão Temática de Educação (ABRAPP);4
+77;Comissão Temática de Governança (ABRAPP);4
+78;Comissão Temática de Investimentos (ABRAPP);4
+79;Comissão Temática de Investimentos Imobiliários (ABRAPP);4
+80;Comissão Temática de Recursos Humanos (ABRAPP);4
+81;Comissão Temática de Relacionamento com o Participante (ABRAPP);4
+82;Comissão Temática de Seguridade (ABRAPP);4
+83;Comissão Temática de Sustentabilidade (ABRAPP);4
+84;Comissão Temática de Tecnologia da Informação? (ABRAPP);4
 85;Comitê de Análises Jurídicas (ABECS);3
-86;Comitê de Bandeiras (ABECS);
+86;Comitê de Bandeiras (ABECS);4
 87;Comitê de Comunicação (ABECS);3
-88;Comitê de Credenciadoras (ABECS);
+88;Comitê de Credenciadoras (ABECS);4
 89;Comitê de Emissores da Abecs (ABECS);3
-90;Comitê de Melhores Práticas Comerciais (ABECS);
-91;Comitê de Pagamento Automático em Veículos (ABECS);
+90;Comitê de Melhores Práticas Comerciais (ABECS);4
+91;Comitê de Pagamento Automático em Veículos (ABECS);4
 92;Comitê de Relações Institucionais da Abecs (ABECS);3
-93;Comitê de Segurança e Prevenção à Fraude (ABECS);
-94;Comitê de Vouchers/Benefícios (ABECS);
+93;Comitê de Segurança e Prevenção à Fraude (ABECS);4
+94;Comitê de Vouchers/Benefícios (ABECS);4
 95;Diretoria da FENSEG;1
 96;Espaço Tecnologia e Inovação  - SindsegSP;1
 97;Lab Odonto - ANS - Projeto Sorrir;2

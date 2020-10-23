@@ -58,20 +58,18 @@ sap.ui.define([
             odtrPeriodo.setSecondDateValue(vToday);
 
             //Filtros Iniciais
-            var //oDPComissPorReg = this.byId("DPComissPorReg"),
-                oDPRepPorCargo = this.byId("DPRepPorCargo"),
-                oDPTemasPorRegCritic = this.byId("DPTemasPorRegCritic");
-            
-            //oDPComissPorReg.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
-            //oDPComissPorReg.setDateValue(vToday);
+            var oDPRepPorCargo = this.byId("DPRepPorCargo"),
+                oDPTemasPorRegCritic = this.byId("DPTemasPorRegCritic"),
+                oDPCompComTemas = this.byId("DPCompComTemas");
             
             oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
             oDPRepPorCargo.setDateValue(vToday);
 
             oDPTemasPorRegCritic.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
 
-
-            //this.getOwnerComponent().setBusy(true);
+            oDPCompComTemas.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            oDPCompComTemas.setDateValue(vToday);
+            
             this.showBusy();
 
         },
@@ -435,11 +433,12 @@ sap.ui.define([
                 oVizFrameTemasPorCriticidade = this.getView().byId("idVizFrameTemasPorCriticidade"),
                 oVizFrameComissSemRep = this.getView().byId("idVizFrameComissSemRep"),
                 oVizFrameComissComRep = this.getView().byId("idVizFrameComissComRep"),
-                oVizFrameRepMercado = this.getView().byId("idVizFrameRepMercado"),
+                oVizFrameCompComTemas = this.getView().byId("idVizFrameCompComTemas"),
                 oVizFrameRepPorCargo = this.getView().byId("idVizFrameRepPorCargo"),
                 ofilterModel = this.getModel("filterModel");
             
-            var aPrimaryAxis = ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],                
+            var aPrimaryAxis = ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],    
+                aPrimaryAxisColum = ["bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],           
                 aColorPalette = [
                 "sapUiChartPaletteSemanticNeutralDark2",
                 "sapUiChartPaletteSequentialHue1Light3",
@@ -607,8 +606,8 @@ sap.ui.define([
             });
 
 
-            //Representações no Mercado
-            oVizFrameRepMercado.setVizProperties({
+            //Comparativo com Temas legendVisible
+            oVizFrameCompComTemas.setVizProperties({
                 plotArea: {
                     dataLabel: {
                         formatString: formatPattern.SHORTFLOAT_MFD2,
@@ -616,15 +615,18 @@ sap.ui.define([
                         showTotal: true
                     },
                     dataShape: {
-                        primaryAxis: aPrimaryAxis
+                        primaryAxis: aPrimaryAxisColum
                     },
-                    colorPalette: aColorPalette
+                    colorPalette: ["sapUiChartPaletteSequentialHue1Dark2"] //aColorPaletteDonut
                 },
                 legendGroup: {
                     layout: {
                         position: "bottom",
                         alignment: "center"
                     }
+                },
+                legend:{
+                    visible: false
                 },
                 valueAxis: {
                     label: {
@@ -649,7 +651,7 @@ sap.ui.define([
                 },
                 title: {
                     visible: true,
-                    text: this.getResourceBundle().getText("representacoes_mercado_title"),
+                    text: this.getResourceBundle().getText("comparativos_com_temas_title"),
                     style: {
                         fontSize: sTitleFontSize
                     }
@@ -770,7 +772,7 @@ sap.ui.define([
             oPopOverComissComRep.connect(oVizFrameComissComRep.getVizUid());
             oPopOverComissComRep.setFormatString(formatPattern.STANDARDFLOAT);
 
-            oPopOverRepMercado.connect(oVizFrameRepMercado.getVizUid());
+            oPopOverRepMercado.connect(oVizFrameCompComTemas.getVizUid());
             oPopOverRepMercado.setFormatString(formatPattern.STANDARDFLOAT);
 
             oPopOverRepPorCargo.connect(oVizFrameRepPorCargo.getVizUid());
@@ -780,9 +782,9 @@ sap.ui.define([
             //Filters
             var aFilter = [],
                 aRepPorCargoFilter = [],
-                //aComissPorRegFilter = [],
+                aComparativosTemaFilter = [],
                 odtrPeriodo = this.byId("dtrPeriodo"),
-                //oDPComissPorReg = this.byId("DPComissPorReg"),
+                oDPCompComTemas = this.byId("DPCompComTemas"),
                 oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 vToday = new Date();
 
@@ -861,11 +863,12 @@ sap.ui.define([
                                     }));
 
             } 
-            //Filtros Comissões Por Regulador
-            /*if(oDPComissPorReg.getDateValue()){
-                var vMinDate = new Date(oDPComissPorReg.getDateValue().getFullYear(), oDPComissPorReg.getDateValue().getMonth(), 1),
-                    vMaxDate = new Date(oDPComissPorReg.getDateValue().getFullYear(), oDPComissPorReg.getDateValue().getMonth() + 1, 0);
-                aComissPorRegFilter.push(new Filter({
+            
+            //Filtros Comparativos Com Temas
+            if(oDPCompComTemas.getDateValue()){
+                var vMinDate = new Date(oDPCompComTemas.getDateValue().getFullYear(), oDPCompComTemas.getDateValue().getMonth(), 1),
+                    vMaxDate = new Date(oDPCompComTemas.getDateValue().getFullYear(), oDPCompComTemas.getDateValue().getMonth() + 1, 0);
+                aComparativosTemaFilter.push(new Filter({
                     path: "ultimoRegistro",
                     operator: FilterOperator.BT,
                     value1: vMinDate,
@@ -876,27 +879,26 @@ sap.ui.define([
                 var vMinDate = new Date(vToday.getFullYear(), vToday.getMonth(), 1),
                     vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
 
-                aComissPorRegFilter.push(new Filter({
+                    aComparativosTemaFilter.push(new Filter({
                                         path: "ultimoRegistro",
                                         operator: FilterOperator.BT,
                                         value1: vMinDate,
                                         value2: vMaxDate
                                     }));
 
-            }  */
+            } 
             
             //Desconsidera Temas Encerrados
             aFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
-            aRepPorCargoFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
-           // aComissPorRegFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
+            aRepPorCargoFilter.push(new Filter("status_ID", FilterOperator.NE, 4));          
 
             this.getTemasPorRegulador(aFilter);
             this.getTemasPorCriticidade(aFilter);
+            this.getComparativoComTemas(aComparativosTemaFilter);
 
             if (oObjectUser.userLog.userProfile_ID !== "REP") {
                 //this.getRepresentacoesPorCargo();
-                this.getRepresentacoesPorCargoH(aRepPorCargoFilter);
-                this.getRepresentacoesNoMercado();
+                this.getRepresentacoesPorCargoH(aRepPorCargoFilter);                
                 this.getComissoesSemRepresentantePorRegulador();
                 this.getComissoesComRepresentantePorRegulador();
             }
@@ -1347,210 +1349,60 @@ sap.ui.define([
             });
         },
 
-        getRepresentacoesPorCargo: function () {
+        getComparativoComTemas: function (aFilter) {
             var oModel = this.getModel(),
-                that = this,
-                aTemasReguladorMes = [],
+                that = this,               
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = '/representacoesPorCargo()';
+                sPath = '/Historico';
 
             oModel.read(sPath, {
-                success: function (oData) {
-
-                    var oResults = oData.results;
-
-                    var aReguladores = oResults.filter((repPorCargo, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.regulador === repPorCargo.regulador && t.regulador === repPorCargo.regulador
-                        ))
-                    );
-
-                    for (let i = 0; i < aReguladores.length; i++) {
-                        const reg = aReguladores[i];
-
-                        var aGroupRegulador = oResults.filter(r => { return r.regulador === reg.regulador });
-
-                        var oMeasure = {};
-
-                        var aCargosPorRegulador = aGroupRegulador.filter((grpReg, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.cargo === grpReg.cargo && t.cargo === grpReg.cargo
-                            ))
-                        );
-
-                        var sElement = '{ "REGULADOR": "' + reg.regulador + '","',
-                            vTotal = 0;
-
-                        for (let z = 0; z < aCargosPorRegulador.length; z++) {
-                            const element = aCargosPorRegulador[z];
-
-                            var aGroupCargos = aGroupRegulador.filter(r => { return r.cargo === element.cargo });
-                            vTotal += aGroupCargos.length;
-                            sElement += element.cargo + '": ' + aGroupCargos.length;
-                            if (z !== aCargosPorRegulador.length - 1) {
-                                sElement += ',"';
-                            }
-
-                            aMeasuresConfig.push({ name: element.cargo, value: '{' + element.cargo + '}' });
-
-                        }
-
-                        sElement += ',"TOTAL": ' + vTotal + ' }';
-
-
-
-                        oMeasure = JSON.parse(sElement);
-                        aMeasures.push(oMeasure);
-
-                    }
-
-                    var assignedContentData = {
-                        RepresentacoesPorCargo: aMeasures
-                    };
-                    var oVizFrame = that.getView().byId("idVizFrameRepPorCargo"),
-                        dataModel = new JSONModel(assignedContentData);
-
-                    oVizFrame.setModel(dataModel);
-
-                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
-
-
-                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.name === measure.name && t.name === measure.name
-                        ))
-                    );
-
-                    oVizFrame.destroyDataset();
-                    oVizFrame.destroyFeeds();
-
-                    var oSorter = new sap.ui.model.Sorter("REGULADOR", false);
-
-                    //New dataset
-                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
-                        dimensions: aDimensions,
-                        measures: aMeasuresConfig,
-                        data: {
-                            path: "/RepresentacoesPorCargo",
-                            sorter: oSorter
-                        }
-                    }));
-
-                    //Add feeds
-                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                        uid: "categoryAxis",
-                        type: "Dimension",
-                        values: ["REGULADOR"]
-                    }));
-
-                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                        uid: "valueAxis",
-                        type: "Measure",
-                        values: ["TOTAL"]
-                    }));
-
-
-                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
-                        const element = aMeasuresConfig[ax];
-
-                        if (element.name !== "TOTAL") {
-                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                                uid: "valueAxis",
-                                type: "Measure",
-                                values: [element.name]
-                            }));
-                        }
-                    }
-
-
-                    that.hideBusy();
-
+                filters: [aFilter],
+                urlParameters: {
+                    "$expand": "status",
+                    "$select": "idTema,ultimoRegistro,status_ID"
                 },
-                error: function (oError) {
-                    that.hideBusy();
-                }
-            });
-        },
-
-
-        getRepresentacoesNoMercado: function () {
-            var oModel = this.getModel(),
-                that = this,
-                aTemasReguladorMes = [],
-                aMeasures = [],
-                aDimensions = [],
-                aMeasuresConfig = [],
-                sPath = '/representacoesMercado()';
-
-            oModel.read(sPath, {
                 success: function (oData) {
-                    var oResults = oData.results,
-                        sSemRegulador = that.getResourceBundle().getText("sem_regulador_txt");
-
-                    var aReguladores = oResults.filter((comissao, index, self) =>
+                    var oResults = oData.results;                    
+                   
+                    var aStatus = oResults.filter((tema, index, self) =>
                         index === self.findIndex((t) => (
-                            t.regulador === comissao.regulador && t.regulador === comissao.regulador
+                            t.status_ID === tema.status_ID && t.status_ID === tema.status_ID
                         ))
                     );
 
-                    for (let i = 0; i < aReguladores.length; i++) {
-                        const reg = aReguladores[i];
+                    for (let i = 0; i < aStatus.length; i++) {
+                        const tema = aStatus[i];
 
-                        var aGroupRegulador = oResults.filter(r => { return r.regulador === reg.regulador });
+                        var aGroupStatus = oResults.filter(r => { return r.status.ID === tema.status.ID }); 
 
-                        var aQtdComIndicacao = aGroupRegulador.filter(regC => { return regC.comIndicacao }),
-                            aQtdSemIndicacao = aGroupRegulador.filter(regS => { return !regS.comIndicacao });
-
-                        var oMeasure = {};
-
-                        var sElement = '{ "REGULADOR": "' + reg.regulador + '","',
-                            vTotal = 0;
-
-                        vTotal = aQtdComIndicacao.length + aQtdSemIndicacao.length
-
-                        oMeasure = {
-                            REGULADOR: reg.regulador,
-                            COM_INDICACAO: aQtdComIndicacao.length,
-                            SEM_INDICACAO: aQtdSemIndicacao.length,
-                            TOTAL: vTotal
-                        };
-
-                        aMeasures.push(oMeasure);
+                        var vTotal = aGroupStatus.length;
+                        aMeasures.push({ STATUS: tema.status.descricao, TOTAL: vTotal });                        
 
                     }
 
                     var assignedContentData = {
-                        RepresentacoesMercado: aMeasures
+                        ComparativosComTemas: aMeasures
                     };
-                    var oVizFrame = that.getView().byId("idVizFrameRepMercado"),
+                    var oVizFrame = that.getView().byId("idVizFrameCompComTemas"),
                         dataModel = new JSONModel(assignedContentData);
 
                     oVizFrame.setModel(dataModel);
 
-                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
-
-                    var sComIndicacao = that.getResourceBundle().getText("com_indicacao_txt"),
-                        sSemIndicacao = that.getResourceBundle().getText("sem_indicacao_txt");
-
-                    aMeasuresConfig.push({ name: sComIndicacao, value: "{COM_INDICACAO}" });
-                    aMeasuresConfig.push({ name: sSemIndicacao, value: "{SEM_INDICACAO}" });
+                    aDimensions.push({ name: "STATUS", value: "{STATUS}" });                   
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });                    
 
                     oVizFrame.destroyDataset();
                     oVizFrame.destroyFeeds();
 
-                    var oSorter = new sap.ui.model.Sorter("REGULADOR", false);
-
+                   
                     //New dataset
                     oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
                         dimensions: aDimensions,
                         measures: aMeasuresConfig,
                         data: {
-                            path: "/RepresentacoesMercado",
-                            sorter: oSorter
+                            path: "/ComparativosComTemas"
                         }
                     }));
 
@@ -1558,7 +1410,7 @@ sap.ui.define([
                     oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
                         uid: "categoryAxis",
                         type: "Dimension",
-                        values: ["REGULADOR"]
+                        values: ["STATUS"]
                     }));
 
                     oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
@@ -1566,19 +1418,6 @@ sap.ui.define([
                         type: "Measure",
                         values: ["TOTAL"]
                     }));
-
-
-                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
-                        const element = aMeasuresConfig[ax];
-
-                        if (element.name !== "TOTAL") {
-                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                                uid: "valueAxis",
-                                type: "Measure",
-                                values: [element.name]
-                            }));
-                        }
-                    }
 
                     that.hideBusy();
                 },
@@ -1694,14 +1533,18 @@ sap.ui.define([
                     for (let i = 0; i < aReguladores.length; i++) {
                         const regulador = aReguladores[i];
 
+                        
                         var aComissoesRegulador = oResults.filter(r => { return r.regulador.descricao === regulador.regulador.descricao });
 
+                       
                         if (regulador.regulador) {
                             aMeasures.push({ REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });
                         } else {
                             aMeasures.push({ REGULADOR: regulador.regulador, TOTAL: aComissoesRegulador.length });
                         }
 
+
+                                              
 
                     }
 
