@@ -267,6 +267,246 @@ module.exports = cds.service.impl(async (service) => {
 
     });
 
+
+    service.before("READ", Historico, async (req) => {
+        let aUsers = [],
+            usuario = {},
+            aComissoesUsuario = [],
+            acomissoesIds = [],
+            xprComissoesIds = {};
+
+        const {
+            SELECT
+        } = req.query
+
+        //console.log("Query>>>>",req.query);
+
+        aUsers = await cds.read(Usuarios).where({
+            ID: req.user.id
+        });
+        if (aUsers.length > 0) {
+            usuario = aUsers[0];
+            //busca comissões para o Usuário
+            aComissoesUsuario = await cds.read(ComissoesRepresentante).where({
+                usuario_ID: usuario.ID
+            });
+            acomissoesIds = aComissoesUsuario.map(x => x.comissao_ID);
+            if (acomissoesIds.length > 0) {
+                const inComissoesID = `comissao_ID in (${acomissoesIds.join(',')})`;
+                //console.log("Comissoes ID", inComissoesID);
+                xprComissoesIds = cds.parse.expr(inComissoesID);
+            }
+        }
+
+        switch (usuario.perfil_ID) {
+            case "REP":
+
+                if (SELECT.where) {
+                    //Realizou filtro na tela
+                    //console.log("BEFORE TEMAS: Where", SELECT.where);
+
+                    if (acomissoesIds.length > 0) {
+                        //Representante somente visualiza Temas para as comissões que esta relacionado
+                        SELECT.where.push(...['and', '(', xprComissoesIds, ')']);
+                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                    } else {
+                        //Representante sem Temas e Comissões
+                        req.reject(404, "Representante sem Comissões");
+                    }
+
+
+                } else {
+                    //Consulta incial sem Filtros
+                    if (acomissoesIds.length > 0) {
+                        //Representante somente visualiza Temas para as comissões que esta relacionado
+                        SELECT.where = [{
+                                ref: ['status_ID']
+                            },
+                            '<>',
+                            {
+                                val: 4
+                            }, 'and', '(', xprComissoesIds, ')'
+                        ];
+
+                    } else {
+                        //Representante sem Temas e Comissões
+                        req.reject(404, "Representante sem Comissões");
+                    }
+
+                }
+
+                break;
+            case "VP_DIR":
+                //visualização dos temas e painéis de sua responsabilidade
+                if (SELECT.where) {
+                    //Realizou filtro na tela
+                   // console.log("BEFORE TEMAS: Where", SELECT.where);
+
+                    if (acomissoesIds.length > 0) {
+                        //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
+                        SELECT.where.push(...['and', '(', xprComissoesIds, 'or',
+                            '(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')', ')'
+                        ]);
+                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                    } else {
+                        //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
+                        SELECT.where.push(...['and', '(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')'
+                        ]);
+                        //console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                    }
+
+
+                } else {
+                    //Consulta incial sem Filtros
+                    if (acomissoesIds.length > 0) {
+                        //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
+                        SELECT.where = [{
+                                ref: ['status_ID']
+                            },
+                            '<>',
+                            {
+                                val: 4
+                            }, 'and', '(', xprComissoesIds,
+                            'or',
+                            '(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')', ')'
+                        ];
+
+                    } else {
+                        //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
+                        SELECT.where = ['(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')', 'and',
+                            {
+                                ref: ['status_ID']
+                            }, '<>', {
+                                val: 4
+                            }
+                        ]; //Somente Temas em Aberto
+                    }
+
+
+                }
+
+                break;
+            case "ADM":
+            case "PRES":
+                //console.log("Adm/Pres", SELECT.where);
+                break;
+            default:
+                req.reject(404, "Usuário não autorizado");
+                break;
+        }
+
+
+    });
+
+
     service.before("READ", AlertasUsuario, async (req) => {
         let aUsers = [],
             usuario = {};
