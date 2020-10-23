@@ -576,14 +576,17 @@ sap.ui.define([
                         showTotal: true
                     },
                     dataShape: {
-                        primaryAxis: aPrimaryAxis
+                        primaryAxis: aPrimaryAxisColum
                     },
-                    colorPalette: aColorPalette
+                    colorPalette: aColorPaletteDonut
                 },
                 legendGroup: {
                     layout: {
                         position: "bottom"
                     }
+                },
+                legend:{
+                    visible: false
                 },
                 valueAxis: {
                     label: {
@@ -927,7 +930,7 @@ sap.ui.define([
             oModel.read(sPath, {
                 filters: [aFilter],
                 urlParameters: {
-                    "$expand": "representante",
+                    "$expand": "representante($expand=cargoClassif)",
                     "$select": "idTema,ultimoRegistro"
                 },
 
@@ -937,62 +940,29 @@ sap.ui.define([
                     for (let i = 0; i < oResults.length; i++) {
                         const element = oResults[i];
                         element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
+
+                        if (element.representante.cargoClassif_ID) {
+                            element.representante.cargo = element.representante.cargoClassif.descricao; 
+                        }
                     }
 
-                    var aDates = oResults.filter((tema, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+                    var aGroupTemasDistinct = oResults.filter((temaM, index, self) =>
+                    index === self.findIndex((t) => (
+                        t.idTema === temaM.idTema && t.idTema === temaM.idTema
                         ))
                     );
 
-                    for (let i = 0; i < aDates.length; i++) {
-                        const tema = aDates[i];
-
-                        var aGroupMonth = oResults.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
-
-                        var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
+                    var aCargosMes = aGroupTemasDistinct.filter((temaCargo, index, self) =>
                         index === self.findIndex((t) => (
-                            t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
-                            ))
-                        );
+                            t.representante.cargo === temaCargo.representante.cargo && t.representante.cargo === temaCargo.representante.cargo
+                        ))
+                    );                  
 
-                        var oMeasure = {};
+                    for (let i = 0; i < aCargosMes.length; i++) {
+                        const cargo = aCargosMes[i];
 
-                        var aCargosMes = aGroupTemasMonth.filter((temaCargo, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.representante.cargo === temaCargo.representante.cargo && t.representante.cargo === temaCargo.representante.cargo
-                            ))
-                        );
-
-                        var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
-                            vTotal = 0;
-
-                        for (let z = 0; z < aCargosMes.length; z++) {
-                            const element = aCargosMes[z];
-
-                            var aGrouprepresentante = aGroupTemasMonth.filter(r => { return r.representante.cargo === element.representante.cargo });
-                            vTotal += aGrouprepresentante.length;
-                            sElement += element.representante.cargo + '": ' + aGrouprepresentante.length;
-                            if (z !== aCargosMes.length - 1) {
-                                sElement += ',"';
-                            }
-
-                            aMeasuresConfig.push({ name: element.representante.cargo, value: '{' + element.representante.cargo + '}' });
-
-                        }
-
-                        sElement += ',"TOTAL": ' + vTotal + ' }';
-
-
-
-                        oMeasure = JSON.parse(sElement);
-                        aMeasures.push(oMeasure);
-
-                    }
-
-                    for (let dts = 0; dts < aMeasures.length; dts++) {
-                        const element = aMeasures[dts];
-                        element.MESANO = new Date(element.MESANO);
+                        var aGroupTemasPorCargo = aGroupTemasDistinct.filter(r => { return r.representante.cargo === cargo.representante.cargo });                       
+                        aMeasures.push({CARGO:  cargo.representante.cargo, TOTAL: aGroupTemasPorCargo.length});
                     }
 
                     var assignedContentData = {
@@ -1003,20 +973,13 @@ sap.ui.define([
 
                     oVizFrame.setModel(dataModel);
 
-                    aDimensions.push({ name: "MESANO", value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }" });
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
-
-
-                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.name === measure.name && t.name === measure.name
-                        ))
-                    );
+                    aDimensions.push({ name: "CARGO", value: "{CARGO}" });                   
+                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" }); 
 
                     oVizFrame.destroyDataset();
                     oVizFrame.destroyFeeds();
 
-                    var oSorter = new sap.ui.model.Sorter("MESANO", false);
+                    var oSorter = new sap.ui.model.Sorter("CARGO", false);
 
                     //New dataset
                     oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
@@ -1032,7 +995,7 @@ sap.ui.define([
                     oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
                         uid: "categoryAxis",
                         type: "Dimension",
-                        values: ["MESANO"]
+                        values: ["CARGO"]
                     }));
 
                     oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
@@ -1040,19 +1003,6 @@ sap.ui.define([
                         type: "Measure",
                         values: ["TOTAL"]
                     }));
-
-
-                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
-                        const element = aMeasuresConfig[ax];
-
-                        if (element.name !== "TOTAL") {
-                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                                uid: "valueAxis",
-                                type: "Measure",
-                                values: [element.name]
-                            }));
-                        }
-                    }
 
                     that.hideBusy();
                 },
@@ -1374,9 +1324,16 @@ sap.ui.define([
                     "$select": "idTema,ultimoRegistro,status_ID"
                 },
                 success: function (oData) {
-                    var oResults = oData.results;                    
+                    var oResults = oData.results;    
+                    
+                    var aGroupTemasDistinct = oResults.filter((temaM, index, self) =>
+                    index === self.findIndex((t) => (
+                        t.idTema === temaM.idTema && t.idTema === temaM.idTema
+                        ))
+                    );
+
                    
-                    var aStatus = oResults.filter((tema, index, self) =>
+                    var aStatus = aGroupTemasDistinct.filter((tema, index, self) =>
                         index === self.findIndex((t) => (
                             t.status_ID === tema.status_ID && t.status_ID === tema.status_ID
                         ))
@@ -1385,7 +1342,7 @@ sap.ui.define([
                     for (let i = 0; i < aStatus.length; i++) {
                         const tema = aStatus[i];
 
-                        var aGroupStatus = oResults.filter(r => { return r.status.ID === tema.status.ID }); 
+                        var aGroupStatus = aGroupTemasDistinct.filter(r => { return r.status.ID === tema.status.ID }); 
 
                         var vTotal = aGroupStatus.length;
                         aMeasures.push({ STATUS: tema.status.descricao, TOTAL: vTotal });                        
@@ -1406,13 +1363,15 @@ sap.ui.define([
                     oVizFrame.destroyDataset();
                     oVizFrame.destroyFeeds();
 
-                   
+                    var oSorter = new sap.ui.model.Sorter("STATUS", false);
+
                     //New dataset
                     oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
                         dimensions: aDimensions,
                         measures: aMeasuresConfig,
                         data: {
-                            path: "/ComparativosComTemas"
+                            path: "/ComparativosComTemas",
+                            sorter: oSorter
                         }
                     }));
 
