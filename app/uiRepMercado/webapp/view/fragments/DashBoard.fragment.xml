@@ -10,9 +10,9 @@
 						<form:Form>
 							<form:formContainers>
 								<!--Filtros Representações por Cargo-->
-								<form:FormContainer 
-								visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}"
-								title="{i18n>representacoes_por_cargo_title}">
+								<form:FormContainer
+									visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}"
+									title="{i18n>representacoes_por_cargo_title}">
 									<form:formElements>
 										<form:FormElement>
 											<form:label>
@@ -25,7 +25,7 @@
 										</form:FormElement>
 									</form:formElements>
 								</form:FormContainer>
-								<!--Filtros temas por regulador e por Criticidade-->								
+								<!--Filtros temas por regulador e por Criticidade-->
 								<form:FormContainer title="{i18n>temas_por_regulador_e_criticidade}">
 									<form:formElements>
 										<form:FormElement>
@@ -33,14 +33,10 @@
 												<Label text="{i18n>tipo_selecao_txt}" design="Standard" width="100%" />
 											</form:label>
 											<form:fields>
-												<RadioButton
-														groupName="GroupA"
-														text="{i18n>periodo_txt}"
-														selected="{filterModel>/dashBoard/porPeriodo}" />
-												<RadioButton
-														groupName="GroupA"
-														text="{i18n>por_mes_txt}"
-														selected="{filterModel>/dashBoard/porMeses}" />
+												<RadioButton groupName="GroupA" text="{i18n>periodo_txt}"
+													selected="{filterModel>/dashBoard/porPeriodo}" />
+												<RadioButton groupName="GroupA" text="{i18n>por_mes_txt}"
+													selected="{filterModel>/dashBoard/porMeses}" />
 											</form:fields>
 										</form:FormElement>
 
@@ -60,21 +56,23 @@
 											</form:label>
 											<form:fields>
 												<DatePicker id="DPTemasPorRegCritic" displayFormat="MM/yyyy"
-													change="onAddMesesTemasPorRegCritic" />												
+													change="onAddMesesTemasPorRegCritic" />
 											</form:fields>
 										</form:FormElement>
 
 										<form:FormElement visible="{filterModel>/dashBoard/porMeses}">
 											<form:label>
-												<Label text="{i18n>meses_selecionados_txt}" design="Standard" width="100%" />
+												<Label text="{i18n>meses_selecionados_txt}" design="Standard"
+													width="100%" />
 											</form:label>
-											<form:fields>												
-												<List id="selectedDatesList" noDataText=""													
+											<form:fields>
+												<List id="selectedDatesList" noDataText=""
 													items="{filterModel>/dashBoard/selectedDates}">
 													<headerToolbar>
 														<OverflowToolbar>
-															<ToolbarSpacer/>
-															<core:Icon src="sap-icon://clear-filter" tooltip="{i18n>limpar_datas_selecionadas_txt}"
+															<ToolbarSpacer />
+															<core:Icon src="sap-icon://clear-filter"
+																tooltip="{i18n>limpar_datas_selecionadas_txt}"
 																press="onClearMesesTemasPorRegCritic">
 																<core:layoutData>
 																	<FlexItemData growFactor="1" />
@@ -91,8 +89,7 @@
 									</form:formElements>
 								</form:FormContainer>
 								<!--Filtros Comparativos com Temas-->
-								<form:FormContainer 
-								title="{i18n>comparativos_com_temas_title}">
+								<form:FormContainer title="{i18n>comparativos_com_temas_title}">
 									<form:formElements>
 										<form:FormElement>
 											<form:label>
@@ -124,6 +121,12 @@
 						</OverflowToolbar>
 					</content>
 				</Panel>
+				<OverflowToolbar width="auto" height="46px" design="Transparent">
+					<content>
+						<ToolbarSpacer width="" />
+						<Button text="{i18n>btn_exportar_pdf}" icon="sap-icon://pdf-attachment" press="onSavePDF" />
+					</content>
+				</OverflowToolbar>
 			</VBox>
 		</layout:fixContent>
 		<layout:flexContent>
@@ -268,7 +271,7 @@
 				</form:SimpleForm>
 
 				<form:SimpleForm maxContainerCols="2" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4"
-					emptySpanL="0" emptySpanM="0" columnsL="2" columnsM="2" >
+					emptySpanL="0" emptySpanM="0" columnsL="2" columnsM="2">
 					<form:content>
 						<!--Comparativo com Temas-->
 						<viz:VizFrame width="100%" id="idVizFrameCompComTemas" uiConfig="{applicationSet:'fiori'}"
@@ -276,7 +279,7 @@
 							<viz:dataset>
 								<viz.data:FlattenedDataset>
 									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Data" value="{MESANO}" />										
+										<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
 									</viz.data:dimensions>
 									<viz.data:measures>
 										<viz.data:MeasureDefinition name="Quantidade de Temas"

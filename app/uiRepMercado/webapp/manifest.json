@@ -110,6 +110,14 @@
         }
       }
     },
+    "resources": {
+      "js": [
+        { "uri": "libs/rgbcolor.js" },
+        { "uri": "libs/stackblur.js" },
+        { "uri": "libs/canvg.js" },
+        { "uri": "libs/jsPDF.js" }
+      ]
+    },
     "services": {
       "ShellUIService": {
         "factoryName": "sap.ushell.ui5service.ShellUIService",
