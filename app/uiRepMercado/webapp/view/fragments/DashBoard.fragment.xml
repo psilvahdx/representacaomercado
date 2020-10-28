@@ -245,7 +245,7 @@
 						</viz:VizFrame>
 						<!--Temas por Criticidade-->
 						<viz:VizFrame width="100%" id="idVizFrameTemasPorCriticidade"
-							uiConfig="{applicationSet:'fiori'}" vizType='stacked_combination'>
+							uiConfig="{applicationSet:'fiori'}" vizType='column'>
 							<viz:dataset>
 								<viz.data:FlattenedDataset>
 									<viz.data:dimensions>

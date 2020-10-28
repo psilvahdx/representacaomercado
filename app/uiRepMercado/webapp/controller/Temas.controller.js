@@ -24,10 +24,10 @@ sap.ui.define([
         /* lifecycle methods                                           */
         /* =========================================================== */
 
-		/**
-		 * Called when the worklist controller is instantiated.
-		 * @public
-		 */
+        /**
+         * Called when the worklist controller is instantiated.
+         * @public
+         */
         onInit: function () {
             var oViewModel;
 
@@ -61,7 +61,7 @@ sap.ui.define([
             var oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 oDPTemasPorRegCritic = this.byId("DPTemasPorRegCritic"),
                 oDPCompComTemas = this.byId("DPCompComTemas");
-            
+
             oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
             oDPRepPorCargo.setDateValue(vToday);
 
@@ -69,7 +69,7 @@ sap.ui.define([
 
             oDPCompComTemas.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
             oDPCompComTemas.setDateValue(vToday);
-            
+
             this.showBusy();
 
         },
@@ -133,7 +133,7 @@ sap.ui.define([
         },
 
         getComissoesUsuario: function () {
-            var oModel = this.getModel(),                
+            var oModel = this.getModel(),
                 that = this;
 
             oModel.read("/Comissoes", {
@@ -153,15 +153,15 @@ sap.ui.define([
         /* event handlers                                              */
         /* =========================================================== */
 
-		/**
-		 * Triggered by the table's 'updateFinished' event: after new table
-		 * data is available, this handler method updates the table counter.
-		 * This should only happen if the update was successful, which is
-		 * why this handler is attached to 'updateFinished' and not to the
-		 * table's list binding's 'dataReceived' method.
-		 * @param {sap.ui.base.Event} oEvent the update finished event
-		 * @public
-		 */
+        /**
+         * Triggered by the table's 'updateFinished' event: after new table
+         * data is available, this handler method updates the table counter.
+         * This should only happen if the update was successful, which is
+         * why this handler is attached to 'updateFinished' and not to the
+         * table's list binding's 'dataReceived' method.
+         * @param {sap.ui.base.Event} oEvent the update finished event
+         * @public
+         */
         onUpdateFinished: function (oEvent) {
             // update the worklist's object counter after the table update
             var sTitle,
@@ -180,8 +180,7 @@ sap.ui.define([
                 var oFilterData = this.getModel("filterModel").getData();
                 if (oFilterData.temas.tema !== "") {
                     MessageBox.information(
-                        sMessage,
-                        {
+                        sMessage, {
                             actions: [MessageBox.Action.YES, MessageBox.Action.NO],
                             onClose: function (sAction) {
                                 if (sAction === MessageBox.Action.YES) {
@@ -207,11 +206,11 @@ sap.ui.define([
             });
         },
 
-		/**
-		 * Event handler when a table item gets pressed
-		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
-		 * @public
-		 */
+        /**
+         * Event handler when a table item gets pressed
+         * @param {sap.ui.base.Event} oEvent the table selectionChange event
+         * @public
+         */
         onTableItemPress: function (oEvent) {
             var oContext = oEvent.getParameter("listItem").getBindingContext(),
                 oObject = this.getModel().getObject(oContext.getPath());
@@ -313,11 +312,11 @@ sap.ui.define([
 
         },
 
-		/**
-		 * Event handler for refresh event. Keeps filter, sort
-		 * and group settings and refreshes the list binding.
-		 * @public
-		 */
+        /**
+         * Event handler for refresh event. Keeps filter, sort
+         * and group settings and refreshes the list binding.
+         * @public
+         */
         onRefresh: function () {
             var oTable = this.byId("tblTemas");
             oTable.getBinding("items").refresh();
@@ -361,35 +360,37 @@ sap.ui.define([
         },
 
         handleChange: function (oEvent) {
-			var oDP = oEvent.getSource(),
-				//sValue = oEvent.getParameter("value"),
-				bValid = oEvent.getParameter("valid");
-			
-			if (bValid) {
-				oDP.setValueState("None");
-			} else {
-				oDP.setValueState("Error");
-			}
+            var oDP = oEvent.getSource(),
+                //sValue = oEvent.getParameter("value"),
+                bValid = oEvent.getParameter("valid");
+
+            if (bValid) {
+                oDP.setValueState("None");
+            } else {
+                oDP.setValueState("Error");
+            }
         },
-        
-        onAddMesesTemasPorRegCritic: function(oEvent){
+
+        onAddMesesTemasPorRegCritic: function (oEvent) {
 
             var ofilterModel = this.getModel("filterModel"),
-	            oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
+                oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
 
             var oDPTemasPorRegCritic = this.byId("DPTemasPorRegCritic");
 
             if (oDPTemasPorRegCritic.getDateValue()) {
-              
-                oFilterDashBoard.selectedDates.push({Date: oDPTemasPorRegCritic.getDateValue()});
+
+                oFilterDashBoard.selectedDates.push({
+                    Date: oDPTemasPorRegCritic.getDateValue()
+                });
                 oDPTemasPorRegCritic.setValue("");
                 ofilterModel.refresh();
             }
         },
 
-        onClearMesesTemasPorRegCritic: function(){
+        onClearMesesTemasPorRegCritic: function () {
             var ofilterModel = this.getModel("filterModel"),
-            oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
+                oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
             oFilterDashBoard.selectedDates = ([]);
             ofilterModel.refresh();
         },
@@ -405,23 +406,95 @@ sap.ui.define([
                 oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 vToday = new Date();
 
-                var ofilterModel = this.getModel("filterModel"),
+            var ofilterModel = this.getModel("filterModel"),
                 oFilterDashBoard = ofilterModel.getProperty("/dashBoard");
-                oFilterDashBoard.selectedDates = ([]);
-                oFilterDashBoard.porPeriodo = true;
-                ofilterModel.refresh();
-            
+            oFilterDashBoard.selectedDates = ([]);
+            oFilterDashBoard.porPeriodo = true;
+            ofilterModel.refresh();
+
             odtrPeriodo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
             odtrPeriodo.setDateValue(new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()));
             odtrPeriodo.setSecondDateValue(vToday);
-            
+
             //oDPComissPorReg.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
-           // oDPComissPorReg.setDateValue(vToday);
-            
+            // oDPComissPorReg.setDateValue(vToday);
+
             oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
             oDPRepPorCargo.setDateValue(vToday);
 
             this._bindChart();
+        },
+
+        setVizProperties: function(oVizControl, sTitle, sTitleFontSize, bSingleColor, isLegendVisible){
+            sap.viz.ui5.api.env.Format.numericFormatter(ChartFormatter.getInstance());
+            var formatPattern = ChartFormatter.DefaultPattern;
+            var aPrimaryAxisColum = ["bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],
+                aColorPalette = [
+                    //"sapUiChartPaletteSemanticNeutralDark2",
+                    "sapUiChartPaletteSequentialHue1Light3",
+                    "sapUiChartPaletteSequentialHue1Light2",
+                    "sapUiChartPaletteSequentialHue1Light1",
+                    "sapUiChartPaletteSequentialHue1",
+                    "sapUiChartPaletteSequentialHue1Dark1",
+                    "sapUiChartPaletteSequentialHue1Dark2",
+                    "sapUiChartPaletteSequentialNeutralLight3",
+                    "sapUiChartPaletteSequentialNeutralLight2",
+                    "sapUiChartPaletteSequentialNeutralLight1",
+                    "sapUiChartPaletteSequentialNeutral",
+                    "sapUiChartPaletteSequentialNeutralDark1",
+                    "sapUiChartPaletteSequentialNeutralDark2"
+                ],
+                aSingleColorPalette = ["sapUiChartPaletteSequentialHue1Dark2"];
+
+            oVizControl.setVizProperties({
+                plotArea: {
+                    dataLabel: {
+                        formatString: formatPattern.SHORTFLOAT_MFD2,
+                        visible: true,
+                        showTotal: true
+                    },
+                    dataShape: {
+                        primaryAxis:  aPrimaryAxisColum
+                    },
+                    colorPalette: bSingleColor? aSingleColorPalette : aColorPalette
+                },
+                legendGroup: {
+                    layout: {
+                        position: "bottom"
+                    }
+                },
+                legend: {
+                    visible: isLegendVisible
+                },
+                valueAxis: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                valueAxis2: {
+                    label: {
+                        formatString: formatPattern.SHORTFLOAT
+                    },
+                    title: {
+                        visible: false
+                    }
+                },
+                categoryAxis: {
+                    title: {
+                        visible: false
+                    }
+                },
+                title: {
+                    visible: true,
+                    text: sTitle,
+                    style: {
+                        fontSize: sTitleFontSize
+                    }
+                }
+            });
         },
 
         _bindChart: function () {
@@ -436,335 +509,21 @@ sap.ui.define([
                 oVizFrameCompComTemas = this.getView().byId("idVizFrameCompComTemas"),
                 oVizFrameRepPorCargo = this.getView().byId("idVizFrameRepPorCargo"),
                 ofilterModel = this.getModel("filterModel");
-            
-            var aPrimaryAxis = ["line", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],    
-                aPrimaryAxisColum = ["bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],           
-                aColorPalette = [
-                "sapUiChartPaletteSemanticNeutralDark2",
-                "sapUiChartPaletteSequentialHue1Light3",
-                "sapUiChartPaletteSequentialHue1Light2",
-                "sapUiChartPaletteSequentialHue1Light1",
-                "sapUiChartPaletteSequentialHue1",
-                "sapUiChartPaletteSequentialHue1Dark1",
-                "sapUiChartPaletteSequentialHue1Dark2",
-                "sapUiChartPaletteSequentialNeutralLight3",
-                "sapUiChartPaletteSequentialNeutralLight2",
-                "sapUiChartPaletteSequentialNeutralLight1",
-                "sapUiChartPaletteSequentialNeutral",
-                "sapUiChartPaletteSequentialNeutralDark1",
-                "sapUiChartPaletteSequentialNeutralDark2"
-            ],
-            aColorPaletteDonut = [                
-                "sapUiChartPaletteSequentialHue1Light3",
-                "sapUiChartPaletteSequentialHue1Light2",
-                "sapUiChartPaletteSequentialHue1Light1",
-                "sapUiChartPaletteSequentialHue1",
-                "sapUiChartPaletteSequentialHue1Dark1",
-                "sapUiChartPaletteSequentialHue1Dark2",
-                "sapUiChartPaletteSequentialNeutralLight3",
-                "sapUiChartPaletteSequentialNeutralLight2",
-                "sapUiChartPaletteSequentialNeutralLight1",
-                "sapUiChartPaletteSequentialNeutral",
-                "sapUiChartPaletteSequentialNeutralDark1",
-                "sapUiChartPaletteSequentialNeutralDark2"
-            ];;
+         
 
             this.showBusy();
             //Temas Por Regulador
-            oVizFrame.setVizProperties({
-                plotArea: {
-                    dataLabel: {
-                        formatString: formatPattern.SHORTFLOAT_MFD2,
-                        visible: true,
-                        showTotal: true
-                    },
-                    dataShape: {
-                        primaryAxis: aPrimaryAxis
-                    },
-                    colorPalette: aColorPalette
-                },
-                legendGroup: {
-                    layout: {
-                        position: "bottom"
-                    }
-                },
-                valueAxis: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                valueAxis2: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                categoryAxis: {
-                    title: {
-                        visible: false
-                    }
-                },
-                title: {
-                    visible: true,
-                    text: this.getResourceBundle().getText("temas_por_reguladores_title"),
-                    style: {
-                        fontSize: sTitleFontSize
-                    }
-                }
-            });
-
+            this.setVizProperties(oVizFrame, this.getResourceBundle().getText("temas_por_reguladores_title"), sTitleFontSize, false, true);
             //Temas por Criticidade
-            oVizFrameTemasPorCriticidade.setVizProperties({
-                plotArea: {
-                    dataLabel: {
-                        formatString: formatPattern.SHORTFLOAT_MFD2,
-                        visible: true,
-                        showTotal: true
-                    },
-                    dataShape: {
-                        primaryAxis: aPrimaryAxis
-                    },
-                    colorPalette: aColorPalette
-                }, 
-                legendGroup: {
-                    layout: {
-                        position: "bottom"
-                    }
-                },
-                valueAxis: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                valueAxis2: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                categoryAxis: {
-                    title: {
-                        visible: false
-                    }
-                },
-                title: {
-                    visible: true,
-                    text: this.getResourceBundle().getText("temas_por_criticidade_title"),
-                    style: {
-                        fontSize: sTitleFontSize
-                    }
-                }
-            });
-
-
+            this.setVizProperties(oVizFrameTemasPorCriticidade, this.getResourceBundle().getText("temas_por_criticidade_title"), sTitleFontSize, false, true);
             //Indicações/representantes por Cargo
-            oVizFrameRepPorCargo.setVizProperties({
-                plotArea: {
-                    dataLabel: {
-                        formatString: formatPattern.SHORTFLOAT_MFD2,
-                        visible: true,
-                        showTotal: true
-                    },
-                    dataShape: {
-                        primaryAxis: aPrimaryAxisColum
-                    },
-                    colorPalette: aColorPaletteDonut
-                },
-                legendGroup: {
-                    layout: {
-                        position: "bottom"
-                    }
-                },
-                legend:{
-                    visible: false
-                },
-                valueAxis: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                valueAxis2: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                categoryAxis: {
-                    title: {
-                        visible: false
-                    }
-                },
-                title: {
-                    visible: true,
-                    text: this.getResourceBundle().getText("representacoes_por_cargo_title"),
-                    style: {
-                        fontSize: sTitleFontSize
-                    }
-                }
-            });
-
-
+            this.setVizProperties(oVizFrameRepPorCargo, this.getResourceBundle().getText("representacoes_por_cargo_title"), sTitleFontSize, false, false);
             //Comparativo com Temas legendVisible
-            oVizFrameCompComTemas.setVizProperties({
-                plotArea: {
-                    dataLabel: {
-                        formatString: formatPattern.SHORTFLOAT_MFD2,
-                        visible: true,
-                        showTotal: true
-                    },
-                    dataShape: {
-                        primaryAxis: aPrimaryAxisColum
-                    },
-                    colorPalette: ["sapUiChartPaletteSequentialHue1Dark2"] //aColorPaletteDonut
-                },
-                legendGroup: {
-                    layout: {
-                        position: "bottom",
-                        alignment: "center"
-                    }
-                },
-                legend:{
-                    visible: false
-                },
-                valueAxis: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                valueAxis2: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                categoryAxis: {
-                    title: {
-                        visible: false
-                    }
-                },
-                title: {
-                    visible: true,
-                    text: this.getResourceBundle().getText("comparativos_com_temas_title"),
-                    style: {
-                        fontSize: sTitleFontSize
-                    }
-                }
-            });
-
+            this.setVizProperties(oVizFrameCompComTemas, this.getResourceBundle().getText("comparativos_com_temas_title"), sTitleFontSize, true, false);
             //Comissoes sem Representante
-            oVizFrameComissSemRep.setVizProperties({
-                plotArea: {
-                    dataLabel: {
-                        formatString: formatPattern.SHORTFLOAT_MFD2,
-                        visible: true,
-                        type: "value"
-                    },
-                    colorPalette: aColorPaletteDonut
-                },
-                legendGroup: {
-                    layout: {
-                        position: "bottom",
-                        alignment: "center"
-                    }
-                },
-                valueAxis: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                valueAxis2: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                categoryAxis: {
-                    title: {
-                        visible: false
-                    }
-                },
-                title: {
-                    visible: true,
-                    text: this.getResourceBundle().getText("comissoes_sem_representante_title"),
-                    style: {
-                        fontSize: sTitleFontSize
-                    }
-                }
-            });
-
-
+            this.setVizProperties(oVizFrameComissSemRep, this.getResourceBundle().getText("comissoes_sem_representante_title"), sTitleFontSize, false, false);
             //Comissoes Com Representante
-            oVizFrameComissComRep.setVizProperties({
-                plotArea: {
-                    dataLabel: {
-                        formatString: formatPattern.SHORTFLOAT_MFD2,
-                        visible: true,
-                        type: "value",
-                        position: 'inside'
-                        //showTotal: true
-                    },
-                    colorPalette: aColorPaletteDonut
-                },
-                legendGroup: {
-                    layout: {
-                        position: "bottom",
-                        alignment: "center"
-                    }
-                },
-                valueAxis: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                valueAxis2: {
-                    label: {
-                        formatString: formatPattern.SHORTFLOAT
-                    },
-                    title: {
-                        visible: false
-                    }
-                },
-                categoryAxis: {
-                    title: {
-                        visible: false
-                    }
-                },
-                title: {
-                    visible: true,
-                    text: this.getResourceBundle().getText("comissoes_com_representante_title"),
-                    style: {
-                        fontSize: sTitleFontSize
-                    }
-                }
-            });
+            this.setVizProperties(oVizFrameComissComRep, this.getResourceBundle().getText("comissoes_com_representante_title"), sTitleFontSize, false, false);            
 
             var oPopOver = this.getView().byId("idPopOver"),
                 oPopOverTemasPorCriticidade = this.getView().byId("idPopOverTemasPorCriticidade"),
@@ -801,60 +560,60 @@ sap.ui.define([
                 oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 vToday = new Date();
 
-                var oDashBoardFilter = ofilterModel.getProperty("/dashBoard");
+            var oDashBoardFilter = ofilterModel.getProperty("/dashBoard");
 
-                if(oDashBoardFilter.porPeriodo){
-                   
-                    if (odtrPeriodo.getDateValue()) {
+            if (oDashBoardFilter.porPeriodo) {
 
-                        var vMinDate = odtrPeriodo.getDateValue(),
-                            vMaxDate = new Date(odtrPeriodo.getSecondDateValue().getFullYear(), odtrPeriodo.getSecondDateValue().getMonth() + 1, 0);
-                        aFilter.push(new Filter({
-                            path: "ultimoRegistro",
-                            operator: FilterOperator.BT,
-                            value1: vMinDate,
-                            value2: vMaxDate
-                        }));
-                    } else {
-        
-                        var vMinDate = new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()),
-                            vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
-        
-                        aFilter.push(new Filter({
-                            path: "ultimoRegistro",
-                            operator: FilterOperator.BT,
-                            value1: vMinDate,
-                            value2: vMaxDate
-                        }));
-                        
-        
-                    }
+                if (odtrPeriodo.getDateValue()) {
 
-                }else{
-                    //Filtro Por Meses Selecionados
-                    var aSelDates = oDashBoardFilter.selectedDates;
-                    if (aSelDates.length > 0) {
-                        for (let index = 0; index < aSelDates.length; index++) {
-                            const oDate = aSelDates[index].Date;
-                            
-                            var vMinDate = new Date(oDate.getFullYear(), oDate.getMonth(), 1),
-                                vMaxDate = new Date(oDate.getFullYear(), oDate.getMonth() + 1, 0);
-        
-                        aFilter.push(new Filter({
-                            path: "ultimoRegistro",
-                            operator: FilterOperator.BT,
-                            value1: vMinDate,
-                            value2: vMaxDate
-                        }));
+                    var vMinDate = odtrPeriodo.getDateValue(),
+                        vMaxDate = new Date(odtrPeriodo.getSecondDateValue().getFullYear(), odtrPeriodo.getSecondDateValue().getMonth() + 1, 0);
+                    aFilter.push(new Filter({
+                        path: "ultimoRegistro",
+                        operator: FilterOperator.BT,
+                        value1: vMinDate,
+                        value2: vMaxDate
+                    }));
+                } else {
+
+                    var vMinDate = new Date(vToday.getFullYear() - 1, vToday.getMonth(), 1),
+                        vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
+
+                    aFilter.push(new Filter({
+                        path: "ultimoRegistro",
+                        operator: FilterOperator.BT,
+                        value1: vMinDate,
+                        value2: vMaxDate
+                    }));
 
 
-                        }
-                    }
                 }
 
-            
+            } else {
+                //Filtro Por Meses Selecionados
+                var aSelDates = oDashBoardFilter.selectedDates;
+                if (aSelDates.length > 0) {
+                    for (let index = 0; index < aSelDates.length; index++) {
+                        const oDate = aSelDates[index].Date;
+
+                        var vMinDate = new Date(oDate.getFullYear(), oDate.getMonth(), 1),
+                            vMaxDate = new Date(oDate.getFullYear(), oDate.getMonth() + 1, 0);
+
+                        aFilter.push(new Filter({
+                            path: "ultimoRegistro",
+                            operator: FilterOperator.BT,
+                            value1: vMinDate,
+                            value2: vMaxDate
+                        }));
+
+
+                    }
+                }
+            }
+
+
             //Filtros Representações Por Cargo
-            if(oDPRepPorCargo.getDateValue()){
+            if (oDPRepPorCargo.getDateValue()) {
                 var vMinDate = new Date(oDPRepPorCargo.getDateValue().getFullYear(), oDPRepPorCargo.getDateValue().getMonth(), 1),
                     vMaxDate = new Date(oDPRepPorCargo.getDateValue().getFullYear(), oDPRepPorCargo.getDateValue().getMonth() + 1, 0);
                 aRepPorCargoFilter.push(new Filter({
@@ -863,22 +622,22 @@ sap.ui.define([
                     value1: vMinDate,
                     value2: vMaxDate
                 }));
-            }else{
+            } else {
 
                 var vMinDate = new Date(vToday.getFullYear(), vToday.getMonth(), 1),
                     vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
 
                 aRepPorCargoFilter.push(new Filter({
-                                        path: "ultimoRegistro",
-                                        operator: FilterOperator.BT,
-                                        value1: vMinDate,
-                                        value2: vMaxDate
-                                    }));
+                    path: "ultimoRegistro",
+                    operator: FilterOperator.BT,
+                    value1: vMinDate,
+                    value2: vMaxDate
+                }));
 
-            } 
-            
+            }
+
             //Filtros Comparativos Com Temas
-            if(oDPCompComTemas.getDateValue()){
+            if (oDPCompComTemas.getDateValue()) {
                 var vMinDate = new Date(oDPCompComTemas.getDateValue().getFullYear(), oDPCompComTemas.getDateValue().getMonth(), 1),
                     vMaxDate = new Date(oDPCompComTemas.getDateValue().getFullYear(), oDPCompComTemas.getDateValue().getMonth() + 1, 0);
                 aComparativosTemaFilter.push(new Filter({
@@ -887,23 +646,23 @@ sap.ui.define([
                     value1: vMinDate,
                     value2: vMaxDate
                 }));
-            }else{
+            } else {
 
                 var vMinDate = new Date(vToday.getFullYear(), vToday.getMonth(), 1),
                     vMaxDate = new Date(vToday.getFullYear(), vToday.getMonth() + 1, 0);
 
-                    aComparativosTemaFilter.push(new Filter({
-                                        path: "ultimoRegistro",
-                                        operator: FilterOperator.BT,
-                                        value1: vMinDate,
-                                        value2: vMaxDate
-                                    }));
+                aComparativosTemaFilter.push(new Filter({
+                    path: "ultimoRegistro",
+                    operator: FilterOperator.BT,
+                    value1: vMinDate,
+                    value2: vMaxDate
+                }));
 
-            } 
-            
+            }
+
             //Desconsidera Temas Encerrados
             aFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
-            aRepPorCargoFilter.push(new Filter("status_ID", FilterOperator.NE, 4));          
+            aRepPorCargoFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
 
             this.getTemasPorRegulador(aFilter);
             this.getTemasPorCriticidade(aFilter);
@@ -911,14 +670,14 @@ sap.ui.define([
 
             if (oObjectUser.userLog.userProfile_ID !== "REP") {
                 //this.getRepresentacoesPorCargo();
-                this.getRepresentacoesPorCargoH(aRepPorCargoFilter);                
+                this.getRepresentacoesPorCargo(aRepPorCargoFilter);
                 this.getComissoesSemRepresentantePorRegulador();
                 this.getComissoesComRepresentantePorRegulador();
             }
 
         },
 
-        getRepresentacoesPorCargoH: function(aFilter){
+        getRepresentacoesPorCargo: function (aFilter) {
 
             var oModel = this.getModel(),
                 that = this,
@@ -942,13 +701,13 @@ sap.ui.define([
                         element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
 
                         if (element.representante.cargoClassif_ID) {
-                            element.representante.cargo = element.representante.cargoClassif.descricao; 
+                            element.representante.cargo = element.representante.cargoClassif.descricao;
                         }
                     }
 
                     var aGroupTemasDistinct = oResults.filter((temaM, index, self) =>
-                    index === self.findIndex((t) => (
-                        t.idTema === temaM.idTema && t.idTema === temaM.idTema
+                        index === self.findIndex((t) => (
+                            t.idTema === temaM.idTema && t.idTema === temaM.idTema
                         ))
                     );
 
@@ -956,13 +715,18 @@ sap.ui.define([
                         index === self.findIndex((t) => (
                             t.representante.cargo === temaCargo.representante.cargo && t.representante.cargo === temaCargo.representante.cargo
                         ))
-                    );                  
+                    );
 
                     for (let i = 0; i < aCargosMes.length; i++) {
                         const cargo = aCargosMes[i];
 
-                        var aGroupTemasPorCargo = aGroupTemasDistinct.filter(r => { return r.representante.cargo === cargo.representante.cargo });                       
-                        aMeasures.push({CARGO:  cargo.representante.cargo, TOTAL: aGroupTemasPorCargo.length});
+                        var aGroupTemasPorCargo = aGroupTemasDistinct.filter(r => {
+                            return r.representante.cargo === cargo.representante.cargo
+                        });
+                        aMeasures.push({
+                            CARGO: cargo.representante.cargo,
+                            TOTAL: aGroupTemasPorCargo.length
+                        });
                     }
 
                     var assignedContentData = {
@@ -973,8 +737,14 @@ sap.ui.define([
 
                     oVizFrame.setModel(dataModel);
 
-                    aDimensions.push({ name: "CARGO", value: "{CARGO}" });                   
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" }); 
+                    aDimensions.push({
+                        name: "CARGO",
+                        value: "{CARGO}"
+                    });
+                    aMeasuresConfig.push({
+                        name: "TOTAL",
+                        value: "{TOTAL}"
+                    });
 
                     oVizFrame.destroyDataset();
                     oVizFrame.destroyFeeds();
@@ -1014,142 +784,141 @@ sap.ui.define([
 
         getTemasPorRegulador: function (aFilter) {
             var oModel = this.getModel(),
-                that = this,
-                aTemasReguladorMes = [],
+                that = this,               
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = '/Historico';
+                sPath = '/TemasPorRegulador';
 
             oModel.read(sPath, {
                 filters: [aFilter],
                 urlParameters: {
-                    "$expand": "regulador",
-                    "$select": "idTema,ultimoRegistro"
+                    "$expand": "itens"
                 },
 
                 success: function (oData) {
                     var oResults = oData.results;
+                    var oVizFrame = that.getView().byId("idVizFrame"),
+                        vVizTypeComb = 0;                            
+                    if (oData.results.length > 0) {
+                        var vTotal = 0
+                        for (let i = 0; i < oResults.length; i++) {
+                            const tema = oResults[i];
 
-                    for (let i = 0; i < oResults.length; i++) {
-                        const element = oResults[i];
-                        element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
-                    }
+                            var oMeasure = {};
+                            var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
+                                vTotal = 0;
 
-                    var aDates = oResults.filter((tema, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
-                        ))
-                    );
+                            var aReguladoresMes = tema.itens.results;
 
-                    for (let i = 0; i < aDates.length; i++) {
-                        const tema = aDates[i];
-
-                        var aGroupMonth = oResults.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
-
-                        var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
-                            ))
-                        );
-
-                        var oMeasure = {};
-
-                        var aReguladoresMes = aGroupTemasMonth.filter((tema, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.regulador.descricao === tema.regulador.descricao && t.regulador.descricao === tema.regulador.descricao
-                            ))
-                        );
-
-                        var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
-                            vTotal = 0;
-
-                        for (let z = 0; z < aReguladoresMes.length; z++) {
-                            const element = aReguladoresMes[z];
-
-                            var aGroupRegulador = aGroupTemasMonth.filter(r => { return r.regulador.descricao === element.regulador.descricao });
-                            vTotal += aGroupRegulador.length;
-                            sElement += element.regulador.descricao + '": ' + aGroupRegulador.length;
-                            if (z !== aReguladoresMes.length - 1) {
-                                sElement += ',"';
+                            if(aReguladoresMes.length > 1){
+                                //Bug: Se somente retornar um feed, tipo de grafico deve ser de colunas e não combinado        
+                                vVizTypeComb++;                        
                             }
 
-                            aMeasuresConfig.push({ name: element.regulador.descricao, value: '{' + element.regulador.descricao + '}' });
+                            for (let z = 0; z < aReguladoresMes.length; z++) {
+                                const element = aReguladoresMes[z];
+
+                                vTotal += element.qtd;
+                                sElement += element.descricao + '": ' + element.qtd;
+                                if (z !== aReguladoresMes.length - 1) {
+                                    sElement += ',"';
+                                }
+
+                                aMeasuresConfig.push({
+                                    name: element.descricao,
+                                    value: '{' + element.descricao + '}'
+                                });
+
+                            }
+
+                            sElement += ',"TOTAL": ' + vTotal + ' }';
+
+
+                            oMeasure = JSON.parse(sElement);
+                            aMeasures.push(oMeasure);
 
                         }
 
-                        sElement += ',"TOTAL": ' + vTotal + ' }';
-
-
-
-                        oMeasure = JSON.parse(sElement);
-                        aMeasures.push(oMeasure);
-
-                    }
-
-                    for (let dts = 0; dts < aMeasures.length; dts++) {
-                        const element = aMeasures[dts];
-                        element.MESANO = new Date(element.MESANO);
-                    }
-
-                    var assignedContentData = {
-                        AssignedContentData: aMeasures
-                    };
-                    var oVizFrame = that.getView().byId("idVizFrame"),
-                        dataModel = new JSONModel(assignedContentData);
-
-                    oVizFrame.setModel(dataModel);
-
-                    aDimensions.push({ name: "MESANO", value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }" });
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
-
-
-                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.name === measure.name && t.name === measure.name
-                        ))
-                    );
-
-                    oVizFrame.destroyDataset();
-                    oVizFrame.destroyFeeds();
-
-                    var oSorter = new sap.ui.model.Sorter("MESANO", false);
-
-                    //New dataset
-                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
-                        dimensions: aDimensions,
-                        measures: aMeasuresConfig,
-                        data: {
-                            path: "/AssignedContentData",
-                            sorter: oSorter
+                        for (let dts = 0; dts < aMeasures.length; dts++) {
+                            const element = aMeasures[dts];
+                            element.MESANO = new Date(element.MESANO);
                         }
-                    }));
 
-                    //Add feeds
-                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                        uid: "categoryAxis",
-                        type: "Dimension",
-                        values: ["MESANO"]
-                    }));
+                        var assignedContentData = {
+                            AssignedContentData: aMeasures
+                        };
+                        var dataModel = new JSONModel(assignedContentData);
 
-                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                        uid: "valueAxis",
-                        type: "Measure",
-                        values: ["TOTAL"]
-                    }));
+                        oVizFrame.setModel(dataModel);
+
+                        aDimensions.push({
+                            name: "MESANO",
+                            value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }"
+                        });
+                        //aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
 
 
-                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
-                        const element = aMeasuresConfig[ax];
+                        aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
+                            index === self.findIndex((t) => (
+                                t.name === measure.name && t.name === measure.name
+                            ))
+                        );
 
-                        if (element.name !== "TOTAL") {
-                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                                uid: "valueAxis",
-                                type: "Measure",
-                                values: [element.name]
-                            }));
+                        oVizFrame.destroyDataset();
+                        oVizFrame.destroyFeeds();
+                        
+                        //Bug: Se somente retornar um feed, tipo de grafico deve ser de colunas e não combinado   
+                        if(vVizTypeComb > 0){
+                            oVizFrame.setVizType("stacked_combination");
+                        }else{
+                            oVizFrame.setVizType("column");
+                        } 
+
+                        var oSorter = new sap.ui.model.Sorter("MESANO", false);
+
+                        //New dataset
+                        oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                            dimensions: aDimensions,
+                            measures: aMeasuresConfig,
+                            data: {
+                                path: "/AssignedContentData",
+                                sorter: oSorter
+                            }
+                        }));
+
+                        //Add feeds
+                        oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                            uid: "categoryAxis",
+                            type: "Dimension",
+                            values: ["MESANO"]
+                        }));
+
+                        /* oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                             uid: "valueAxis",
+                             type: "Measure",
+                             values: ["TOTAL"]
+                         }));*/
+
+
+                        for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
+                            const element = aMeasuresConfig[ax];
+
+                            if (element.name !== "TOTAL") {
+                                oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                                    uid: "valueAxis",
+                                    type: "Measure",
+                                    values: [element.name]
+                                }));
+                            }
                         }
+
+                    } else {
+
+                        oVizFrame.destroyDataset();
+                        oVizFrame.destroyFeeds();
                     }
+
 
                     that.hideBusy();
                 },
@@ -1163,141 +932,135 @@ sap.ui.define([
         getTemasPorCriticidade: function (aFilter) {
             var oModel = this.getModel(),
                 that = this,
-                aTemasReguladorMes = [],
-                //aFilter = new Filter([]),
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = '/Historico';
+                sPath = '/TemasPorCriticidade';
 
             oModel.read(sPath, {
                 filters: [aFilter],
                 urlParameters: {
-                    "$expand": "criticidade",
-                    "$select": "idTema,ultimoRegistro"
+                    "$expand": "itens"
                 },
 
                 success: function (oData) {
                     var oResults = oData.results;
+                    var oVizFrame = that.getView().byId("idVizFrameTemasPorCriticidade"),
+                        vVizTypeComb = 0;                            
 
-                    for (let i = 0; i < oResults.length; i++) {
-                        const element = oResults[i];
-                        element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
-                    }
+                    if (oData.results.length > 0) {
+                        var vTotal = 0
+                        for (let i = 0; i < oResults.length; i++) {
+                            const tema = oResults[i];
 
-                    var aDates = oResults.filter((tema, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
-                        ))
-                    );
+                            var oMeasure = {};
+                            var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
+                                vTotal = 0;
 
-                    for (let i = 0; i < aDates.length; i++) {
-                        const tema = aDates[i];
+                            var aCriticidadesMes = tema.itens.results;
 
-                        var aGroupMonth = oResults.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
-
-                        var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
-                            ))
-                        );
-
-                        var oMeasure = {};
-
-                        var aCriticidadeMes = aGroupTemasMonth.filter((tema, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.criticidade.descricao === tema.criticidade.descricao && t.criticidade.descricao === tema.criticidade.descricao
-                            ))
-                        );
-
-                        var sElement = '{ "MESANO": "' + tema.ultimoRegistro + '","',
-                            vTotal = 0;
-
-                        for (let z = 0; z < aCriticidadeMes.length; z++) {
-                            const element = aCriticidadeMes[z];
-
-                            var aGroupCriticidade = aGroupTemasMonth.filter(r => { return r.criticidade.descricao === element.criticidade.descricao });
-                            vTotal += aGroupCriticidade.length;
-                            sElement += element.criticidade.descricao + '": ' + aGroupCriticidade.length;
-                            if (z !== aCriticidadeMes.length - 1) {
-                                sElement += ',"';
+                            if(aCriticidadesMes.length > 1){
+                                //Bug: Se somente retornar um feed, tipo de grafico deve ser de colunas e não combinado        
+                                vVizTypeComb++;                        
                             }
 
-                            aMeasuresConfig.push({ name: element.criticidade.descricao, value: '{' + element.criticidade.descricao + '}' });
+                            for (let z = 0; z < aCriticidadesMes.length; z++) {
+                                const element = aCriticidadesMes[z];
+
+                                vTotal += element.qtd;
+                                sElement += element.descricao + '": ' + element.qtd;
+                                if (z !== aCriticidadesMes.length - 1) {
+                                    sElement += ',"';
+                                }
+
+                                aMeasuresConfig.push({
+                                    name: element.descricao,
+                                    value: '{' + element.descricao + '}'
+                                });
+
+                            }
+
+                            sElement += ',"TOTAL": ' + vTotal + ' }';
+
+
+                            oMeasure = JSON.parse(sElement);
+                            aMeasures.push(oMeasure);
 
                         }
 
-                        sElement += ',"TOTAL": ' + vTotal + ' }';
-
-
-
-                        oMeasure = JSON.parse(sElement);
-                        aMeasures.push(oMeasure);
-
-                    }
-
-                    for (let dts = 0; dts < aMeasures.length; dts++) {
-                        const element = aMeasures[dts];
-                        element.MESANO = new Date(element.MESANO);
-                    }
-
-                    var assignedContentData = {
-                        AssignedContentData: aMeasures
-                    };
-                    var oVizFrame = that.getView().byId("idVizFrameTemasPorCriticidade"),
-                        dataModel = new JSONModel(assignedContentData);
-
-                    oVizFrame.setModel(dataModel);
-
-                    aDimensions.push({ name: "MESANO", value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }" });
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
-
-
-                    aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
-                        index === self.findIndex((t) => (
-                            t.name === measure.name && t.name === measure.name
-                        ))
-                    );
-
-                    oVizFrame.destroyDataset();
-                    oVizFrame.destroyFeeds();
-
-                    var oSorter = new sap.ui.model.Sorter("MESANO", false);
-
-                    //New dataset
-                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
-                        dimensions: aDimensions,
-                        measures: aMeasuresConfig,
-                        data: {
-                            path: "/AssignedContentData",
-                            sorter: oSorter
+                        for (let dts = 0; dts < aMeasures.length; dts++) {
+                            const element = aMeasures[dts];
+                            element.MESANO = new Date(element.MESANO);
                         }
-                    }));
 
-                    //Add feeds
-                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                        uid: "categoryAxis",
-                        type: "Dimension",
-                        values: ["MESANO"]
-                    }));
+                        var assignedContentData = {
+                            AssignedContentData: aMeasures
+                        };
+                        var dataModel = new JSONModel(assignedContentData);
 
-                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                        uid: "valueAxis",
-                        type: "Measure",
-                        values: ["TOTAL"]
-                    }));
+                        oVizFrame.setModel(dataModel);
+
+                        aDimensions.push({
+                            name: "MESANO",
+                            value: "{path:'MESANO', type: 'sap.ui.model.type.Date', formatOptions: { pattern : 'MMM/yyyy' } }"
+                        });
+                        //aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
 
 
-                    for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
-                        const element = aMeasuresConfig[ax];
+                        aMeasuresConfig = aMeasuresConfig.filter((measure, index, self) =>
+                            index === self.findIndex((t) => (
+                                t.name === measure.name && t.name === measure.name
+                            ))
+                        );
 
-                        if (element.name !== "TOTAL") {
-                            oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
-                                uid: "valueAxis",
-                                type: "Measure",
-                                values: [element.name]
-                            }));
+                        oVizFrame.destroyDataset();
+                        oVizFrame.destroyFeeds();
+
+                        if(vVizTypeComb > 0){
+                            oVizFrame.setVizType("stacked_combination");
+                        }else{
+                            oVizFrame.setVizType("column");
+                        }                               
+
+                        var oSorter = new sap.ui.model.Sorter("MESANO", false);
+
+                        //New dataset
+                        oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                            dimensions: aDimensions,
+                            measures: aMeasuresConfig,
+                            data: {
+                                path: "/AssignedContentData",
+                                sorter: oSorter
+                            }
+                        }));
+
+                        //Add feeds
+                        oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                            uid: "categoryAxis",
+                            type: "Dimension",
+                            values: ["MESANO"]
+                        }));
+
+                        /* oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                             uid: "valueAxis",
+                             type: "Measure",
+                             values: ["TOTAL"]
+                         }));*/
+
+
+                        for (let ax = 0; ax < aMeasuresConfig.length; ax++) {
+                            const element = aMeasuresConfig[ax];
+
+                            if (element.name !== "TOTAL") {
+                                oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                                    uid: "valueAxis",
+                                    type: "Measure",
+                                    values: [element.name]
+                                }));
+                            }
                         }
+                    } else {
+
                     }
 
 
@@ -1311,7 +1074,7 @@ sap.ui.define([
 
         getComparativoComTemas: function (aFilter) {
             var oModel = this.getModel(),
-                that = this,               
+                that = this,
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
@@ -1324,15 +1087,15 @@ sap.ui.define([
                     "$select": "idTema,ultimoRegistro,status_ID"
                 },
                 success: function (oData) {
-                    var oResults = oData.results;    
-                    
+                    var oResults = oData.results;
+
                     var aGroupTemasDistinct = oResults.filter((temaM, index, self) =>
-                    index === self.findIndex((t) => (
-                        t.idTema === temaM.idTema && t.idTema === temaM.idTema
+                        index === self.findIndex((t) => (
+                            t.idTema === temaM.idTema && t.idTema === temaM.idTema
                         ))
                     );
 
-                   
+
                     var aStatus = aGroupTemasDistinct.filter((tema, index, self) =>
                         index === self.findIndex((t) => (
                             t.status_ID === tema.status_ID && t.status_ID === tema.status_ID
@@ -1342,10 +1105,15 @@ sap.ui.define([
                     for (let i = 0; i < aStatus.length; i++) {
                         const tema = aStatus[i];
 
-                        var aGroupStatus = aGroupTemasDistinct.filter(r => { return r.status.ID === tema.status.ID }); 
+                        var aGroupStatus = aGroupTemasDistinct.filter(r => {
+                            return r.status.ID === tema.status.ID
+                        });
 
                         var vTotal = aGroupStatus.length;
-                        aMeasures.push({ STATUS: tema.status.descricao, TOTAL: vTotal });                        
+                        aMeasures.push({
+                            STATUS: tema.status.descricao,
+                            TOTAL: vTotal
+                        });
 
                     }
 
@@ -1357,8 +1125,14 @@ sap.ui.define([
 
                     oVizFrame.setModel(dataModel);
 
-                    aDimensions.push({ name: "STATUS", value: "{STATUS}" });                   
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });                    
+                    aDimensions.push({
+                        name: "STATUS",
+                        value: "{STATUS}"
+                    });
+                    aMeasuresConfig.push({
+                        name: "TOTAL",
+                        value: "{TOTAL}"
+                    });
 
                     oVizFrame.destroyDataset();
                     oVizFrame.destroyFeeds();
@@ -1422,12 +1196,20 @@ sap.ui.define([
                     for (let i = 0; i < aReguladores.length; i++) {
                         const regulador = aReguladores[i];
 
-                        var aComissoesRegulador = oResults.filter(r => { return r.regulador === regulador.regulador });
+                        var aComissoesRegulador = oResults.filter(r => {
+                            return r.regulador === regulador.regulador
+                        });
 
                         if (regulador.regulador) {
-                            aMeasures.push({ REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });
+                            aMeasures.push({
+                                REGULADOR: regulador.regulador.descricao,
+                                TOTAL: aComissoesRegulador.length
+                            });
                         } else {
-                            aMeasures.push({ REGULADOR: sSemRegulador, TOTAL: aComissoesRegulador.length });
+                            aMeasures.push({
+                                REGULADOR: sSemRegulador,
+                                TOTAL: aComissoesRegulador.length
+                            });
                         }
 
 
@@ -1441,8 +1223,14 @@ sap.ui.define([
 
                     oVizFrame.setModel(dataModel);
 
-                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+                    aDimensions.push({
+                        name: "REGULADOR",
+                        value: "{REGULADOR}"
+                    });
+                    aMeasuresConfig.push({
+                        name: "TOTAL",
+                        value: "{TOTAL}"
+                    });
 
                     oVizFrame.destroyDataset();
                     oVizFrame.destroyFeeds();
@@ -1502,18 +1290,24 @@ sap.ui.define([
                     for (let i = 0; i < aReguladores.length; i++) {
                         const regulador = aReguladores[i];
 
-                        
-                        var aComissoesRegulador = oResults.filter(r => { return r.regulador.descricao === regulador.regulador.descricao });
 
-                       
+                        var aComissoesRegulador = oResults.filter(r => {
+                            return r.regulador.descricao === regulador.regulador.descricao
+                        });
+
+
                         if (regulador.regulador) {
-                            aMeasures.push({ REGULADOR: regulador.regulador.descricao, TOTAL: aComissoesRegulador.length });
+                            aMeasures.push({
+                                REGULADOR: regulador.regulador.descricao,
+                                TOTAL: aComissoesRegulador.length
+                            });
                         } else {
-                            aMeasures.push({ REGULADOR: regulador.regulador, TOTAL: aComissoesRegulador.length });
+                            aMeasures.push({
+                                REGULADOR: regulador.regulador,
+                                TOTAL: aComissoesRegulador.length
+                            });
                         }
 
-
-                                              
 
                     }
 
@@ -1525,8 +1319,14 @@ sap.ui.define([
 
                     oVizFrame.setModel(dataModel);
 
-                    aDimensions.push({ name: "REGULADOR", value: "{REGULADOR}" });
-                    aMeasuresConfig.push({ name: "TOTAL", value: "{TOTAL}" });
+                    aDimensions.push({
+                        name: "REGULADOR",
+                        value: "{REGULADOR}"
+                    });
+                    aMeasuresConfig.push({
+                        name: "TOTAL",
+                        value: "{TOTAL}"
+                    });
 
                     oVizFrame.destroyDataset();
                     oVizFrame.destroyFeeds();
@@ -1562,18 +1362,18 @@ sap.ui.define([
         },
 
         //Download PDF
-        onSavePDF: function() {
+        onSavePDF: function () {
             var oUser = this.getModel("userLogModel").getData();
             //Step 1: Export chart content to svg
             var oVizFrame = this.getView().byId("idVizFrame"),
-            oVizFrameComissSemRep = this.getView().byId("idVizFrameComissSemRep"),
-            oVizFrameComissComRep = this.getView().byId("idVizFrameComissComRep"),
-            oVizFrameRepPorCargo  = this.getView().byId("idVizFrameRepPorCargo"),            
-            oVizFrameTemasPorCriticidade = this.getView().byId("idVizFrameTemasPorCriticidade"),
-            oVizFrameCompComTemas = this.getView().byId("idVizFrameCompComTemas");
+                oVizFrameComissSemRep = this.getView().byId("idVizFrameComissSemRep"),
+                oVizFrameComissComRep = this.getView().byId("idVizFrameComissComRep"),
+                oVizFrameRepPorCargo = this.getView().byId("idVizFrameRepPorCargo"),
+                oVizFrameTemasPorCriticidade = this.getView().byId("idVizFrameTemasPorCriticidade"),
+                oVizFrameCompComTemas = this.getView().byId("idVizFrameCompComTemas");
             var sSVG = oVizFrame.exportToSVGString({
-              width: 800,
-              height: 600
+                width: 800,
+                height: 600
             });
             var sSVG = {},
                 sSVGTemasPorCriticidade = {},
@@ -1581,84 +1381,84 @@ sap.ui.define([
                 sSVGComissSemRep = {},
                 sSVGComissComRep = {},
                 sSVGRepPorCargo = {};
-            
+
             var oPDF = new jsPDF();
             var oCanvasHTML = document.createElement("canvas");
             var oCanvasHTMLComissSemRep = document.createElement("canvas");
-            var oCanvasHTMLComissComRep  = document.createElement("canvas");
+            var oCanvasHTMLComissComRep = document.createElement("canvas");
             var oCanvasHTMLRepPorCargo = document.createElement("canvas");
             var oCanvasHTMLTemasPorReg = document.createElement("canvas");
             var oCanvasHTMLTemasPorCriticidade = document.createElement("canvas");
             var oCanvasHTMLCompComTemas = document.createElement("canvas");
-            
-            //Temas Por regulador
-             sSVG = oVizFrame.exportToSVGString({
-                width: 800,
-                height: 600
-              });
-              
-              sSVGTemasPorCriticidade = oVizFrameTemasPorCriticidade.exportToSVGString({
-                width: 800,
-                height: 600
-              });
-          
-              sSVGCompComTemas = oVizFrameCompComTemas.exportToSVGString({
-                width: 800,
-                height: 600
-              });
 
-              sSVG = sSVG.replace(/translate /gm, "translate");
-              sSVGTemasPorCriticidade = sSVGTemasPorCriticidade.replace(/translate /gm, "translate");
-              sSVGCompComTemas = sSVGCompComTemas.replace(/translate /gm, "translate");  
-              
+            //Temas Por regulador
+            sSVG = oVizFrame.exportToSVGString({
+                width: 800,
+                height: 600
+            });
+
+            sSVGTemasPorCriticidade = oVizFrameTemasPorCriticidade.exportToSVGString({
+                width: 800,
+                height: 600
+            });
+
+            sSVGCompComTemas = oVizFrameCompComTemas.exportToSVGString({
+                width: 800,
+                height: 600
+            });
+
+            sSVG = sSVG.replace(/translate /gm, "translate");
+            sSVGTemasPorCriticidade = sSVGTemasPorCriticidade.replace(/translate /gm, "translate");
+            sSVGCompComTemas = sSVGCompComTemas.replace(/translate /gm, "translate");
+
             if (oUser.userLog.userProfile_ID !== "REP") {
-                sSVGComissSemRep =  oVizFrameComissSemRep.exportToSVGString({
+                sSVGComissSemRep = oVizFrameComissSemRep.exportToSVGString({
                     width: 800,
                     height: 600
-                  });
-                sSVGComissComRep =  oVizFrameComissComRep.exportToSVGString({
+                });
+                sSVGComissComRep = oVizFrameComissComRep.exportToSVGString({
                     width: 800,
                     height: 600
-                  });
+                });
                 sSVGRepPorCargo = oVizFrameRepPorCargo.exportToSVGString({
                     width: 800,
                     height: 600
-                  });
-            
-                  sSVGComissSemRep = sSVGComissSemRep.replace(/translate /gm, "translate");
-                  sSVGComissComRep = sSVGComissComRep.replace(/translate /gm, "translate");
-                  sSVGRepPorCargo = sSVGRepPorCargo.replace(/translate /gm, "translate");
+                });
 
-                
+                sSVGComissSemRep = sSVGComissSemRep.replace(/translate /gm, "translate");
+                sSVGComissComRep = sSVGComissComRep.replace(/translate /gm, "translate");
+                sSVGRepPorCargo = sSVGRepPorCargo.replace(/translate /gm, "translate");
 
-                  canvg(oCanvasHTMLComissSemRep, sSVGComissSemRep);
-                  canvg(oCanvasHTMLComissComRep, sSVGComissComRep);
-                  canvg(oCanvasHTMLRepPorCargo, sSVGRepPorCargo);
 
-                  canvg(oCanvasHTMLTemasPorReg, sSVG); // add SVG content to Canvas           
-                  canvg(oCanvasHTMLTemasPorCriticidade, sSVGTemasPorCriticidade);
-                  canvg(oCanvasHTMLCompComTemas, sSVGCompComTemas);
 
-                 // STEP 3: Get dataURL for content in Canvas as PNG/JPEG
-                    var sImageData = oCanvasHTMLComissSemRep.toDataURL("image/png");
-                    var sImageData2 = oCanvasHTMLComissComRep.toDataURL("image/png");
-                    var sImageData3 = oCanvasHTMLRepPorCargo.toDataURL("image/png");
-                    var sImageData4 = oCanvasHTMLTemasPorReg.toDataURL("image/png");
-                    var sImageData5 = oCanvasHTMLTemasPorCriticidade.toDataURL("image/png");
-                    var sImageData6 = oCanvasHTMLCompComTemas.toDataURL("image/png");
-            
-                    // STEP 4: Create PDF using library jsPDF                    
-                    oPDF.addImage(sImageData, "PNG", 15, 20, 180, 100);
-                    oPDF.addImage(sImageData2, "PNG", 15, 150, 180, 100);                   
-                    oPDF.addPage();                    
-                    oPDF.addImage(sImageData3, "PNG", 15, 0, 180, 160);
-                    oPDF.addImage(sImageData4, "PNG", 15, 130, 180, 160);
-                    oPDF.addPage();
-                    oPDF.addImage(sImageData5, "PNG", 15, 15, 180, 160);
-                    oPDF.addImage(sImageData6, "PNG", 15, 150, 180, 160);
-                    oPDF.save("Indicadores.pdf");
-            } else{
-                
+                canvg(oCanvasHTMLComissSemRep, sSVGComissSemRep);
+                canvg(oCanvasHTMLComissComRep, sSVGComissComRep);
+                canvg(oCanvasHTMLRepPorCargo, sSVGRepPorCargo);
+
+                canvg(oCanvasHTMLTemasPorReg, sSVG); // add SVG content to Canvas           
+                canvg(oCanvasHTMLTemasPorCriticidade, sSVGTemasPorCriticidade);
+                canvg(oCanvasHTMLCompComTemas, sSVGCompComTemas);
+
+                // STEP 3: Get dataURL for content in Canvas as PNG/JPEG
+                var sImageData = oCanvasHTMLComissSemRep.toDataURL("image/png");
+                var sImageData2 = oCanvasHTMLComissComRep.toDataURL("image/png");
+                var sImageData3 = oCanvasHTMLRepPorCargo.toDataURL("image/png");
+                var sImageData4 = oCanvasHTMLTemasPorReg.toDataURL("image/png");
+                var sImageData5 = oCanvasHTMLTemasPorCriticidade.toDataURL("image/png");
+                var sImageData6 = oCanvasHTMLCompComTemas.toDataURL("image/png");
+
+                // STEP 4: Create PDF using library jsPDF                    
+                oPDF.addImage(sImageData, "PNG", 15, 20, 180, 100);
+                oPDF.addImage(sImageData2, "PNG", 15, 150, 180, 100);
+                oPDF.addPage();
+                oPDF.addImage(sImageData3, "PNG", 15, 0, 180, 160);
+                oPDF.addImage(sImageData4, "PNG", 15, 130, 180, 160);
+                oPDF.addPage();
+                oPDF.addImage(sImageData5, "PNG", 15, 15, 180, 160);
+                oPDF.addImage(sImageData6, "PNG", 15, 150, 180, 160);
+                oPDF.save("Indicadores.pdf");
+            } else {
+
                 canvg(oCanvasHTMLTemasPorReg, sSVG); // add SVG content to Canvas           
                 canvg(oCanvasHTMLTemasPorCriticidade, sSVGTemasPorCriticidade);
                 canvg(oCanvasHTMLCompComTemas, sSVGCompComTemas);
@@ -1667,17 +1467,17 @@ sap.ui.define([
                 var sImageData8 = oCanvasHTMLTemasPorCriticidade.toDataURL("image/png");
                 var sImageData9 = oCanvasHTMLCompComTemas.toDataURL("image/png");
 
-                oPDF.addImage(sImageData7, "PNG", 15, 10, 180, 140);                
+                oPDF.addImage(sImageData7, "PNG", 15, 10, 180, 140);
                 oPDF.addImage(sImageData8, "PNG", 15, 150, 180, 140);
                 oPDF.addPage();
                 oPDF.addImage(sImageData9, "PNG", 15, 10, 180, 160);
                 oPDF.save("Indicadores.pdf");
 
-            }     
-           
-           
-          },
-      
+            }
+
+
+        },
+
 
         //EXPORT EXCEL
         createColumnConfig: function (aSelectedColumns) {
@@ -1902,7 +1702,7 @@ sap.ui.define([
 
             oSettings = {
                 workbook: {
-                    columns: aCols,//,
+                    columns: aCols, //,
                     //hierarchyLevel: 'Level'
                     context: {
                         sheetName: 'Temas'
@@ -1916,7 +1716,7 @@ sap.ui.define([
                     count: oRowBinding.getLength ? oRowBinding.getLength() : null,
                     useBatch: true // Default for ODataModel V2
                 },
-                fileName: 'Temas.xlsx'//,
+                fileName: 'Temas.xlsx' //,
                 //worker: false // We need to disable worker because we are using a MockServer as OData Service
             };
 
@@ -1928,7 +1728,7 @@ sap.ui.define([
 
         _validateField: function (fieldName) {
 
-            var oControl = sap.ui.getCore().byId(fieldName);//this.getView().byId(fieldName);
+            var oControl = sap.ui.getCore().byId(fieldName); //this.getView().byId(fieldName);
             var value;
 
             if (fieldName.substring(0, 3) === "cmb") {
@@ -1971,7 +1771,7 @@ sap.ui.define([
                 var oRTextEditor = sap.ui.getCore().byId("RTextEditor");
                 if (oRTextEditor.getValue() === "") {
                     sap.m.MessageToast.show(this.geti18nText("campo_obrigatorio_msg"));
-                    isValid = false; 
+                    isValid = false;
                 }
             }
 
@@ -2068,13 +1868,13 @@ sap.ui.define([
 
 
             var oParams = {
-                ID: "",
-                usuario_ID: oUser.userLog.ID,
-                eventos: [],
-                dtInicio: new Date(),
-                alertaPessoal: true,
-                editable: true
-            },
+                    ID: "",
+                    usuario_ID: oUser.userLog.ID,
+                    eventos: [],
+                    dtInicio: new Date(),
+                    alertaPessoal: true,
+                    editable: true
+                },
                 oEvento = {
                     ID: "",
                     descricao: "",
@@ -2116,15 +1916,15 @@ sap.ui.define([
                 //bSelected = oAppointment.getSelected();
                 var oBingingContext = oAppointment.getBindingContext(),
                     oSelPath = oBingingContext.getPath(),
-                    oSelectedAppintment = this.getModel().getObject(oSelPath),                    
+                    oSelectedAppintment = this.getModel().getObject(oSelPath),
                     oDtInicio = sap.ui.getCore().byId("dtInicio"),
                     btnExluirAlerta = sap.ui.getCore().byId("btnExluirAlerta"),
                     mtCBoxStatusAlerta = sap.ui.getCore().byId("mtCBoxStatusAlerta"),
                     mtCBoxPerfisAlerta = sap.ui.getCore().byId("mtCBoxPerfisAlerta"),
                     oMultiInput = sap.ui.getCore().byId("inpRepresentantesAlerta");
 
-                    oSelectedAppintment.editable = true;
-              
+                oSelectedAppintment.editable = true;
+
 
                 btnExluirAlerta.setEnabled(true);
                 oDtInicio.setMinDate(new Date());
@@ -2159,12 +1959,12 @@ sap.ui.define([
 
                 }
 
-                if (oSelectedAppintment.eventoOrigem_ID) {                   
+                if (oSelectedAppintment.eventoOrigem_ID) {
                     oSelectedAppintment.editable = false;
-                     btnExluirAlerta.setEnabled(false);
-                   if (oUser.userLog.userProfile_ID === "ADM") {
-                      oSelectedAppintment.editable = true;
-                   } 
+                    btnExluirAlerta.setEnabled(false);
+                    if (oUser.userLog.userProfile_ID === "ADM") {
+                        oSelectedAppintment.editable = true;
+                    }
                 }
 
                 var oEditAlertaModel = new JSONModel(oSelectedAppintment);
@@ -2172,7 +1972,7 @@ sap.ui.define([
 
                 this._oDialogDetalhesAlerta.open();
             }
-        },       
+        },
 
         onSaveAlertaButtonPress: function (oEvent) {
             if (this.validaInformacoesAlerta()) {
@@ -2202,7 +2002,7 @@ sap.ui.define([
                         alertaUsuario_ID: oModelData.alertaUsuario_ID ? oModelData.alertaUsuario_ID : oModelData.ID
 
                     },
-                    entitySet = "/AlertasUsuario";//EventosAlerta
+                    entitySet = "/AlertasUsuario"; //EventosAlerta
 
                 //Datas
                 var dtInicio = sap.ui.getCore().byId("dtInicio").getDateValue();
@@ -2244,7 +2044,7 @@ sap.ui.define([
                     if (oSelKeysUsuarios.length > 0) {
                         oEvento.usuariosQueRecebem = oSelKeysUsuarios.join('|');
                     }
-                   
+
                 }
 
                 oCalendario.eventos.push(oEvento);
@@ -2252,8 +2052,7 @@ sap.ui.define([
                 if (oCalendario.ID === "") {
                     //Novo Calendario e Alerta
                     this.sendCreateCalendarioRequest(entitySet, oCalendario, oEvento);
-                }
-                else {
+                } else {
                     if (oEvento.ID === "") {
                         //Possui um calendário mas ainda não possui alertas, cria alerta no calendario do usuario 
                         var sEntitySet = "/EventosAlerta";
@@ -2280,8 +2079,7 @@ sap.ui.define([
             if (sIdEvento && sIdEvento !== "") {
 
                 MessageBox.warning(
-                    sMessage,
-                    {
+                    sMessage, {
                         actions: [MessageBox.Action.YES, MessageBox.Action.NO],
                         onClose: function (sAction) {
                             if (sAction === MessageBox.Action.YES) {
@@ -2337,7 +2135,12 @@ sap.ui.define([
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_alerta"));
                     oEvent.ID = oData.ID;
 
-                    that.replicaEventoAlertaRequest({idEvento: oData.ID,  perfisQueRecebem: oData.perfisQueRecebem, usuariosQueRecebem: oData.usuariosQueRecebem, bCreate: true });
+                    that.replicaEventoAlertaRequest({
+                        idEvento: oData.ID,
+                        perfisQueRecebem: oData.perfisQueRecebem,
+                        usuariosQueRecebem: oData.usuariosQueRecebem,
+                        bCreate: true
+                    });
 
                     that.onCancelAlerta();
                     oModel.refresh();
@@ -2349,36 +2152,36 @@ sap.ui.define([
             });
         },
 
-        replicaEventoAlertaRequest: function(oParams){
-         
-              var oModel = this.getModel(),
+        replicaEventoAlertaRequest: function (oParams) {
+
+            var oModel = this.getModel(),
                 sEntitySet = "/replicaEventoAlerta";
-            
+
 
             oModel.create(sEntitySet, oParams, {
                 success: function (oData) {
 
                 },
                 error: function (oError) {
-                  
+
                 }
             });
 
 
         },
 
-        replicaAlteracaoEventoRequest: function(oParams){
-         
-              var oModel = this.getModel(),
+        replicaAlteracaoEventoRequest: function (oParams) {
+
+            var oModel = this.getModel(),
                 sEntitySet = "/replicaEventoAlerta";
-            
+
 
             oModel.create(sEntitySet, oParams, {
                 success: function (oData) {
 
                 },
                 error: function (oError) {
-                  
+
                 }
             });
 
@@ -2394,7 +2197,12 @@ sap.ui.define([
             oModel.update(entitySet, oParams, {
                 success: function (oData) {
                     that.getOwnerComponent()._genericSuccessMessage(that.geti18nText("sucesso_salvar_alerta"));
-                    that.replicaAlteracaoEventoRequest({idEvento: oData.ID,  perfisQueRecebem: oData.perfisQueRecebem, usuariosQueRecebem: oData.usuariosQueRecebem,  bCreate: false });
+                    that.replicaAlteracaoEventoRequest({
+                        idEvento: oData.ID,
+                        perfisQueRecebem: oData.perfisQueRecebem,
+                        usuariosQueRecebem: oData.usuariosQueRecebem,
+                        bCreate: false
+                    });
                     oModel.refresh();
                 },
                 error: function (oError) {
