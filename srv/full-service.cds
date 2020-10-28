@@ -1,6 +1,22 @@
 using {representacaomercado.db as db} from '../db/schema';
 
 
+@cds.autoexpose
+ entity TemasPorReguladorItem {
+        key ID: String;
+        descricao      : String;
+        qtd : Integer;
+        item: Association to FullSerice.TemasPorRegulador;
+    }
+
+@cds.autoexpose
+ entity TemasPorCriticidadeItem {
+        key ID: String;
+        descricao      : String;
+        qtd : Integer;
+        item: Association to FullSerice.TemasPorCriticidade;
+    }
+
 @path     : '/services/compliance'
 @impl     : './dataAccess.js'
 @requires : 'authenticated-user'
@@ -21,39 +37,7 @@ service FullSerice {
     entity TiposAlerta            as projection on db.TiposAlerta;
     entity EventosAlerta          as projection on db.EventosAlerta;
     entity AlertasUsuario         as projection on db.AlertasUsuario;
-
-
-    view TemasPorRegulador() as
-        select from db.Temas {
-            key substr(
-                    primeiroRegistro, 1, 4
-                ) || '-' || substr(
-                    primeiroRegistro, 6, 2
-                ) || '-01T00:00:00Z' as mesAno               : DateTime,
-            key regulador.descricao  as descRegulador,
-                count(
-                    ID
-                )                    as qtdTemasPorRegulador : Integer
-        }
-        group by
-            primeiroRegistro,
-            regulador.descricao;
-
-    view TemasPorCriticidade() as
-        select from db.Temas {
-            key substr(
-                    primeiroRegistro, 1, 4
-                ) || '-' || substr(
-                    primeiroRegistro, 6, 2
-                ) || '-01T00:00:00Z'  as mesAno                 : DateTime,
-            key criticidade.descricao as descCriticidade,
-                count(
-                    ID
-                )                     as qtdTemasPorCriticidade : Integer
-        }
-        group by
-            primeiroRegistro,
-            criticidade.descricao;
+    
 
     entity RepresentacoesMercado {
         key ID           : Integer;
@@ -74,6 +58,21 @@ service FullSerice {
         key ID             : UUID;
             cargo          : String;           
             ultimoRegistro : DateTime;
+    };  
+   
+
+     entity TemasPorRegulador {
+        key ID             : UUID;            
+            ultimoRegistro : DateTime;
+            status_ID      : Integer;
+            itens   : Association to many TemasPorReguladorItem on itens.item = $self;
+    };
+
+     entity TemasPorCriticidade {
+        key ID             : UUID;            
+            ultimoRegistro : DateTime;
+            status_ID      : Integer;
+            itens   : Association to many TemasPorCriticidadeItem on itens.item = $self;
     };
 
     entity UsersExtensions {

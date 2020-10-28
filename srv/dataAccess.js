@@ -6,6 +6,7 @@ const SapCfAxios = require('sap-cf-axios').default;
 const destination = SapCfAxios('ODATA_COLABORADORES');
 const axios = require('axios');
 const qs = require('qs');
+const dateFormat = require('dateformat');
 
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
@@ -19,12 +20,14 @@ module.exports = cds.service.impl(async (service) => {
         Perfis,
         PerfilAcoes,
         Comissoes,
-        AppSettings,
+        TemasPorRegulador,
         Reguladores,
         CargoClassificacoes,
         TiposAlerta,
         AlertasUsuario,
-        EventosAlerta
+        EventosAlerta,
+        Criticidades,
+        TemasPorCriticidade
     } = service.entities;
 
 
@@ -277,9 +280,13 @@ module.exports = cds.service.impl(async (service) => {
 
         const {
             SELECT
-        } = req.query
+        } = req.query       
 
-        //console.log("Query>>>>",req.query);
+        //Incrementa Limite de resultados (Exibição de Indicadores)
+        if(SELECT.limit){
+            SELECT.limit.rows.val = 30000000;
+        }
+       // console.log("Historico Query>>>>",SELECT.limit);
 
         aUsers = await cds.read(Usuarios).where({
             ID: req.user.id
@@ -564,22 +571,7 @@ module.exports = cds.service.impl(async (service) => {
 
 
 
-    });
-
-    service.before("TemasPorRegulador", async (req) => {
-
-        const {
-            SELECT
-        } = req.query;
-        //console.log("SELECT Temas por Regulador: >>>>", SELECT);
-
-        if (SELECT.where) {
-            console.log("Sem Filtros", SELECT.query);
-        } else {
-            console.log("Com Filtros", SELECT.query);
-        }
-
-    });
+    });  
 
 
     service.before("CREATE", Temas, async (context) => {
@@ -616,24 +608,7 @@ module.exports = cds.service.impl(async (service) => {
             field: "ID"
         });
         context.data.ID = await comissaoId.getNextNumber();
-    });
-
-   /* service.before("CREATE", Historico, async (context) => {
-        const histTemaId = new SequenceHelper({
-            db: db,
-            sequence: "HISTORICO_ID",
-            table: "REPRESENTACAOMERCADO_DB_HISTORICO",
-            field: "ID"
-        });
-
-        context.data.ID = await histTemaId.getNextNumber();
-        if (!context.data.ID) {
-            context.data.ID = 1;
-        }
-        context.data.userAlteracao_ID = context.user.id;
-        console.debug('Historico ID:', context.data.ID)
-
-    });*/
+    });  
 
     service.before("READ", Comissoes, async (req) => {
 
@@ -788,6 +763,161 @@ module.exports = cds.service.impl(async (service) => {
 
         return comissoes;
     });
+
+    //Temas por Regulador 
+    service.on("READ", TemasPorRegulador, async (req) => {
+
+        let  aReturn = [];        
+        let qry = req.query.SELECT.where;               
+        
+        const aReguladores = await cds.read(Reguladores);
+        
+        const tx = service.tx(req);               
+        var aHist = await tx.run(SELECT.from(Historico).where(qry));
+        console.log(aHist.length);
+
+        for (let i = 0; i < aHist.length; i++) {
+            const element = aHist[i];
+            var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
+            element.ultimoRegistro.substring(5, 7) + "/01");          
+            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");
+            
+        }
+        //Recupera lista distinta de datas nos registros recuperados
+        var aDates = aHist.filter((tema, index, self) =>
+            index === self.findIndex((t) => (
+                t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+            ))
+        );
+        //Percorre lista de Datas recuperadas
+        for (let i = 0; i < aDates.length; i++) {
+            const tema = aDates[i];
+
+            var oTemaPorRegulador = {ID: ""};            
+            //Agrupa Temas para mês em execução
+            var aGroupMonth = aHist.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            //Remove duplicados para o mesmo mês, considerando o Id do tema
+            var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
+            index === self.findIndex((t) => (
+                t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                ))
+            );           
+            //Agrupa por Regulador
+            var aReguladoresMes = aGroupTemasMonth.filter((tema, index, self) =>
+                index === self.findIndex((t) => (
+                    t.regulador_ID === tema.regulador_ID && t.regulador_ID === tema.regulador_ID
+                ))
+            );
+            //Monta objeto de Retorno
+            oTemaPorRegulador.ID = tema.ID;
+            oTemaPorRegulador.ultimoRegistro = tema.ultimoRegistro;
+            var aItens = [];
+
+            for (let z = 0; z < aReguladoresMes.length; z++) {
+                const element = aReguladoresMes[z];
+
+                var oItem = {ID: ""};
+
+                var aGroupRegulador = aGroupTemasMonth.filter(r => { return r.regulador_ID === element.regulador_ID });   
+                
+                var oReg = aReguladores.find(rg=> rg.ID === element.regulador_ID );
+                if (oReg) {
+                    oItem.descricao = oReg.descricao;   
+                }else{
+                    oItem.descricao = "OUTROS"; 
+                }
+                
+                oItem.qtd = aGroupRegulador.length;
+                aItens.push(oItem);
+            }
+            oTemaPorRegulador.itens = aItens;
+            aReturn.push(oTemaPorRegulador);
+        }
+
+
+        return aReturn;
+
+
+    });
+
+
+     //Temas por Criticidade 
+     service.on("READ", TemasPorCriticidade, async (req) => {
+
+        let  aReturn = [];        
+        let qry = req.query.SELECT.where;               
+        
+        const aCriticidades = await cds.read(Criticidades);
+        
+        const tx = service.tx(req);               
+        var aHist = await tx.run(SELECT.from(Historico).where(qry));
+        console.log(aHist.length);
+
+        for (let i = 0; i < aHist.length; i++) {
+            const element = aHist[i];
+            var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
+            element.ultimoRegistro.substring(5, 7) + "/01");          
+            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");
+            
+        }
+        //Recupera lista distinta de datas nos registros recuperados
+        var aDates = aHist.filter((tema, index, self) =>
+            index === self.findIndex((t) => (
+                t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+            ))
+        );
+        //Percorre lista de Datas recuperadas
+        for (let i = 0; i < aDates.length; i++) {
+            const tema = aDates[i];
+
+            var oTemaPorCriticidade = {ID: ""};            
+            //Agrupa Temas para mês em execução
+            var aGroupMonth = aHist.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            //Remove duplicados para o mesmo mês, considerando o Id do tema
+            var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
+            index === self.findIndex((t) => (
+                t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                ))
+            );           
+            //Agrupa por Criticidade
+            var aCriticidadesMes = aGroupTemasMonth.filter((tema, index, self) =>
+                index === self.findIndex((t) => (
+                    t.criticidade_ID === tema.criticidade_ID && t.criticidade_ID === tema.criticidade_ID
+                ))
+            );
+            //Monta objeto de Retorno
+            oTemaPorCriticidade.ID = tema.ID;
+            oTemaPorCriticidade.ultimoRegistro = tema.ultimoRegistro;
+            var aItens = [];
+
+            for (let z = 0; z < aCriticidadesMes.length; z++) {
+                const element = aCriticidadesMes[z];
+
+                var oItem = {ID: ""};
+
+                var aGroupCriticidade = aGroupTemasMonth.filter(r => { return r.criticidade_ID === element.criticidade_ID });   
+                
+                var oReg = aCriticidades.find(cr=> cr.ID === element.criticidade_ID );
+                if (oReg) {
+                    oItem.descricao = oReg.descricao;   
+                }else{
+                    oItem.descricao = "Novo"; 
+                }
+                
+                oItem.qtd = aGroupCriticidade.length;
+                aItens.push(oItem);
+            }
+            oTemaPorCriticidade.itens = aItens;
+            aReturn.push(oTemaPorCriticidade);
+        }
+
+        return aReturn;
+
+
+    });
+
 
     service.on("READ", UsersExtensions, async (context, next) => {
        // console.log("USEREX", context.user.id);
