@@ -773,8 +773,16 @@ module.exports = cds.service.impl(async (service) => {
         const aReguladores = await cds.read(Reguladores);
         
         const tx = service.tx(req);               
-        var aHist = await tx.run(SELECT.from(Historico).where(qry));
-        console.log(aHist.length);
+        var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
+        console.log("Historico Recuperado:", aHistAux.length);
+
+        //Recupera lista distinta de Temas nos registros recuperados
+        var aHist = aHistAux.filter((tema, index, self) =>
+            index === self.findIndex((t) => (
+                t.idTema === tema.idTema && t.idTema === tema.idTema
+            ))
+        );
+        console.log("Historico Sem Duplicados:", aHist.length);
 
         for (let i = 0; i < aHist.length; i++) {
             const element = aHist[i];
@@ -851,8 +859,17 @@ module.exports = cds.service.impl(async (service) => {
         const aCriticidades = await cds.read(Criticidades);
         
         const tx = service.tx(req);               
-        var aHist = await tx.run(SELECT.from(Historico).where(qry));
-        console.log(aHist.length);
+        var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
+        console.log("Historico Recuperado:", aHistAux.length);
+
+        //Recupera lista distinta de Temas nos registros recuperados
+        var aHist = aHistAux.filter((tema, index, self) =>
+            index === self.findIndex((t) => (
+                t.idTema === tema.idTema && t.idTema === tema.idTema
+            ))
+        );
+        console.log("Historico Sem Duplicados:", aHist.length);
+
 
         for (let i = 0; i < aHist.length; i++) {
             const element = aHist[i];

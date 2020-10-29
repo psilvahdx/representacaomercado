@@ -142,45 +142,59 @@
 					emptySpanL="0" emptySpanM="0" columnsL="2" columnsM="2"
 					visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}">
 					<form:content>
-
 						<!--Comissoes sem Representante-->
-						<viz:VizFrame width="100%" id="idVizFrameComissSemRep" uiConfig="{applicationSet:'fiori'}"
-							vizType='pie'>
-							<viz:dataset>
-								<viz.data:FlattenedDataset>
-									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Regulador" value="{descricao}" />
-									</viz.data:dimensions>
-									<viz.data:measures>
-										<viz.data:MeasureDefinition name="Total" value="{ID}" />
-									</viz.data:measures>
-								</viz.data:FlattenedDataset>
-							</viz:dataset>
-
-							<viz:feeds>
-								<viz.feeds:FeedItem uid="size" type="Measure" values="Total" />
-								<viz.feeds:FeedItem uid="color" type="Dimension" values="Regulador" />
-							</viz:feeds>
-						</viz:VizFrame>
+						<VBox>
+							<Title id="ttlComissSemRep" textAlign="Center" wrapping="true"
+								text="{i18n>comissoes_sem_representante_title}">
+								<layoutData>
+									<FlexItemData alignSelf="Center" />
+								</layoutData>
+							</Title>
+							<viz:VizFrame width="100%" id="idVizFrameComissSemRep" uiConfig="{applicationSet:'fiori'}"
+								vizType='pie'>
+								<viz:dataset>
+									<viz.data:FlattenedDataset>
+										<viz.data:dimensions>
+											<viz.data:DimensionDefinition name="Regulador" value="{descricao}" />
+										</viz.data:dimensions>
+										<viz.data:measures>
+											<viz.data:MeasureDefinition name="Total" value="{ID}" />
+										</viz.data:measures>
+									</viz.data:FlattenedDataset>
+								</viz:dataset>
+								<viz:feeds>
+									<viz.feeds:FeedItem uid="size" type="Measure" values="Total" />
+									<viz.feeds:FeedItem uid="color" type="Dimension" values="Regulador" />
+								</viz:feeds>
+							</viz:VizFrame>
+						</VBox>
 						<!--Comissoes Com Representante-->
-						<viz:VizFrame width="100%" id="idVizFrameComissComRep" uiConfig="{applicationSet:'fiori'}"
-							vizType='pie'>
-							<viz:dataset>
-								<viz.data:FlattenedDataset>
-									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Regulador" value="{descricao}" />
-									</viz.data:dimensions>
-									<viz.data:measures>
-										<viz.data:MeasureDefinition name="Total" value="{ID}" />
-									</viz.data:measures>
-								</viz.data:FlattenedDataset>
-							</viz:dataset>
+						<VBox>
+							<Title id="ttlComissComRep" textAlign="Center" wrapping="true"
+								text="{i18n>comissoes_com_representante_title}">
+								<layoutData>
+									<FlexItemData alignSelf="Center" />
+								</layoutData>
+							</Title>
+							<viz:VizFrame width="100%" id="idVizFrameComissComRep" uiConfig="{applicationSet:'fiori'}"
+								vizType='pie'>
+								<viz:dataset>
+									<viz.data:FlattenedDataset>
+										<viz.data:dimensions>
+											<viz.data:DimensionDefinition name="Regulador" value="{descricao}" />
+										</viz.data:dimensions>
+										<viz.data:measures>
+											<viz.data:MeasureDefinition name="Total" value="{ID}" />
+										</viz.data:measures>
+									</viz.data:FlattenedDataset>
+								</viz:dataset>
 
-							<viz:feeds>
-								<viz.feeds:FeedItem uid="size" type="Measure" values="Total" />
-								<viz.feeds:FeedItem uid="color" type="Dimension" values="Regulador" />
-							</viz:feeds>
-						</viz:VizFrame>
+								<viz:feeds>
+									<viz.feeds:FeedItem uid="size" type="Measure" values="Total" />
+									<viz.feeds:FeedItem uid="color" type="Dimension" values="Regulador" />
+								</viz:feeds>
+							</viz:VizFrame>
+						</VBox>
 					</form:content>
 				</form:SimpleForm>
 
@@ -189,28 +203,38 @@
 					visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}">
 					<form:content>
 						<!--Indicações/representantes por Cargo-->
-						<viz:VizFrame width="100%" id="idVizFrameRepPorCargo" uiConfig="{applicationSet:'fiori'}"
-							vizType='column'>
-							<viz:dataset>
-								<viz.data:FlattenedDataset>
-									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
-										<viz.data:DimensionDefinition name="descRegulador" value="{descRegulador}" />
-									</viz.data:dimensions>
-									<viz.data:measures>
-										<viz.data:MeasureDefinition name="Quantidade de Temas"
-											value="{qtdTemasPorRegulador}" />
-									</viz.data:measures>
-								</viz.data:FlattenedDataset>
-							</viz:dataset>
+						<VBox>
+							<Title id="ttlRepPorCargo" textAlign="Center" wrapping="true"
+								text="{i18n>representacoes_por_cargo_title}">
+								<layoutData>
+									<FlexItemData alignSelf="Center" />
+								</layoutData>
+							</Title>
+							<viz:VizFrame width="100%" id="idVizFrameRepPorCargo" uiConfig="{applicationSet:'fiori'}"
+								vizType='column'>
+								<viz:dataset>
+									<viz.data:FlattenedDataset>
+										<viz.data:dimensions>
+											<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
+											<viz.data:DimensionDefinition name="descRegulador"
+												value="{descRegulador}" />
+										</viz.data:dimensions>
+										<viz.data:measures>
+											<viz.data:MeasureDefinition name="Quantidade de Temas"
+												value="{qtdTemasPorRegulador}" />
+										</viz.data:measures>
+									</viz.data:FlattenedDataset>
+								</viz:dataset>
 
-							<viz:feeds>
-								<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
-								<viz.feeds:FeedItem id="feedCategoryAxisRepPorCargo" uid="categoryAxis" type="Dimension"
-									values="Data" />
-								<viz.feeds:FeedItem uid="color" type="Dimension" values="descRegulador" />
-							</viz:feeds>
-						</viz:VizFrame>
+								<viz:feeds>
+									<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
+									<viz.feeds:FeedItem id="feedCategoryAxisRepPorCargo" uid="categoryAxis"
+										type="Dimension" values="Data" />
+									<viz.feeds:FeedItem uid="color" type="Dimension" values="descRegulador" />
+								</viz:feeds>
+							</viz:VizFrame>
+						</VBox>
+
 					</form:content>
 				</form:SimpleForm>
 
@@ -219,54 +243,71 @@
 					labelSpanL="4" labelSpanM="4" emptySpanL="0" emptySpanM="0" columnsL="2" columnsM="2">
 					<form:content>
 						<!--Temas por Regulador-->
-						<viz:VizFrame width="100%" id="idVizFrame" uiConfig="{applicationSet:'fiori'}"
-							vizType='stacked_combination'>
-							<viz:dataset>
-								<viz.data:FlattenedDataset data="{chartRegData>/}">
-									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
-										<viz.data:DimensionDefinition name="descRegulador" value="{descRegulador}" />
-									</viz.data:dimensions>
-									<viz.data:measures>
-										<viz.data:MeasureDefinition name="Quantidade de Temas"
-											value="{qtdTemasPorRegulador}" />
-										<!--<viz.data:MeasureDefinition name="Total"
+						<VBox>
+							<Title id="ttlTemasPorReg" textAlign="Center" wrapping="true"
+								text="{i18n>temas_por_reguladores_title}">
+								<layoutData>
+									<FlexItemData alignSelf="Center" />
+								</layoutData>
+							</Title>
+							<viz:VizFrame width="100%" id="idVizFrame" uiConfig="{applicationSet:'fiori'}"
+								vizType='stacked_column'>
+								<viz:dataset>
+									<viz.data:FlattenedDataset data="{chartRegData>/}">
+										<viz.data:dimensions>
+											<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
+											<viz.data:DimensionDefinition name="descRegulador"
+												value="{descRegulador}" />
+										</viz.data:dimensions>
+										<viz.data:measures>
+											<viz.data:MeasureDefinition name="Quantidade de Temas"
+												value="{qtdTemasPorRegulador}" />
+											<!--<viz.data:MeasureDefinition name="Total"
 												value="{total}" />-->
-									</viz.data:measures>
-								</viz.data:FlattenedDataset>
-							</viz:dataset>
+										</viz.data:measures>
+									</viz.data:FlattenedDataset>
+								</viz:dataset>
 
-							<viz:feeds>
-								<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
-								<viz.feeds:FeedItem id="feedCategoryAxis" uid="categoryAxis" type="Dimension"
-									values="Data" />
-								<viz.feeds:FeedItem uid="color" type="Dimension" values="descRegulador" />
-							</viz:feeds>
-						</viz:VizFrame>
+								<viz:feeds>
+									<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
+									<viz.feeds:FeedItem id="feedCategoryAxis" uid="categoryAxis" type="Dimension"
+										values="Data" />
+									<viz.feeds:FeedItem uid="color" type="Dimension" values="descRegulador" />
+								</viz:feeds>
+							</viz:VizFrame>
+						</VBox>
 						<!--Temas por Criticidade-->
-						<viz:VizFrame width="100%" id="idVizFrameTemasPorCriticidade"
-							uiConfig="{applicationSet:'fiori'}" vizType='column'>
-							<viz:dataset>
-								<viz.data:FlattenedDataset>
-									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Data"
-											value="{path: 'mesAno', formatter: '.formatter.formatDateShortMonthYear'}" />
-										<viz.data:DimensionDefinition name="descCriticidade"
-											value="{descCriticidade}" />
-									</viz.data:dimensions>
-									<viz.data:measures>
-										<viz.data:MeasureDefinition name="Quantidade de Temas"
-											value="{qtdTemasPorCriticidade}" />
-									</viz.data:measures>
-								</viz.data:FlattenedDataset>
-							</viz:dataset>
+						<VBox>
+							<Title id="ttlTemasPorCriti" textAlign="Center" wrapping="true"
+								text="{i18n>temas_por_criticidade_title}">
+								<layoutData>
+									<FlexItemData alignSelf="Center" />
+								</layoutData>
+							</Title>
+							<viz:VizFrame width="100%" id="idVizFrameTemasPorCriticidade"
+								uiConfig="{applicationSet:'fiori'}" vizType='stacked_column'>
+								<viz:dataset>
+									<viz.data:FlattenedDataset>
+										<viz.data:dimensions>
+											<viz.data:DimensionDefinition name="Data"
+												value="{path: 'mesAno', formatter: '.formatter.formatDateShortMonthYear'}" />
+											<viz.data:DimensionDefinition name="descCriticidade"
+												value="{descCriticidade}" />
+										</viz.data:dimensions>
+										<viz.data:measures>
+											<viz.data:MeasureDefinition name="Quantidade de Temas"
+												value="{qtdTemasPorCriticidade}" />
+										</viz.data:measures>
+									</viz.data:FlattenedDataset>
+								</viz:dataset>
 
-							<viz:feeds>
-								<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
-								<viz.feeds:FeedItem uid="categoryAxis" type="Dimension" values="Data" />
-								<viz.feeds:FeedItem uid="color" type="Dimension" values="descCriticidade" />
-							</viz:feeds>
-						</viz:VizFrame>
+								<viz:feeds>
+									<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
+									<viz.feeds:FeedItem uid="categoryAxis" type="Dimension" values="Data" />
+									<viz.feeds:FeedItem uid="color" type="Dimension" values="descCriticidade" />
+								</viz:feeds>
+							</viz:VizFrame>
+						</VBox>
 					</form:content>
 				</form:SimpleForm>
 
@@ -274,27 +315,35 @@
 					emptySpanL="0" emptySpanM="0" columnsL="2" columnsM="2">
 					<form:content>
 						<!--Comparativo com Temas-->
-						<viz:VizFrame width="100%" id="idVizFrameCompComTemas" uiConfig="{applicationSet:'fiori'}"
-							vizType='column'>
-							<viz:dataset>
-								<viz.data:FlattenedDataset>
-									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
-									</viz.data:dimensions>
-									<viz.data:measures>
-										<viz.data:MeasureDefinition name="Quantidade de Temas"
-											value="{qtdTemasPorRegulador}" />
-									</viz.data:measures>
-								</viz.data:FlattenedDataset>
-							</viz:dataset>
+						<VBox>
+							<Title id="ttlCompComTemas" textAlign="Center" wrapping="true"
+								text="{i18n>comparativos_com_temas_title}">
+								<layoutData>
+									<FlexItemData alignSelf="Center" />
+								</layoutData>
+							</Title>
+							<viz:VizFrame width="100%" id="idVizFrameCompComTemas" uiConfig="{applicationSet:'fiori'}"
+								vizType='column'>
+								<viz:dataset>
+									<viz.data:FlattenedDataset>
+										<viz.data:dimensions>
+											<viz.data:DimensionDefinition name="Data" value="{MESANO}" />
+										</viz.data:dimensions>
+										<viz.data:measures>
+											<viz.data:MeasureDefinition name="Quantidade de Temas"
+												value="{qtdTemasPorRegulador}" />
+										</viz.data:measures>
+									</viz.data:FlattenedDataset>
+								</viz:dataset>
 
-							<viz:feeds>
-								<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
-								<viz.feeds:FeedItem id="feedCategoryAxisRepM" uid="categoryAxis" type="Dimension"
-									values="Data" />
-								<viz.feeds:FeedItem uid="color" type="Dimension" values="descRegulador" />
-							</viz:feeds>
-						</viz:VizFrame>
+								<viz:feeds>
+									<viz.feeds:FeedItem uid="valueAxis" type="Measure" values="Quantidade de Temas" />
+									<viz.feeds:FeedItem id="feedCategoryAxisRepM" uid="categoryAxis" type="Dimension"
+										values="Data" />
+									<viz.feeds:FeedItem uid="color" type="Dimension" values="descRegulador" />
+								</viz:feeds>
+							</viz:VizFrame>
+						</VBox>
 					</form:content>
 				</form:SimpleForm>
 			</VBox>
