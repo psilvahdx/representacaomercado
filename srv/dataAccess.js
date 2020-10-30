@@ -7,9 +7,31 @@ const destination = SapCfAxios('ODATA_COLABORADORES');
 const axios = require('axios');
 const qs = require('qs');
 const dateFormat = require('dateformat');
+const hana = require('@sap/hana-client');
+//require('@sap/xsenv').loadEnv();
 
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
+
+    const bancoColaboradores = hana.createConnection();
+    const conn_parms_tcp_test = {
+        serverNode: "44c342a6-a692-414c-b778-2aaa97292179.hana.prod-us20.hanacloud.ondemand.com:443",
+        encrypt: true,
+        sslValidateCertificate: false,
+        uid: "USER_FERIAS",
+        pwd: "PorT0s3g2af0g9f"
+
+        /*serverNode: process.env.VAR_BDCOLAB_SERVERNODE, //"44c342a6-a692-414c-b778-2aaa97292179.hana.prod-us20.hanacloud.ondemand.com:443",
+        encrypt: true,
+        sslValidateCertificate: false,
+        uid: process.env.VAR_BDCOLAB_UID,//"USER_FERIAS",
+        pwd: process.env.VAR_BDCOLAB_PWD //"PorT0s3g2af0g9f"*/
+    };
+
+    await bancoColaboradores.connect(conn_parms_tcp_test, function (err) {
+        if (err) throw err;
+        console.log("CONNECTOU")
+    });
     const db = await cds.connect.to("db");
     const {
         Temas,
@@ -37,7 +59,7 @@ module.exports = cds.service.impl(async (service) => {
             usuario = {},
             aComissoesUsuario = [],
             acomissoesIds = [],
-            xprComissoesIds = {};
+            xprComissoesIds = {};           
 
         const {
             SELECT
@@ -770,30 +792,49 @@ module.exports = cds.service.impl(async (service) => {
         let  aReturn = [];        
         let qry = req.query.SELECT.where;               
         
-        const aReguladores = await cds.read(Reguladores);
+        const aReguladores = await cds.read(Reguladores),
+              aTemasEncerrados = await cds.read(Historico).where({status_ID: 4});
         
         const tx = service.tx(req);               
         var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
         console.log("Historico Recuperado:", aHistAux.length);
 
+        for (let i = 0; i < aHistAux.length; i++) {
+            const element = aHistAux[i];
+            var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
+            element.ultimoRegistro.substring(5, 7) + "/02");          
+            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");            
+        } 
         //Recupera lista distinta de Temas nos registros recuperados
         var aHist = aHistAux.filter((tema, index, self) =>
             index === self.findIndex((t) => (
-                t.idTema === tema.idTema && t.idTema === tema.idTema
+                t.idTema === tema.idTema && t.ultimoRegistro === tema.ultimoRegistro
             ))
         );
         console.log("Historico Sem Duplicados:", aHist.length);
 
-        for (let i = 0; i < aHist.length; i++) {
-            const element = aHist[i];
-            var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
-            element.ultimoRegistro.substring(5, 7) + "/01");          
-            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
-            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");
-            
-        }
+         //Se o Tema foi em algum momento Encerrado, desconsiderar da seleção
+         var aTemasEmAberto = [];
+         for (let idx = 0; idx < aHist.length; idx++) {
+             const element = aHist[idx];
+             
+             const found = aTemasEncerrados.find(temaEncerrado=> temaEncerrado.idTema === element.idTema);
+             if (!found) {
+                 //Tema em aberto
+                 aTemasEmAberto.push(element);
+             }else{
+                 //Se encontrado, verificar se foi encerrado no mês atual
+                 var vToday = dateFormat(new Date(), "isoUtcDateTime");
+                 if (element.ultimoRegistro.substring(0, 6) !== vToday.substring(0, 6)) {
+                      //Tema em aberto nos meses anteriores
+                      aTemasEmAberto.push(element);
+                 }
+             }
+         }
+        
         //Recupera lista distinta de datas nos registros recuperados
-        var aDates = aHist.filter((tema, index, self) =>
+        var aDates = aTemasEmAberto.filter((tema, index, self) =>
             index === self.findIndex((t) => (
                 t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
             ))
@@ -804,7 +845,7 @@ module.exports = cds.service.impl(async (service) => {
 
             var oTemaPorRegulador = {ID: ""};            
             //Agrupa Temas para mês em execução
-            var aGroupMonth = aHist.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            var aGroupMonth = aTemasEmAberto.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
             //Remove duplicados para o mesmo mês, considerando o Id do tema
             var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
             index === self.findIndex((t) => (
@@ -856,31 +897,50 @@ module.exports = cds.service.impl(async (service) => {
         let  aReturn = [];        
         let qry = req.query.SELECT.where;               
         
-        const aCriticidades = await cds.read(Criticidades);
+        const aCriticidades = await cds.read(Criticidades),
+              aTemasEncerrados = await cds.read(Historico).where({status_ID: 4});;
         
         const tx = service.tx(req);               
         var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
         console.log("Historico Recuperado:", aHistAux.length);
 
+        for (let i = 0; i < aHistAux.length; i++) {
+            const element = aHistAux[i];
+            var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
+            element.ultimoRegistro.substring(5, 7) + "/02");          
+            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");            
+        }
+
         //Recupera lista distinta de Temas nos registros recuperados
         var aHist = aHistAux.filter((tema, index, self) =>
             index === self.findIndex((t) => (
-                t.idTema === tema.idTema && t.idTema === tema.idTema
+                t.idTema === tema.idTema && t.ultimoRegistro === tema.ultimoRegistro
             ))
         );
         console.log("Historico Sem Duplicados:", aHist.length);
 
-
-        for (let i = 0; i < aHist.length; i++) {
-            const element = aHist[i];
-            var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
-            element.ultimoRegistro.substring(5, 7) + "/01");          
-            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
-            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");
-            
-        }
+         //Se o Tema foi em algum momento Encerrado, desconsiderar da seleção
+         var aTemasEmAberto = [];
+         for (let idx = 0; idx < aHist.length; idx++) {
+             const element = aHist[idx];
+             
+             const found = aTemasEncerrados.find(temaEncerrado=> temaEncerrado.idTema === element.idTema);
+             if (!found) {
+                 //Tema em aberto
+                 aTemasEmAberto.push(element);
+             }else{
+                //Se encontrado, verificar se foi encerrado no mês atual
+                var vToday = dateFormat(new Date(), "isoUtcDateTime");
+                if (element.ultimoRegistro.substring(0, 6) !== vToday.substring(0, 6)) {
+                     //Tema em aberto nos meses anteriores
+                     aTemasEmAberto.push(element);
+                }
+            }
+         }        
+        
         //Recupera lista distinta de datas nos registros recuperados
-        var aDates = aHist.filter((tema, index, self) =>
+        var aDates = aTemasEmAberto.filter((tema, index, self) =>
             index === self.findIndex((t) => (
                 t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
             ))
@@ -891,7 +951,7 @@ module.exports = cds.service.impl(async (service) => {
 
             var oTemaPorCriticidade = {ID: ""};            
             //Agrupa Temas para mês em execução
-            var aGroupMonth = aHist.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            var aGroupMonth = aTemasEmAberto.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
             //Remove duplicados para o mesmo mês, considerando o Id do tema
             var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
             index === self.findIndex((t) => (
@@ -1076,9 +1136,32 @@ module.exports = cds.service.impl(async (service) => {
 
     async function getColaborador(matricula) {
 
-        let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${matricula}')`,
-            oColaborador = {};
+        let oColaborador = {};
 
+        console.log("DataBase Colaboradores", matricula);
+
+            var resPromisse = new Promise(function (resolve, reject) {
+                bancoColaboradores.exec(`SELECT *
+            FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
+            WHERE Empregado."Login_Funcionario" = '${matricula}'`,
+                    function (err, result) {
+                        if (err) reject(err);
+                        resolve(result);
+                    });
+            }.bind(this));
+
+           var response = await resPromisse.then(function (result) {
+                return result
+            }).catch(function (err) {
+                //context.reject(400, err);
+                console.log("ERRO DataBase Colaboradores", err);
+            });
+            if(response){
+                oColaborador = response[0];
+            }           
+
+/*
+        let //sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${matricula}')`,
         try {
             const response = await destination({
                 method: "get",
@@ -1095,7 +1178,7 @@ module.exports = cds.service.impl(async (service) => {
         } catch (error) {
 
             console.log("ERRO ODATA_COLABORADORES_DESTINATION", error.message);
-        }
+        }*/
 
         return oColaborador;
 

@@ -4,8 +4,22 @@ const SapCfAxios = require('sap-cf-axios').default;
 const destination = SapCfAxios('ODATA_COLABORADORES');
 const axios = require('axios');
 const qs = require('qs');
+const hana = require('@sap/hana-client');
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
+    const bancoColaboradores = hana.createConnection();
+    const conn_parms_tcp_test = {
+        serverNode: "44c342a6-a692-414c-b778-2aaa97292179.hana.prod-us20.hanacloud.ondemand.com:443",
+        encrypt: true,
+        sslValidateCertificate: false,
+        uid: "USER_FERIAS",
+        pwd: "PorT0s3g2af0g9f"
+    };
+
+    await bancoColaboradores.connect(conn_parms_tcp_test, function (err) {
+        if (err) throw err;
+        console.log("CONNECTOU")
+    });
     const db = await cds.connect.to("db");
     const {
         Temas,
@@ -235,7 +249,9 @@ module.exports = cds.service.impl(async (service) => {
         }
 
         let response = await getEmailColaborador(sMatricula).then(colaborador => {
-
+            
+            if (colaborador && colaborador.Email_Funcionario) {                
+           
             //colaborador.Email_Funcionario
             let aEmails = ["paulosantos.silva@portoseguro.com.br"]; //colaborador.Email_Funcionario
             if (colaborador.Login_Funcionario === "F0121544") {
@@ -264,6 +280,9 @@ module.exports = cds.service.impl(async (service) => {
             }).catch(function (error) {
                 console.log("Erro no envio de email:", error.message);
             });
+         }else{
+             return false;
+         }
 
         });
 
@@ -272,8 +291,32 @@ module.exports = cds.service.impl(async (service) => {
 
     async function getEmailColaborador(sMatricula) {
 
+        let oColaborador = {};
 
-        let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${sMatricula}')`,
+        console.log("DataBase Colaboradores", matricula);
+
+        var resPromisse = new Promise(function (resolve, reject) {
+            bancoColaboradores.exec(`SELECT *
+        FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
+        WHERE Empregado."Login_Funcionario" = '${matricula}'`,
+                function (err, result) {
+                    if (err) reject(err);
+                    resolve(result);
+                });
+        }.bind(this));
+
+       var response = await resPromisse.then(function (result) {
+            return result
+        }).catch(function (err) {
+            //context.reject(400, err);
+            console.log("ERRO DataBase Colaboradores", err);
+        });
+        
+        if(response){
+             oColaborador = response[0];
+        }       
+
+        /*let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${sMatricula}')`,
             oColaborador = {};
 
         try {
@@ -295,7 +338,7 @@ module.exports = cds.service.impl(async (service) => {
         } catch (error) {
 
             console.log("ERRO ODATA_COLABORADORES_DESTINATION", error.message);
-        }
+        }*/
 
         return oColaborador;
 
