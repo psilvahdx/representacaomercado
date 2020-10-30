@@ -151,3 +151,34 @@ entity EventosAlerta : cuid {
 		alertaUsuario: Association to AlertasUsuario;
 		
 }	
+
+
+entity TemasPorRegulador {
+        key ID             : UUID;            
+            ultimoRegistro : DateTime;
+            status_ID      : Integer;
+            itens   : Association to many TemasPorRegItem on itens.item = $self;
+    };
+
+     entity TemasPorCriticidade {
+        key ID             : UUID;            
+            ultimoRegistro : DateTime;
+            status_ID      : Integer;
+            itens   : Association to many TemasPorCrItem on itens.item = $self;
+    };
+
+    //@cds.autoexpose
+ entity TemasPorRegItem {
+        key ID: String;
+        descricao      : String;
+        qtd : Integer;
+        item: Association to TemasPorRegulador;
+    }
+
+//@cds.autoexpose
+ entity TemasPorCrItem {
+        key ID: String;
+        descricao      : String;
+        qtd : Integer;
+        item: Association to TemasPorCriticidade;
+    }
