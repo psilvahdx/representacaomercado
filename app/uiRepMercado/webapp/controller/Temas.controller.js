@@ -719,7 +719,7 @@ sap.ui.define([
                     var oResults = oData.results,
                         oVizFrame = that.getView().byId("idVizFrameRepPorCargo");                            
 
-                    if (oData.results.length) {
+                    if (oData.results.length > 0) {
                         for (let i = 0; i < oResults.length; i++) {
                             const element = oResults[i];
                             element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
@@ -798,8 +798,55 @@ sap.ui.define([
                         }));
                     } else {
 
-                        that.setNoDataVizFrame(oVizFrame);
+                        aMeasures.push({
+                            STATUS: "",
+                            TOTAL: 0
+                        });
 
+                        var assignedContentData = {
+                            ComparativosComTemas: aMeasures
+                        };
+                        var dataModel = new JSONModel(assignedContentData);
+
+                        oVizFrame.setModel(dataModel);
+
+                        aDimensions.push({
+                            name: "CARGO",
+                            value: "{CARGO}"
+                        });
+                        aMeasuresConfig.push({
+                            name: "TOTAL",
+                            value: "{TOTAL}"
+                        });
+
+                        oVizFrame.destroyDataset();
+                        oVizFrame.destroyFeeds();
+
+                        var oSorter = new sap.ui.model.Sorter("CARGO", false);                      
+
+                        //New dataset
+                        oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                            dimensions: aDimensions,
+                            measures: aMeasuresConfig,
+                            data: {
+                                path: "/RepresentacoesPorCargo",
+                                sorter: oSorter
+                            }
+                        }));
+
+                        //Add feeds
+                        oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                            uid: "categoryAxis",
+                            type: "Dimension",
+                            values: ["CARGO"]
+                        }));
+
+                        oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                            uid: "valueAxis",
+                            type: "Measure",
+                            values: ["TOTAL"]
+                        }));
+                        //that.setNoDataVizFrame(oVizFrame);
                     }
 
                     that.hideBusy();
@@ -1105,21 +1152,37 @@ sap.ui.define([
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = '/Historico';
+                sPath = "/ComparativoComTemas";
+                //sPath = '/Historico';
 
             oModel.read(sPath, {
                 filters: [aFilter],
                 urlParameters: {
-                    "$expand": "status",
-                    "$orderby": "ultimoRegistro desc",
-                    "$select": "idTema,ultimoRegistro,status_ID"
+                    "$expand": "itens",
+                    "$orderby": "ultimoRegistro desc"//,
+                    //"$select": "idTema,ultimoRegistro,status_ID"
                 },
                 success: function (oData) {
                     var oResults = oData.results,
-                        oVizFrame = that.getView().byId("idVizFrameCompComTemas");
-                            
+                        oVizFrame = that.getView().byId("idVizFrameCompComTemas");                            
 
                     if (oData.results.length > 0) {
+
+                        for (let z = 0; z < oResults.length; z++) {
+                            const element = oResults[z];
+
+                            var aItens = element.itens.results;
+                            for (let i = 0; i < aItens.length; i++) {
+                                const item = aItens[i];
+                                aMeasures.push({
+                                    STATUS: item.descricao,
+                                    TOTAL: item.qtd
+                                });
+                            }                         
+                            
+                        }                        
+                      
+                        /*
                         var aGroupTemasDistinct = oResults.filter((temaM, index, self) =>
                             index === self.findIndex((t) => (
                                 t.idTema === temaM.idTema && t.idTema === temaM.idTema
@@ -1146,7 +1209,7 @@ sap.ui.define([
                                 TOTAL: vTotal
                             });
 
-                        }
+                        }*/
 
                         var assignedContentData = {
                             ComparativosComTemas: aMeasures
@@ -1192,7 +1255,57 @@ sap.ui.define([
                             values: ["TOTAL"]
                         }));
                     } else {
-                        that.setNoDataVizFrame(oVizFrame);
+
+                        aMeasures.push({
+                            CARGO: "",
+                            TOTAL: 0
+                        });
+
+                        var assignedContentData = {
+                            RepresentacoesPorCargo: aMeasures
+                        };
+                        var dataModel = new JSONModel(assignedContentData);
+
+                        oVizFrame.setModel(dataModel);
+
+                        aDimensions.push({
+                            name: "STATUS",
+                            value: "{STATUS}"
+                        });
+                        aMeasuresConfig.push({
+                            name: "TOTAL",
+                            value: "{TOTAL}"
+                        });
+
+                        oVizFrame.destroyDataset();
+                        oVizFrame.destroyFeeds();
+
+                        var oSorter = new sap.ui.model.Sorter("STATUS", false);                      
+
+                        //New dataset
+                        oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                            dimensions: aDimensions,
+                            measures: aMeasuresConfig,
+                            data: {
+                                path: "/ComparativosComTemas",
+                                sorter: oSorter
+                            }
+                        }));
+
+                        //Add feeds
+                        oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                            uid: "categoryAxis",
+                            type: "Dimension",
+                            values: ["STATUS"]
+                        }));
+
+                        oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                            uid: "valueAxis",
+                            type: "Measure",
+                            values: ["TOTAL"]
+                        }));
+
+                        //that.setNoDataVizFrame(oVizFrame);
                     }
 
                     that.hideBusy();
@@ -1205,6 +1318,7 @@ sap.ui.define([
 
         getComissoesSemRepresentantePorRegulador: function () {
             var oModel = this.getModel(),
+                oUser = this.getModel("userLogModel").getData(),
                 that = this,
                 aMeasures = [],
                 aDimensions = [],
@@ -1222,7 +1336,7 @@ sap.ui.define([
                         oVizFrame = that.getView().byId("idVizFrameComissSemRep");
                     
 
-                    if (oData.results.length > 0) {
+                    if (oData.results.length > 0 && oUser.userLog.userProfile_ID === "ADM") {
                         var aReguladores = oResults.filter((comissao, index, self) =>
                             index === self.findIndex((t) => (
                                 t.regulador === comissao.regulador && t.regulador === comissao.regulador
@@ -1292,7 +1406,56 @@ sap.ui.define([
                             values: ["TOTAL"]
                         }));
                     } else {
-                        that.setNoDataVizFrame(oVizFrame);
+                       // that.setNoDataVizFrame(oVizFrame);
+
+                       aMeasures.push({
+                        CARGO: "",
+                        TOTAL: 0
+                         });
+
+                    var assignedContentData = {
+                        RepresentacoesPorCargo: aMeasures
+                    };
+                    var dataModel = new JSONModel(assignedContentData);                 
+
+                    oVizFrame.setModel(dataModel);
+
+                    aDimensions.push({
+                        name: "REGULADOR",
+                        value: "{REGULADOR}"
+                    });
+                    aMeasuresConfig.push({
+                        name: "TOTAL",
+                        value: "{TOTAL}"
+                    });
+
+                    oVizFrame.destroyDataset();
+                    oVizFrame.destroyFeeds();
+
+                    //New dataset
+                    oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
+                        dimensions: aDimensions,
+                        measures: aMeasuresConfig,
+                        data: {
+                            path: "/ComissoesSemRepresentante"
+                        }
+                    }));
+
+                    //Add feeds
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "color",
+                        type: "Dimension",
+                        values: ["REGULADOR"]
+                    }));
+
+                    oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({
+                        uid: "size",
+                        type: "Measure",
+                        values: ["TOTAL"]
+                    }));
+
+
+
                     }
 
                     that.hideBusy();
@@ -1334,7 +1497,6 @@ sap.ui.define([
                             var aComissoesRegulador = oResults.filter(r => {
                                 return r.regulador.descricao === regulador.regulador.descricao
                             });
-
 
                             if (regulador.regulador) {
                                 aMeasures.push({
@@ -1471,8 +1633,6 @@ sap.ui.define([
                 sSVGComissSemRep = sSVGComissSemRep.replace(/translate /gm, "translate");
                 sSVGComissComRep = sSVGComissComRep.replace(/translate /gm, "translate");
                 sSVGRepPorCargo = sSVGRepPorCargo.replace(/translate /gm, "translate");
-
-
 
                 canvg(oCanvasHTMLComissSemRep, sSVGComissSemRep);
                 canvg(oCanvasHTMLComissComRep, sSVGComissComRep);
