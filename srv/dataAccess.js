@@ -1019,26 +1019,28 @@ module.exports = cds.service.impl(async (service) => {
 
         
         const aStatus = await cds.read(Status),
-              aTemasSemAtualizacao = await cds.read(Temas).where({status_ID: 3});        
+              aTemasSemAtualizacao = await cds.read(Temas).where({status_ID: 2});        
                     
         var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
-        console.log("Historico Recuperado:", aHistAux.length);        
-
+        console.log("Comarativo com Temas Historico Recuperado:", aHistAux.length);        
+        //console.log(aHistAux);
         for (let i = 0; i < aHistAux.length; i++) {
-            const element = aHistAux[i];
+            var element = aHistAux[i];
             var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
             element.ultimoRegistro.substring(5, 7) + "/02");          
             //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
             element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");            
         }
-
+        //console.log(aHistAux);
+        aHistAux = aHistAux.sort(function(a, b){return b.status_ID - a.status_ID});
+        //console.log("Sort",aHistAux);
         //Recupera lista distinta de Temas nos registros recuperados
         var aHist = aHistAux.filter((tema, index, self) =>
             index === self.findIndex((t) => (
-                t.idTema === tema.idTema && t.ultimoRegistro === tema.ultimoRegistro
+                t.idTema === tema.idTema && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
             ))
         );
-        console.log("Historico Sem Duplicados:", aHist.length);
+        console.log("Comarativo com Temas Historico Sem Duplicados:", aHist.length);
         
         //Recupera lista distinta de datas nos registros recuperados
         var aDates = aHist.filter((tema, index, self) =>
@@ -1063,7 +1065,7 @@ module.exports = cds.service.impl(async (service) => {
                 t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
                 ))
             );           
-            //Agrupa por Criticidade
+            //Agrupa por Status
             var aStatusMes = aGroupTemasMonth.filter((tema, index, self) =>
                 index === self.findIndex((t) => (
                     t.status_ID === tema.status_ID && t.status_ID === tema.status_ID
@@ -1101,26 +1103,29 @@ module.exports = cds.service.impl(async (service) => {
         //console.log("qry em branco", qry[2].val);
         if (qry[2].val.substring(0, 6) === vToday.substring(0, 6)) {
             isMesAtual = true;  
-            aReturn.push({ID: "cf3e1cc1-a35a-4b2f-8696-0b2000000521",ultimoRegistro: qry[2].val, itens: [{ID: 3, descricao: "Sem atualização", qtd: 0}] });           
+            aReturn.push({ID: "cf3e1cc1-a35a-4b2f-8696-0b2000000521",ultimoRegistro: qry[2].val, itens: [{ID: 2, descricao: "Sem atualização", qtd: 0}] });           
         }
 
         if (isMesAtual) {
 
             
-            if (oUser.perfil_ID === "ADM") {
+            if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES") {
                 aTemasPorPerfil = aTemasSemAtualizacao;
             }else if(oUser.perfil_ID === "VP_DIR" || oUser.perfil_ID === "REP" ){
 
                 for (let idx = 0; idx < aTemasSemAtualizacao.length; idx++) {
-                    const tema = aTemasSemAtualizacao[idx];
+                    var tema = aTemasSemAtualizacao[idx];
+
+                    tema.diretorGeral = tema.diretorGeral? tema.diretorGeral : "";
+                    tema.diretorExecutivo = tema.diretorExecutivo? tema.diretorExecutivo : "";
                     
                     const found = aComissoesUsuario.find(cm=> cm.comissao_ID === tema.comissao_ID);
                     if (found) {
                         aTemasPorPerfil.push(tema);
-                    }else if (tema.diretorGeral === oUser.nome) {
+                    }else if (tema.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
                         aTemasPorPerfil.push(tema);
                     }
-                    else if (tema.diretorExecutivo === oUser.nome) {
+                    else if (tema.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase()) {
                         aTemasPorPerfil.push(tema);
                     }
                 }
@@ -1131,7 +1136,7 @@ module.exports = cds.service.impl(async (service) => {
                 const element = aReturn[y];
                 for (let idx = 0; idx < element.itens.length; idx++) {
                     var item = element.itens[idx];
-                    if (item.ID === 3) {//Sem atualização no mês atual não considerar data
+                    if (item.ID === 2) {//Sem atualização no mês atual não considerar data
                         item.qtd = aTemasPorPerfil.length;
                     } 
                 }
@@ -1391,6 +1396,7 @@ module.exports = cds.service.impl(async (service) => {
         console.log("Comissoes com Representante", aComissoesComRep.length)
         switch (oUser.perfil_ID) {
             case "ADM":
+            case "PRES":    
                 for (let i = 0; i < aComissoes.length; i++) {
                     const element = aComissoes[i];
         
@@ -1410,11 +1416,13 @@ module.exports = cds.service.impl(async (service) => {
             
                         if (find) {
                             var oRepresentante = aUsers.find(user => user.ID === find.usuario_ID);
-                            if (oRepresentante.diretorGeral === oUser.nome) {
+                            oRepresentante.diretorGeral = oRepresentante.diretorGeral? oRepresentante.diretorGeral : "";
+                            oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo? oRepresentante.diretorExecutivo : "";
+                            if (oRepresentante.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
                                 //console.log("diretor Geral")
                                 aReturn.push(element);
                             }
-                            else if(oRepresentante.diretorExecutivo === oUser.nome ){
+                            else if(oRepresentante.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase() ){
                                 //console.log("diretor executivo")
                                 aReturn.push(element);
                             }else{                      
