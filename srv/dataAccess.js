@@ -49,7 +49,9 @@ module.exports = cds.service.impl(async (service) => {
         AlertasUsuario,
         EventosAlerta,
         Criticidades,
-        TemasPorCriticidade
+        TemasPorCriticidade,
+        ComparativoComTemas,
+        Status
     } = service.entities;
 
 
@@ -980,7 +982,7 @@ module.exports = cds.service.impl(async (service) => {
                 if (oReg) {
                     oItem.descricao = oReg.descricao;   
                 }else{
-                    oItem.descricao = "Novo"; 
+                    oItem.descricao = "Baixo"; 
                 }
                 
                 oItem.qtd = aGroupCriticidade.length;
@@ -988,6 +990,153 @@ module.exports = cds.service.impl(async (service) => {
             }
             oTemaPorCriticidade.itens = aItens;
             aReturn.push(oTemaPorCriticidade);
+        }
+
+        return aReturn;
+
+
+    });
+
+    //Comparativo com Temas    
+     service.on("READ", ComparativoComTemas, async (req) => {
+        
+        const tx = service.tx(req);           
+        let  aReturn = [];        
+        let qry = req.query.SELECT.where;          
+        var vToday = dateFormat(new Date(), "isoUtcDateTime");    
+        var isMesAtual = false;
+
+        let aUsers = []
+            aTemasPorPerfil = [],
+            oUser = {},
+            aComissoesRepresentante = await cds.read(ComissoesRepresentante);
+
+            //Busca dados Usuário logado
+            aUsers = await cds.read(Usuarios);           
+            oUser = aUsers.find(usr=> usr.ID === req.user.id);
+
+        var aComissoesUsuario = aComissoesRepresentante.filter(cm=>{return cm.usuario_ID === oUser.ID});       
+
+        
+        const aStatus = await cds.read(Status),
+              aTemasSemAtualizacao = await cds.read(Temas).where({status_ID: 3});        
+                    
+        var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
+        console.log("Historico Recuperado:", aHistAux.length);        
+
+        for (let i = 0; i < aHistAux.length; i++) {
+            const element = aHistAux[i];
+            var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
+            element.ultimoRegistro.substring(5, 7) + "/02");          
+            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");            
+        }
+
+        //Recupera lista distinta de Temas nos registros recuperados
+        var aHist = aHistAux.filter((tema, index, self) =>
+            index === self.findIndex((t) => (
+                t.idTema === tema.idTema && t.ultimoRegistro === tema.ultimoRegistro
+            ))
+        );
+        console.log("Historico Sem Duplicados:", aHist.length);
+        
+        //Recupera lista distinta de datas nos registros recuperados
+        var aDates = aHist.filter((tema, index, self) =>
+            index === self.findIndex((t) => (
+                t.ultimoRegistro.toString() === tema.ultimoRegistro.toString() && t.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+            ))
+        );
+        //Percorre lista de Datas recuperadas
+        for (let i = 0; i < aDates.length; i++) {
+            const tema = aDates[i];
+           
+            if (tema.ultimoRegistro.substring(0, 6) === vToday.substring(0, 6)) {
+                isMesAtual = true;               
+            }
+
+            var oTemaPorStatus = {ID: ""};            
+            //Agrupa Temas para mês em execução
+            var aGroupMonth = aHist.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            //Remove duplicados para o mesmo mês, considerando o Id do tema
+            var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
+            index === self.findIndex((t) => (
+                t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                ))
+            );           
+            //Agrupa por Criticidade
+            var aStatusMes = aGroupTemasMonth.filter((tema, index, self) =>
+                index === self.findIndex((t) => (
+                    t.status_ID === tema.status_ID && t.status_ID === tema.status_ID
+                ))
+            );
+            //Monta objeto de Retorno
+            oTemaPorStatus.ID = tema.ID;
+            oTemaPorStatus.ultimoRegistro = tema.ultimoRegistro;
+            var aItens = [];
+
+            for (let z = 0; z < aStatusMes.length; z++) {
+                const element = aStatusMes[z];
+
+                var oItem = {ID: ""};
+
+                var aGroupStatus = aGroupTemasMonth.filter(r => { return r.status_ID === element.status_ID });   
+                
+                var oReg = aStatus.find(cr=> cr.ID === element.status_ID );
+                if (oReg) {
+                    oItem.ID = oReg.ID;
+                    oItem.descricao = oReg.descricao;   
+                }else{
+                    oItem.ID = 1;
+                    oItem.descricao = "Novo"; 
+                }
+                
+                oItem.qtd = aGroupStatus.length;
+                aItens.push(oItem);
+            }
+
+            oTemaPorStatus.itens = aItens;
+            aReturn.push(oTemaPorStatus);
+        }
+        //Consulta no mês Atual
+        //console.log("qry em branco", qry[2].val);
+        if (qry[2].val.substring(0, 6) === vToday.substring(0, 6)) {
+            isMesAtual = true;  
+            aReturn.push({ID: "cf3e1cc1-a35a-4b2f-8696-0b2000000521",ultimoRegistro: qry[2].val, itens: [{ID: 3, descricao: "Sem atualização", qtd: 0}] });           
+        }
+
+        if (isMesAtual) {
+
+            
+            if (oUser.perfil_ID === "ADM") {
+                aTemasPorPerfil = aTemasSemAtualizacao;
+            }else if(oUser.perfil_ID === "VP_DIR" || oUser.perfil_ID === "REP" ){
+
+                for (let idx = 0; idx < aTemasSemAtualizacao.length; idx++) {
+                    const tema = aTemasSemAtualizacao[idx];
+                    
+                    const found = aComissoesUsuario.find(cm=> cm.comissao_ID === tema.comissao_ID);
+                    if (found) {
+                        aTemasPorPerfil.push(tema);
+                    }else if (tema.diretorGeral === oUser.nome) {
+                        aTemasPorPerfil.push(tema);
+                    }
+                    else if (tema.diretorExecutivo === oUser.nome) {
+                        aTemasPorPerfil.push(tema);
+                    }
+                }
+
+            }
+            
+            for (let y = 0; y < aReturn.length; y++) {
+                const element = aReturn[y];
+                for (let idx = 0; idx < element.itens.length; idx++) {
+                    var item = element.itens[idx];
+                    if (item.ID === 3) {//Sem atualização no mês atual não considerar data
+                        item.qtd = aTemasPorPerfil.length;
+                    } 
+                }
+            }           
+            
         }
 
         return aReturn;
@@ -1198,7 +1347,7 @@ module.exports = cds.service.impl(async (service) => {
             ))
         );
 
-        console.log("Comissoes com Representante", aComissoesComRep.length)
+       // console.log("Comissoes com Representante", aComissoesComRep.length)
 
         for (let i = 0; i < aComissoes.length; i++) {
             const element = aComissoes[i];
@@ -1210,7 +1359,7 @@ module.exports = cds.service.impl(async (service) => {
             }
         }
 
-        console.log("Comissoes SEM Representante", aReturn.length)
+       // console.log("Comissoes SEM Representante", aReturn.length)
 
 
         return aReturn;
@@ -1220,9 +1369,17 @@ module.exports = cds.service.impl(async (service) => {
     service.on("comissoesComRepresentante", async req => {
 
         let aReturn = [];
+        let aUsers = [],
+        oUser = {};
 
+        //Busca Usuários
+        aUsers = await cds.read(Usuarios);
+        //Recupera Usuario Logado
+        oUser = aUsers.find(usr => usr.ID === req.user.id);
+       
         const aComissoes = await cds.read(Comissoes),
-            aComissoesRep = await cds.read(ComissoesRepresentante);
+            aComissoesRep = await cds.read(ComissoesRepresentante),
+            aComissoesUser = aComissoesRep.filter(cr =>{ return  cr.usuario_ID === oUser.ID} ) ;
 
         //Filtra somente Comissões com Representante atribuido   
         const aComissoesComRep = aComissoesRep.filter((comissao, index, self) =>
@@ -1232,19 +1389,49 @@ module.exports = cds.service.impl(async (service) => {
         );
 
         console.log("Comissoes com Representante", aComissoesComRep.length)
+        switch (oUser.perfil_ID) {
+            case "ADM":
+                for (let i = 0; i < aComissoes.length; i++) {
+                    const element = aComissoes[i];
+        
+                    const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
+        
+                    if (find) {
+                        aReturn.push(element);
+                    }
+                }
+                break;  
+            case "VP_DIR":
+                    //Somente Vizualiza dados de sua responsábilidade
+                    for (let y = 0; y < aComissoes.length; y++) {
+                        const element = aComissoes[y];
+            
+                        const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
+            
+                        if (find) {
+                            var oRepresentante = aUsers.find(user => user.ID === find.usuario_ID);
+                            if (oRepresentante.diretorGeral === oUser.nome) {
+                                //console.log("diretor Geral")
+                                aReturn.push(element);
+                            }
+                            else if(oRepresentante.diretorExecutivo === oUser.nome ){
+                                //console.log("diretor executivo")
+                                aReturn.push(element);
+                            }else{                      
+                                //verifica se comissão esta relacionada com o Usuário logado
+                                var found = aComissoesUser.find(acr => acr.comissao_ID === element.ID);
 
-        for (let i = 0; i < aComissoes.length; i++) {
-            const element = aComissoes[i];
-
-            const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
-
-            if (find) {
-                aReturn.push(element);
-            }
-        }
-
-        //console.log("Comissoes SEM Representante", aReturn.length)
-
+                                if (found) {                                   
+                                    aReturn.push(element);
+                                }                                
+                               
+                            }                           
+                        }
+                    }
+                    break;       
+            default:
+                break;
+        }        
 
         return aReturn;
     });

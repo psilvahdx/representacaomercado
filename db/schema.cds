@@ -167,6 +167,13 @@ entity TemasPorRegulador {
             itens   : Association to many TemasPorCrItem on itens.item = $self;
     };
 
+entity ComparativoComTemas{
+      key ID             : UUID;            
+            ultimoRegistro : DateTime;
+            status_ID      : Integer;
+            itens   : Association to many TemasPorStautsItem on itens.item = $self;
+}
+
     //@cds.autoexpose
  entity TemasPorRegItem {
         key ID: String;
@@ -182,3 +189,10 @@ entity TemasPorRegulador {
         qtd : Integer;
         item: Association to TemasPorCriticidade;
     }
+
+entity TemasPorStautsItem {
+     key ID: Integer;
+        descricao      : String;
+        qtd : Integer;
+        item: Association to ComparativoComTemas;
+}
