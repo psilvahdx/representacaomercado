@@ -822,6 +822,7 @@ sap.ui.define([
         saveHistorico: function (oParams, oOldTema) {
             var oModel = this.getModel(),
                 that = this,
+                oUserLog = this.getModel("userLogModel").getData(),
                 sDescricao = this.getResourceBundle().getText("tema_txt"),
                 sStatus = this.getResourceBundle().getText("status_txt"),
                 sDtUltimaReuniao = this.getResourceBundle().getText("ultima_reuniao_txt"),
@@ -830,6 +831,8 @@ sap.ui.define([
                 sPrincipaisImpactos = this.getResourceBundle().getText("principais_impactos_short_txt");
 
             delete oParams.ID;
+
+            oParams.userAlteracao_ID = oUserLog.userLog.ID;
 
             //Registra log de campos que foram modificados
             if (oOldTema) {
