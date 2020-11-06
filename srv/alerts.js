@@ -30,7 +30,7 @@ module.exports = cds.service.impl(async (service) => {
     } = service.entities;
 
     service.on("atualizaStatusTemas", async (context) => {
-
+        console.log("chamou Atualiza Status temas");
         let nTemasAtualizados = 0;
         let oLog = {
             ID: 0,
@@ -118,7 +118,7 @@ module.exports = cds.service.impl(async (service) => {
     });*/
 
     //disparaEmailsAlerta
-    service.on("disparaEmailsAlerta", async (context) => {
+   service.on("disparaEmailsAlerta", async (context) => {
         let oLog = {
             ID: 0,
             status: "",

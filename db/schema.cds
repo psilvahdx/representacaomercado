@@ -147,7 +147,7 @@ entity EventosAlerta : cuid {
         perfisQueRecebem: String(50);
         usuariosQueRecebem: String;
         eventoOrigem_ID: String;
-		tipoAlerta : Association to TiposAlerta;
+		tipoAlerta : Association to TiposAlerta @assert.integrity:false;
 		alertaUsuario: Association to AlertasUsuario;
 		
 }	
