@@ -1364,7 +1364,7 @@ module.exports = cds.service.impl(async (service) => {
             }
         }
 
-       // console.log("Comissoes SEM Representante", aReturn.length)
+       //console.log("Comissoes SEM Representante", aReturn.length)
 
 
         return aReturn;

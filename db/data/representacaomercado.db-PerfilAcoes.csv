@@ -1,5 +1,5 @@
 ID;isDashBoardVisible;isCadastroVisible;changeRepresentante;createTemas
 REP;true;false;false;true
 VP_DIR;true;false;false;true
-PRES;true;false;true;true
+PRES;true;false;false;false
 ADM;true;true;true;true

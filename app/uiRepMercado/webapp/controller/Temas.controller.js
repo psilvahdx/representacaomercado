@@ -1339,7 +1339,7 @@ sap.ui.define([
                     if (oData.results.length > 0 && oUser.userLog.userProfile_ID === "ADM") {
                         var aReguladores = oResults.filter((comissao, index, self) =>
                             index === self.findIndex((t) => (
-                                t.regulador === comissao.regulador && t.regulador === comissao.regulador
+                                t.regulador.ID === comissao.regulador.ID  && t.regulador.ID  === comissao.regulador.ID 
                             ))
                         );
 
@@ -1347,7 +1347,7 @@ sap.ui.define([
                             const regulador = aReguladores[i];
 
                             var aComissoesRegulador = oResults.filter(r => {
-                                return r.regulador === regulador.regulador
+                                return r.regulador.ID  === regulador.regulador.ID 
                             });
 
                             if (regulador.regulador) {

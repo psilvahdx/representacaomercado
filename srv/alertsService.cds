@@ -6,10 +6,10 @@ using {representacaomercado.db as db} from '../db/schema';
 
 service alertsService {
 
-    @readonly
+    
     entity Temas          as projection on db.Temas;
 
-    @readonly
+   
     entity Historico      as projection on db.Historico;
 
     @readonly
@@ -29,6 +29,7 @@ service alertsService {
             status  : String;
             message : String;
     }
+   
 
     action atualizaStatusTemas() returns Logs;
     action disparaEmailsAlerta() returns Logs;
