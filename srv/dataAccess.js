@@ -1272,7 +1272,7 @@ module.exports = cds.service.impl(async (service) => {
                 oUserEx.diretor = ret_api_hierarquia.Nome_Vice_Presidente;
             }
 
-            console.log("Usr API hierarquia", oUserEx);
+            //console.log("Usr API hierarquia", oUserEx);
 
             if (context.data.ID) {
                 return oUserEx;
@@ -1494,17 +1494,18 @@ module.exports = cds.service.impl(async (service) => {
 
 
         return aReturn;
-    });
+    });   
 
-    service.on("representacoesPorCargo", async req => {
+    service.on("getRepresentacoesPorCargo", async req => {
 
-        let aReturn = [];
+        let aReturn = []
+            aRepresentacoesPorCargo = [],
+            oUser = {}
+            aComissUserLogado = [];
 
-        const aComissoes = await cds.read(Comissoes),
-            aComissoesRep = await cds.read(ComissoesRepresentante),
-            aReguladores = await cds.read(Reguladores),
-            aRepresentantes = await cds.read(Usuarios),
-            aCalssifCargo = await cds.read(CargoClassificacoes);
+        const aComissoesRep = await cds.read(ComissoesRepresentante),          
+              aRepresentantes = await cds.read(Usuarios),
+              aCalssifCargo = await cds.read(CargoClassificacoes);
 
         //Filtra somente Comissões com Representante atribuido   
         const aComissoesComRep = aComissoesRep.filter((comissao, index, self) =>
@@ -1512,78 +1513,76 @@ module.exports = cds.service.impl(async (service) => {
                 t.comissao_ID === comissao.comissao_ID && t.comissao_ID === comissao.comissao_ID
             ))
         );
+        //Usuário Logado
+        oUser = aRepresentantes.find(usr=> usr.ID === req.user.id);
+        //Busca Comissões Usuário Logado
+        if (oUser) {
+            aComissUserLogado = aComissoesRep.filter(acr => {return acr.usuario_ID === oUser.ID});
+        }
 
-        console.log("Comissoes com Representante", aComissoesComRep.length)
+        console.log("Comissoes com Representante", aComissoesComRep.length);
+        console.log("Comissoes Usuario Logado", aComissUserLogado.length);
 
-        for (let i = 0; i < aComissoes.length; i++) {
-            const element = aComissoes[i];
+        //Monta lista de Representacoes por Cargo
+        for (let i = 0; i < aComissoesComRep.length; i++) {
+            const element = aComissoesComRep[i];
+            var oRepPorCargo = {};
+
+            oRepPorCargo.ID = element.ID;
+           
+            var oRepresentante = aRepresentantes.find(rep => rep.ID === element.usuario_ID);
+            const oClassCargo = aCalssifCargo.find(carg => carg.ID === oRepresentante.cargoClassif_ID);
+            oRepPorCargo.cargo = oClassCargo ? oClassCargo.descricao : oRepresentante.cargo;
+            if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES" ) {
+                aRepresentacoesPorCargo.push(oRepPorCargo); 
+            }else if (oUser.perfil_ID === "VP_DIR") {
+
+                oRepresentante.diretorGeral = oRepresentante.diretorGeral? oRepresentante.diretorGeral : "";
+                oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo? oRepresentante.diretorExecutivo : "";
+                
+                if (oRepresentante.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
+                    //console.log("diretor Geral")
+                    aRepresentacoesPorCargo.push(oRepPorCargo); 
+                }
+                else if(oRepresentante.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase() ){
+                    //console.log("diretor executivo")
+                    aRepresentacoesPorCargo.push(oRepPorCargo); 
+                }else{                      
+                    //verifica se comissão esta relacionada com o Usuário logado
+                    var found = aComissUserLogado.find(acr => acr.comissao_ID === element.comissao_ID);
+
+                    if (found) {                                   
+                        aRepresentacoesPorCargo.push(oRepPorCargo); 
+                    }                                
+                   
+                }               
+                
+                
+            }
+            
+        }
+        //Agrupa por Cargos
+        console.log("lista de Representacoes por Cargo", aRepresentacoesPorCargo.length);
+        const aRepCargos = aRepresentacoesPorCargo.filter((cargo, index, self) =>
+        index === self.findIndex((t) => (
+            t.cargo === cargo.cargo && t.cargo === cargo.cargo
+        )));
+
+        console.log("Agrupa por Cargos", aRepCargos.length);
+
+        for (let z = 0; z < aRepCargos.length; z++) {
+            const cargo = aRepCargos[z];
             var oReturn = {};
+            oReturn.ID = cargo.cargo;
+            oReturn.cargo = cargo.cargo;
 
-            oReturn.ID = element.ID;
-            oReturn.comissao = element.descricao;
+            var aQtdPorCargo = aRepresentacoesPorCargo.filter(ac=>{return ac.cargo === cargo.cargo });
+            oReturn.qtd = aQtdPorCargo.length;
 
-            if (element.regulador_ID) {
-                const oRegulador = aReguladores.find(r => r.ID === element.regulador_ID);
-                oReturn.regulador = oRegulador.descricao;
-            } else {
-                oReturn.regulador = "OUTROS";
-            }
-
-            const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
-
-            if (find) {
-                const oRepresentante = aRepresentantes.find(rep => rep.ID === find.usuario_ID);
-                const oClassCargo = aCalssifCargo.find(carg => carg.ID === oRepresentante.cargoClassif_ID);
-
-                oReturn.cargo = oClassCargo ? oClassCargo.descricao : oRepresentante.cargo;
-                aReturn.push(oReturn);
-
-            }
+            aReturn.push(oReturn);
 
         }
 
-        return aReturn;
-
-    });
-
-    service.on("getRepresentacoesPorCargo", async req => {
-
-        let aReturn = [];
-
-        let oFilter = req._.req.query; 
-
-        console.log("Filtro:",oFilter);
-
-        const aTemas = await cds.read(Historico).where({
-                status_ID: [1, 2, 3]
-            }),
-            aRepresentantes = await cds.read(Usuarios),
-            aCalssifCargo = await cds.read(CargoClassificacoes);
-
-        console.log("Temas em Aberto", aTemas.length)
-
-        for (let i = 0; i < aTemas.length; i++) {
-            const tema = aTemas[i];
-            var oReturn = {},
-                oClassCargo = {};
-
-            oReturn.ID = tema.ID;
-            oReturn.ultimoRegistro = tema.ultimoRegistro;
-
-            const oRepresentante = aRepresentantes.find(rep => rep.ID === tema.representante_ID);
-            if (oRepresentante && oRepresentante.cargoClassif_ID) {
-                oClassCargo = aCalssifCargo.find(carg => carg.ID === oRepresentante.cargoClassif_ID);
-            } else {
-                oClassCargo = null;
-            }
-
-            if (oRepresentante) {
-                oReturn.cargo = oClassCargo ? oClassCargo.descricao : oRepresentante.cargo;
-                aReturn.push(oReturn);
-            }
-
-
-        }
 
         return aReturn;
 

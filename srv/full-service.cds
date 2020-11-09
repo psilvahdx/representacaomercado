@@ -36,18 +36,10 @@ service FullSerice {
     };
 
     entity RepresentacoesPorCargo {
-        key ID             : Integer;
+        key ID             : String;
             cargo          : String;
-            comissao       : String;
-            regulador      : String;
-            ultimoRegistro : DateTime;
-    };
-
-     entity RepresentacoesPorCargoH {
-        key ID             : UUID;
-            cargo          : String;           
-            ultimoRegistro : DateTime;
-    };
+            qtd            : Integer;
+    };   
 
     entity UsersExtensions {
         key ID                    : String;
@@ -78,9 +70,8 @@ service FullSerice {
     action replicaEventoAlerta(idEvento : String, perfisQueRecebem : String, usuariosQueRecebem : String, bCreate : Boolean);
     function comissoesSemRepresentante() returns array of Comissoes;
     function comissoesComRepresentante() returns array of Comissoes;
-    function representacoesMercado() returns array of RepresentacoesMercado;
-    function representacoesPorCargo() returns array of RepresentacoesPorCargo;
-    function getRepresentacoesPorCargo() returns array of RepresentacoesPorCargoH;
+    function representacoesMercado() returns array of RepresentacoesMercado;    
+    function getRepresentacoesPorCargo() returns array of RepresentacoesPorCargo;
     function getUserExtension(ID : String) returns UsersExtensions;
 
 
