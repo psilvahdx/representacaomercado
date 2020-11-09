@@ -8,8 +8,7 @@ service alertsService {
 
     
     entity Temas          as projection on db.Temas;
-
-   
+    entity TemasFechamentoMensal as projection on db.TemasFechamentoMensal;   
     entity Historico      as projection on db.Historico;
 
     @readonly
@@ -33,5 +32,5 @@ service alertsService {
 
     action atualizaStatusTemas() returns Logs;
     action disparaEmailsAlerta() returns Logs;
-
+    action criaFechamentoMensal(bForce: Boolean) returns Logs;
 }
