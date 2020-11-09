@@ -26,7 +26,8 @@ module.exports = cds.service.impl(async (service) => {
         Historico,
         AlertasUsuario,
         EventosAlerta,
-        AppSettings
+        AppSettings,
+        TemasFechamentoMensal
     } = service.entities;
 
     service.on("atualizaStatusTemas", async (context) => {
@@ -98,24 +99,7 @@ module.exports = cds.service.impl(async (service) => {
         oLog.message = `Quantidade de temas atualizados: ${nTemasAtualizados}`;
 
         context.reply(oLog);
-    });
-
-   /* service.before("CREATE", Historico, async (context) => {
-        const histTemaId = new SequenceHelper({
-            db: db,
-            sequence: "HISTORICO_ID",
-            table: "REPRESENTACAOMERCADO_DB_HISTORICO",
-            field: "ID"
-        });
-
-        context.data.ID = await histTemaId.getNextNumber();
-        if (!context.data.ID) {
-            context.data.ID = 1;
-        }
-        context.data.userAlteracao_ID = null;
-        console.debug('Historico ID:', context.data.ID)
-
-    });*/
+    }); 
 
     //disparaEmailsAlerta
    service.on("disparaEmailsAlerta", async (context) => {
@@ -224,6 +208,76 @@ module.exports = cds.service.impl(async (service) => {
 
         oLog.message = `Quantidade de emails enviados: ${nTotalEnvios}`;
         context.reply(oLog);
+
+    });
+
+    //Fechamento Mensal
+    service.on("criaFechamentoMensal", async (context) => {
+        let oLog = {
+            ID: 0,
+            status: "",
+            message: ""
+        };
+        var aFechamentoMes = [],
+            aTemas = await cds.read(Temas);
+        var vToday = new Date()
+            vDtFechamento = new Date();
+
+            console.log("veio algo:",context.data)
+
+        //Se Execução acontece no primeiro dia do mês
+        if (vToday.getDate() === 1) {
+            
+            vDtFechamento.setDate(2);//Começo do Mês
+            vDtFechamento.setMonth(vDtFechamento.getMonth()-1);//Mês anterior
+
+
+            for (let i = 0; i < aTemas.length; i++) {
+                const element = aTemas[i];
+                element.ultimoRegistro = dateFormat(vDtFechamento, "isoUtcDateTime");
+                var oTema = {                
+                    idTema: element.ID,
+                    status_ID: element.status_ID,
+                    criticidade_ID: element.criticidade_ID,
+                    regulador_ID: element.regulador_ID,
+                    primeiroRegistro: element.primeiroRegistro,
+                    ultimoRegistro: element.ultimoRegistro,
+                    dataUltimaReuniao: element.dataUltimaReuniao,
+                    representante_ID: element.representante_ID,
+                    comissao_ID: element.comissao_ID,
+                    diretorGeral: element.diretorGeral,
+                    diretorExecutivo: element.diretorExecutivo,
+                    dtFechamento: dateFormat(vDtFechamento, "isoUtcDateTime")
+                }
+                
+                aFechamentoMes.push(oTema);
+
+                if (aFechamentoMes.length >= 500) {
+                
+                    console.log("Atualizando Fechamento Mensal");
+                    const aRows = await service.create(TemasFechamentoMensal).entries(aFechamentoMes);
+                    //console.log("Fechamento Mensal", aRows);
+                    aFechamentoMes = [];
+                }
+    
+            }
+    
+            if (aFechamentoMes.length > 0) {
+                
+                console.log("Atualizando Fechamento Mensal");
+                const aRows = await service.create(TemasFechamentoMensal).entries(aFechamentoMes);
+                //console.log("Fechamento Mensal", aRows);
+    
+            }
+            oLog.message = `Fechamento Realizado para: ${vDtFechamento.toLocaleDateString()}`;
+        }else{
+            oLog.message = `Não há Registros para atualizar`;
+        }
+
+       
+        context.reply(oLog);
+
+        
 
     });
 

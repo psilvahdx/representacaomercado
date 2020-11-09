@@ -196,3 +196,20 @@ entity TemasPorStautsItem {
         qtd : Integer;
         item: Association to ComparativoComTemas;
 }
+
+
+entity TemasFechamentoMensal : cuid {
+    key ID                      : UUID;
+        idTema                  : Integer;
+        status                  : Association to Status;
+        criticidade             : Association to Criticidades;
+        regulador               : Association to Reguladores;        
+        primeiroRegistro        : DateTime null;
+        ultimoRegistro          : DateTime null;
+        dataUltimaReuniao       : DateTime null;
+        representante           : Association to Usuarios;
+        comissao                : Association to Comissoes;
+        diretorGeral            : String;
+        diretorExecutivo        : String;
+        dtFechamento            : DateTime;
+}

@@ -23,9 +23,10 @@ service FullSerice {
     entity TemasPorRegulador      as projection on db.TemasPorRegulador;
     entity TemasPorCriticidade    as projection on db.TemasPorCriticidade;
     entity ComparativoComTemas    as projection on db.ComparativoComTemas;
-    entity TemasPorRegItem as projection on db.TemasPorRegItem;
-    entity TemasPorCrItem as projection on db.TemasPorCrItem;    
-    entity TemasPorStatusItem as projection on db.TemasPorStautsItem;   
+    entity TemasPorRegItem        as projection on db.TemasPorRegItem;
+    entity TemasPorCrItem         as projection on db.TemasPorCrItem;    
+    entity TemasPorStatusItem     as projection on db.TemasPorStautsItem;
+    entity TemasFechamentoMensal  as projection on db.TemasFechamentoMensal;   
 
 
     entity RepresentacoesMercado {

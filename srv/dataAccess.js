@@ -51,7 +51,8 @@ module.exports = cds.service.impl(async (service) => {
         Criticidades,
         TemasPorCriticidade,
         ComparativoComTemas,
-        Status
+        Status,
+        TemasFechamentoMensal
     } = service.entities;
 
 
@@ -61,7 +62,7 @@ module.exports = cds.service.impl(async (service) => {
             usuario = {},
             aComissoesUsuario = [],
             acomissoesIds = [],
-            xprComissoesIds = {};           
+            xprComissoesIds = {};
 
         const {
             SELECT
@@ -96,7 +97,7 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Representante somente visualiza Temas para as comissões que esta relacionado
                         SELECT.where.push(...['and', '(', xprComissoesIds, ')']);
-                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                        // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
                     } else {
                         //Representante sem Temas e Comissões
                         req.reject(404, "Representante sem Comissões");
@@ -128,7 +129,7 @@ module.exports = cds.service.impl(async (service) => {
                 //visualização dos temas e painéis de sua responsabilidade
                 if (SELECT.where) {
                     //Realizou filtro na tela
-                   // console.log("BEFORE TEMAS: Where", SELECT.where);
+                    // console.log("BEFORE TEMAS: Where", SELECT.where);
 
                     if (acomissoesIds.length > 0) {
                         //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
@@ -162,7 +163,250 @@ module.exports = cds.service.impl(async (service) => {
                             },
                             ')', ')'
                         ]);
-                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                        // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                    } else {
+                        //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
+                        SELECT.where.push(...['and', '(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')'
+                        ]);
+                        //console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                    }
+
+
+                } else {
+                    //Consulta incial sem Filtros
+                    if (acomissoesIds.length > 0) {
+                        //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
+                        SELECT.where = [{
+                                ref: ['status_ID']
+                            },
+                            '<>',
+                            {
+                                val: 4
+                            }, 'and', '(', xprComissoesIds,
+                            'or',
+                            '(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')', ')'
+                        ];
+
+                    } else {
+                        //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
+                        SELECT.where = ['(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')', 'and',
+                            {
+                                ref: ['status_ID']
+                            }, '<>', {
+                                val: 4
+                            }
+                        ]; //Somente Temas em Aberto
+                    }
+
+
+                }
+
+                break;
+            case "ADM":
+            case "PRES":
+                //console.log("Adm/Pres", SELECT.where);
+                break;
+            default:
+                req.reject(404, "Usuário não autorizado");
+                break;
+        }
+
+
+    });
+
+    service.before("READ", TemasFechamentoMensal, async (req) => {
+        let aUsers = [],
+            usuario = {},
+            aComissoesUsuario = [],
+            acomissoesIds = [],
+            xprComissoesIds = {};
+
+        const {
+            SELECT
+        } = req.query
+
+        //Incrementa Limite de resultados (Exibição de Indicadores)
+        if (SELECT.limit) {
+            SELECT.limit.rows.val = 30000000;
+        }
+
+        //console.log("Query>>>>",req.query);
+
+        aUsers = await cds.read(Usuarios).where({
+            ID: req.user.id
+        });
+        if (aUsers.length > 0) {
+            usuario = aUsers[0];
+            //busca comissões para o Usuário
+            aComissoesUsuario = await cds.read(ComissoesRepresentante).where({
+                usuario_ID: usuario.ID
+            });
+            acomissoesIds = aComissoesUsuario.map(x => x.comissao_ID);
+            if (acomissoesIds.length > 0) {
+                const inComissoesID = `comissao_ID in (${acomissoesIds.join(',')})`;
+                //console.log("Comissoes ID", inComissoesID);
+                xprComissoesIds = cds.parse.expr(inComissoesID);
+            }
+        }
+
+        switch (usuario.perfil_ID) {
+            case "REP":
+
+                if (SELECT.where) {
+                    //Realizou filtro na tela
+                    //console.log("BEFORE TEMAS: Where", SELECT.where);
+
+                    if (acomissoesIds.length > 0) {
+                        //Representante somente visualiza Temas para as comissões que esta relacionado
+                        SELECT.where.push(...['and', '(', xprComissoesIds, ')']);
+                        // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                    } else {
+                        //Representante sem Temas e Comissões
+                        req.reject(404, "Representante sem Comissões");
+                    }
+
+
+                } else {
+                    //Consulta incial sem Filtros
+                    if (acomissoesIds.length > 0) {
+                        //Representante somente visualiza Temas para as comissões que esta relacionado
+                        SELECT.where = [{
+                                ref: ['status_ID']
+                            },
+                            '<>',
+                            {
+                                val: 4
+                            }, 'and', '(', xprComissoesIds, ')'
+                        ];
+
+                    } else {
+                        //Representante sem Temas e Comissões
+                        req.reject(404, "Representante sem Comissões");
+                    }
+
+                }
+
+                break;
+            case "VP_DIR":
+                //visualização dos temas e painéis de sua responsabilidade
+                if (SELECT.where) {
+                    //Realizou filtro na tela
+                    // console.log("BEFORE TEMAS: Where", SELECT.where);
+
+                    if (acomissoesIds.length > 0) {
+                        //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
+                        SELECT.where.push(...['and', '(', xprComissoesIds, 'or',
+                            '(', {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorGeral']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            'or',
+                            {
+                                func: 'upper',
+                                args: [{
+                                    ref: ['diretorExecutivo']
+                                }]
+                            },
+                            'like',
+                            {
+                                func: 'concat',
+                                args: ['\'%\'', {
+                                    val: usuario.nome.toUpperCase()
+                                }, '\'%\'']
+                            },
+                            ')', ')'
+                        ]);
+                        // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where.push(...['and', '(', {
@@ -304,13 +548,13 @@ module.exports = cds.service.impl(async (service) => {
 
         const {
             SELECT
-        } = req.query       
+        } = req.query
 
         //Incrementa Limite de resultados (Exibição de Indicadores)
-        if(SELECT.limit){
+        if (SELECT.limit) {
             SELECT.limit.rows.val = 30000000;
         }
-       // console.log("Historico Query>>>>",SELECT.limit);
+        // console.log("Historico Query>>>>",SELECT.limit);
 
         aUsers = await cds.read(Usuarios).where({
             ID: req.user.id
@@ -339,7 +583,7 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Representante somente visualiza Temas para as comissões que esta relacionado
                         SELECT.where.push(...['and', '(', xprComissoesIds, ')']);
-                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                        // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
                     } else {
                         //Representante sem Temas e Comissões
                         req.reject(404, "Representante sem Comissões");
@@ -371,7 +615,7 @@ module.exports = cds.service.impl(async (service) => {
                 //visualização dos temas e painéis de sua responsabilidade
                 if (SELECT.where) {
                     //Realizou filtro na tela
-                   // console.log("BEFORE TEMAS: Where", SELECT.where);
+                    // console.log("BEFORE TEMAS: Where", SELECT.where);
 
                     if (acomissoesIds.length > 0) {
                         //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
@@ -405,7 +649,7 @@ module.exports = cds.service.impl(async (service) => {
                             },
                             ')', ')'
                         ]);
-                       // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
+                        // console.log("BEFORE TEMAS: Where Alterado", SELECT.where);
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where.push(...['and', '(', {
@@ -595,7 +839,7 @@ module.exports = cds.service.impl(async (service) => {
 
 
 
-    });  
+    });
 
 
     service.before("CREATE", Temas, async (context) => {
@@ -621,7 +865,7 @@ module.exports = cds.service.impl(async (service) => {
         });
         context.data.ID = await reguladorId.getNextNumber();
 
-       // console.log("USUARIO >>>>>>>>>", context.user.id);
+        // console.log("USUARIO >>>>>>>>>", context.user.id);
     });
 
     service.before("CREATE", Comissoes, async (context) => {
@@ -632,7 +876,7 @@ module.exports = cds.service.impl(async (service) => {
             field: "ID"
         });
         context.data.ID = await comissaoId.getNextNumber();
-    });  
+    });
 
     service.before("READ", Comissoes, async (req) => {
 
@@ -690,36 +934,38 @@ module.exports = cds.service.impl(async (service) => {
                             t === id && t === id
                         ))
                     );
-                    
-                    uniqueIds.sort(function(a, b){return a - b});
+
+                    uniqueIds.sort(function (a, b) {
+                        return a - b
+                    });
 
                     const inComissoesIDs = `ID in (${uniqueIds.join(',')})`;
                     const notInComissoesIDs = `ID NOT in (${uniqueIds.join(',')})`;
-                  
+
                     xprComissoesIds = cds.parse.expr(inComissoesIDs);
-                    xprNotComissoesIds =  cds.parse.expr(notInComissoesIDs);
+                    xprNotComissoesIds = cds.parse.expr(notInComissoesIDs);
 
                     if (SELECT.where) {
-                       
-                       // console.log("Adm Sel Where", SELECT.where);                       
-                        let sQruery =  JSON.stringify(SELECT.where);
-                       // console.log("Adm Sel Where String", sQruery);
+
+                        // console.log("Adm Sel Where", SELECT.where);                       
+                        let sQruery = JSON.stringify(SELECT.where);
+                        // console.log("Adm Sel Where String", sQruery);
                         if (sQruery.includes('{"ref":["comIndicacao"]},"=",{"val":null}')) {
                             console.log("comIndicacao", null)
-                        } 
+                        }
                         if (sQruery.includes('{"ref":["comIndicacao"]},"=",{"val":true}')) {
                             console.log("Com Indicacao")
-                            sQruery = sQruery.replace(',"and",{"ref":["comIndicacao"]},"=",{"val":true}', "")                           
-                           SELECT.where = JSON.parse(sQruery);
-                           SELECT.where.push(...['and', '(', xprComissoesIds, ')']);
-                                             
-                        }   
+                            sQruery = sQruery.replace(',"and",{"ref":["comIndicacao"]},"=",{"val":true}', "")
+                            SELECT.where = JSON.parse(sQruery);
+                            SELECT.where.push(...['and', '(', xprComissoesIds, ')']);
+
+                        }
                         if (sQruery.includes('{"ref":["comIndicacao"]},"=",{"val":false}')) {
-                            console.log("Sem Indicacao")                          
-                            sQruery = sQruery.replace(',"and",{"ref":["comIndicacao"]},"=",{"val":false}', "")                           
+                            console.log("Sem Indicacao")
+                            sQruery = sQruery.replace(',"and",{"ref":["comIndicacao"]},"=",{"val":false}', "")
                             SELECT.where = JSON.parse(sQruery);
                             SELECT.where.push(...['and', '(', xprNotComissoesIds, ')']);
-                        }     
+                        }
                     }
                 }
                 default:
@@ -729,29 +975,29 @@ module.exports = cds.service.impl(async (service) => {
 
     });
 
-    service.before("DELETE", EventosAlerta, async req =>{
+    service.before("DELETE", EventosAlerta, async req => {
         let aUsers = [],
-        oUser = {};
+            oUser = {};
 
-            //Busca dados Usuário logado
-            aUsers = await cds.read(Usuarios).where({
-                ID: req.user.id
-            });
-            if (aUsers.length > 0) {
-                oUser = aUsers[0];
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios).where({
+            ID: req.user.id
+        });
+        if (aUsers.length > 0) {
+            oUser = aUsers[0];
+        }
+
+        if (oUser.perfil_ID === "ADM") {
+            //Exclui os eventos onde há relação com o Evento Origem
+            if (req.data.ID) {
+                console.log("Exclui os eventos onde há relação com o Evento Origem", req.data.ID);
+                const delEvents = await cds.delete(EventosAlerta).where({
+                    eventoOrigem_ID: req.data.ID
+                });
+                console.log("Eventos excluidos com sucesso", req.data.ID);
             }
 
-            if (oUser.perfil_ID === "ADM") {
-                //Exclui os eventos onde há relação com o Evento Origem
-                if (req.data.ID) {
-                    console.log("Exclui os eventos onde há relação com o Evento Origem", req.data.ID);
-                    const delEvents = await cds.delete(EventosAlerta).where({
-                        eventoOrigem_ID: req.data.ID
-                    });
-                    console.log("Eventos excluidos com sucesso", req.data.ID);
-                }
-                
-            }
+        }
 
     });
 
@@ -770,7 +1016,7 @@ module.exports = cds.service.impl(async (service) => {
         );
 
         //console.log("aComissoesRep", aComissoesRep.length)
-       // console.log("Comissoes NExt", comissoes.length)
+        // console.log("Comissoes NExt", comissoes.length)
         for (let i = 0; i < comissoes.length; i++) {
             var cm = comissoes[i];
 
@@ -791,50 +1037,102 @@ module.exports = cds.service.impl(async (service) => {
     //Temas por Regulador 
     service.on("READ", TemasPorRegulador, async (req) => {
 
-        let  aReturn = [];        
-        let qry = req.query.SELECT.where;               
-        
-        const aReguladores = await cds.read(Reguladores),
-              aTemasEncerrados = await cds.read(Historico).where({status_ID: 4});
-        
-        const tx = service.tx(req);               
-        var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
-        console.log("Historico Recuperado:", aHistAux.length);
+        let aReturn = [],
+            aUsers = [];
+        let qry = req.query.SELECT.where,
+            oUser = {},
+            aComissoesRepresentante = await cds.read(ComissoesRepresentante);
 
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios);
+        oUser = aUsers.find(usr => usr.ID === req.user.id);
+
+        var aComissoesUsuario = aComissoesRepresentante.filter(cm => {
+            return cm.usuario_ID === oUser.ID
+        });
+
+        const aReguladores = await cds.read(Reguladores);
+        var aTemas = await cds.read(Temas).where({status_ID: [1,2,3]});
+
+        const tx = service.tx(req);
+        var aHistAux = await tx.run(SELECT.from(TemasFechamentoMensal).where(qry));
+        console.log("TemasFechamentoMensal:", aHistAux.length);
+
+        //Registro será apresentado por mês. fixa dia como primeiro dia do mês  
         for (let i = 0; i < aHistAux.length; i++) {
             const element = aHistAux[i];
             var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
-            element.ultimoRegistro.substring(5, 7) + "/02");          
-            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
-            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");            
-        } 
-        //Recupera lista distinta de Temas nos registros recuperados
-        var aHist = aHistAux.filter((tema, index, self) =>
-            index === self.findIndex((t) => (
-                t.idTema === tema.idTema && t.ultimoRegistro === tema.ultimoRegistro
-            ))
-        );
-        console.log("Historico Sem Duplicados:", aHist.length);
+                element.ultimoRegistro.substring(5, 7) + "/02");
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");
+        }
 
-         //Se o Tema foi em algum momento Encerrado, desconsiderar da seleção
-         var aTemasEmAberto = [];
-         for (let idx = 0; idx < aHist.length; idx++) {
-             const element = aHist[idx];
-             
-             const found = aTemasEncerrados.find(temaEncerrado=> temaEncerrado.idTema === element.idTema);
-             if (!found) {
-                 //Tema em aberto
-                 aTemasEmAberto.push(element);
-             }else{
-                 //Se encontrado, verificar se foi encerrado no mês atual
-                 var vToday = dateFormat(new Date(), "isoUtcDateTime");
-                 if (element.ultimoRegistro.substring(0, 6) !== vToday.substring(0, 6)) {
-                      //Tema em aberto nos meses anteriores
-                      aTemasEmAberto.push(element);
-                 }
-             }
-         }
+        var aTemasEmAberto = aHistAux;
+
+        var oFilter = req._.odataReq.getQueryOptions() || null;
+        if (oFilter) {
+            console.log("filtro", oFilter);
+
+            var sFilter = oFilter.$filter;
+            var vCurrentMonth = new Date();
+            var sCurrentMonth = dateFormat(vCurrentMonth, "isoUtcDateTime");
+             sCurrentMonth =  sCurrentMonth.substring(0,7);
+            console.log("Mes Atual", sCurrentMonth);
+
+            if (sFilter.includes(sCurrentMonth)) {
+                //Temas Em aberto no mês atual 
+                console.log("filtro no mes atual");
+                var vToday = new Date();
+                for (let i = 0; i < aTemas.length; i++) {
+                    const element = aTemas[i];
+                    element.ultimoRegistro = dateFormat(vToday, "isoUtcDateTime");
+                    var oTema = {
+                        ID: "4f3e1cc1-a35a-4b2f-8696-0b2000000001",//Dummy
+                        idTema: element.ID,
+                        status_ID: element.status_ID,
+                        criticidade_ID: element.criticidade_ID,
+                        regulador_ID: element.regulador_ID,
+                        primeiroRegistro: element.primeiroRegistro,
+                        ultimoRegistro: element.ultimoRegistro,
+                        dataUltimaReuniao: element.dataUltimaReuniao,
+                        representante_ID: element.representante_ID,
+                        comissao_ID: element.comissao_ID,
+                        diretorGeral: element.diretorGeral,
+                        diretorExecutivo: element.diretorExecutivo,
+                        dtFechamento: element.ultimoRegistro
+                    }
+                    //Filtra por Perfil de Acesso
+                    if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES" ) {
+                        aTemasEmAberto.push(oTema);
+                    }else if (oUser.perfil_ID === "REP" || oUser.perfil_ID === "VP_DIR") {
+                     
+                        oTema.diretorGeral = oTema.diretorGeral ? oTema.diretorGeral : "";
+                        oTema.diretorExecutivo = oTema.diretorExecutivo ? oTema.diretorExecutivo : "";
+                        if (oTema.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
+                            //console.log("diretor Geral")
+                            aTemasEmAberto.push(oTema);
+                        } else if (oTema.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase()) {
+                            //console.log("diretor executivo")
+                            aTemasEmAberto.push(oTema);;
+                        } else {
+                            //verifica se comissão esta relacionada com o Usuário logado
+                            var found = aComissoesUsuario.find(acr => acr.comissao_ID === oTema.comissao_ID);
         
+                            if (found) {
+                                aTemasEmAberto.push(oTema);
+                            }
+        
+                        }
+        
+                    }
+        
+                    
+                }
+
+
+            }
+
+        }        
+
         //Recupera lista distinta de datas nos registros recuperados
         var aDates = aTemasEmAberto.filter((tema, index, self) =>
             index === self.findIndex((t) => (
@@ -845,15 +1143,19 @@ module.exports = cds.service.impl(async (service) => {
         for (let i = 0; i < aDates.length; i++) {
             const tema = aDates[i];
 
-            var oTemaPorRegulador = {ID: ""};            
+            var oTemaPorRegulador = {
+                ID: ""
+            };
             //Agrupa Temas para mês em execução
-            var aGroupMonth = aTemasEmAberto.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            var aGroupMonth = aTemasEmAberto.filter(r => {
+                return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+            });
             //Remove duplicados para o mesmo mês, considerando o Id do tema
             var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
-            index === self.findIndex((t) => (
-                t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                index === self.findIndex((t) => (
+                    t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
                 ))
-            );           
+            );
             //Agrupa por Regulador
             var aReguladoresMes = aGroupTemasMonth.filter((tema, index, self) =>
                 index === self.findIndex((t) => (
@@ -868,17 +1170,21 @@ module.exports = cds.service.impl(async (service) => {
             for (let z = 0; z < aReguladoresMes.length; z++) {
                 const element = aReguladoresMes[z];
 
-                var oItem = {ID: ""};
+                var oItem = {
+                    ID: ""
+                };
 
-                var aGroupRegulador = aGroupTemasMonth.filter(r => { return r.regulador_ID === element.regulador_ID });   
-                
-                var oReg = aReguladores.find(rg=> rg.ID === element.regulador_ID );
+                var aGroupRegulador = aGroupTemasMonth.filter(r => {
+                    return r.regulador_ID === element.regulador_ID
+                });
+
+                var oReg = aReguladores.find(rg => rg.ID === element.regulador_ID);
                 if (oReg) {
-                    oItem.descricao = oReg.descricao;   
-                }else{
-                    oItem.descricao = "OUTROS"; 
+                    oItem.descricao = oReg.descricao;
+                } else {
+                    oItem.descricao = "OUTROS";
                 }
-                
+
                 oItem.qtd = aGroupRegulador.length;
                 aItens.push(oItem);
             }
@@ -890,57 +1196,107 @@ module.exports = cds.service.impl(async (service) => {
         return aReturn;
 
 
-    });
+    }); 
 
+    //Temas por Criticidade 
+    service.on("READ", TemasPorCriticidade, async (req) => {
 
-     //Temas por Criticidade 
-     service.on("READ", TemasPorCriticidade, async (req) => {
+        let aReturn = [],
+            aUsers = [];
+        let qry = req.query.SELECT.where,
+            oUser = {},
+            aComissoesRepresentante = await cds.read(ComissoesRepresentante);
 
-        let  aReturn = [];        
-        let qry = req.query.SELECT.where;               
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios);
+        oUser = aUsers.find(usr => usr.ID === req.user.id);
+
+        var aComissoesUsuario = aComissoesRepresentante.filter(cm => {
+            return cm.usuario_ID === oUser.ID
+        });
+
+        const aCriticidades = await cds.read(Criticidades); 
+        var aTemas = await cds.read(Temas).where({status_ID: [1,2,3]});
         
-        const aCriticidades = await cds.read(Criticidades),
-              aTemasEncerrados = await cds.read(Historico).where({status_ID: 4});;
-        
-        const tx = service.tx(req);               
-        var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
-        console.log("Historico Recuperado:", aHistAux.length);
+        const tx = service.tx(req);
+        var aHistAux = await tx.run(SELECT.from(TemasFechamentoMensal).where(qry));
+        console.log("TemasFechamentoMensal:", aHistAux.length);
 
-        for (let i = 0; i < aHistAux.length; i++) {
+        //Registro será apresentado por mês. fixa dia como primeiro dia do mês  
+          for (let i = 0; i < aHistAux.length; i++) {
             const element = aHistAux[i];
             var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
-            element.ultimoRegistro.substring(5, 7) + "/02");          
-            //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
-            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");            
+                element.ultimoRegistro.substring(5, 7) + "/02");
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");
         }
 
-        //Recupera lista distinta de Temas nos registros recuperados
-        var aHist = aHistAux.filter((tema, index, self) =>
-            index === self.findIndex((t) => (
-                t.idTema === tema.idTema && t.ultimoRegistro === tema.ultimoRegistro
-            ))
-        );
-        console.log("Historico Sem Duplicados:", aHist.length);
+        var aTemasEmAberto = aHistAux;
 
-         //Se o Tema foi em algum momento Encerrado, desconsiderar da seleção
-         var aTemasEmAberto = [];
-         for (let idx = 0; idx < aHist.length; idx++) {
-             const element = aHist[idx];
-             
-             const found = aTemasEncerrados.find(temaEncerrado=> temaEncerrado.idTema === element.idTema);
-             if (!found) {
-                 //Tema em aberto
-                 aTemasEmAberto.push(element);
-             }else{
-                //Se encontrado, verificar se foi encerrado no mês atual
-                var vToday = dateFormat(new Date(), "isoUtcDateTime");
-                if (element.ultimoRegistro.substring(0, 6) !== vToday.substring(0, 6)) {
-                     //Tema em aberto nos meses anteriores
-                     aTemasEmAberto.push(element);
-                }
-            }
-         }        
+        var oFilter = req._.odataReq.getQueryOptions() || null;
+        if (oFilter) {
+            console.log("filtro", oFilter);
+
+            var sFilter = oFilter.$filter;
+            var vCurrentMonth = new Date();
+            var sCurrentMonth = dateFormat(vCurrentMonth, "isoUtcDateTime");
+             sCurrentMonth =  sCurrentMonth.substring(0,7);
+            console.log("Mes Atual", sCurrentMonth);
+
+            if (sFilter.includes(sCurrentMonth)) {
+                //Temas Em aberto no mês atual 
+                console.log("filtro no mes atual");
+                var vToday = new Date();
+                for (let i = 0; i < aTemas.length; i++) {
+                    const element = aTemas[i];
+                    element.ultimoRegistro = dateFormat(vToday, "isoUtcDateTime");
+                    var oTema = {
+                        ID: "3f3e1cc1-a35a-4b2f-8696-0b2000000001",//Dummy
+                        idTema: element.ID,
+                        status_ID: element.status_ID,
+                        criticidade_ID: element.criticidade_ID,
+                        regulador_ID: element.regulador_ID,
+                        primeiroRegistro: element.primeiroRegistro,
+                        ultimoRegistro: element.ultimoRegistro,
+                        dataUltimaReuniao: element.dataUltimaReuniao,
+                        representante_ID: element.representante_ID,
+                        comissao_ID: element.comissao_ID,
+                        diretorGeral: element.diretorGeral,
+                        diretorExecutivo: element.diretorExecutivo,
+                        dtFechamento: element.ultimoRegistro
+                    }
+                    //Filtra por Perfil de Acesso
+                    if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES" ) {
+                        aTemasEmAberto.push(oTema);
+                    }else if (oUser.perfil_ID === "REP" || oUser.perfil_ID === "VP_DIR") {
+                     
+                        oTema.diretorGeral = oTema.diretorGeral ? oTema.diretorGeral : "";
+                        oTema.diretorExecutivo = oTema.diretorExecutivo ? oTema.diretorExecutivo : "";
+                        if (oTema.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
+                            //console.log("diretor Geral")
+                            aTemasEmAberto.push(oTema);
+                        } else if (oTema.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase()) {
+                            //console.log("diretor executivo")
+                            aTemasEmAberto.push(oTema);;
+                        } else {
+                            //verifica se comissão esta relacionada com o Usuário logado
+                            var found = aComissoesUsuario.find(acr => acr.comissao_ID === oTema.comissao_ID);
         
+                            if (found) {
+                                aTemasEmAberto.push(oTema);
+                            }
+        
+                        }
+        
+                    }
+        
+                    
+                }
+
+
+            }
+
+        } 
+
         //Recupera lista distinta de datas nos registros recuperados
         var aDates = aTemasEmAberto.filter((tema, index, self) =>
             index === self.findIndex((t) => (
@@ -951,15 +1307,19 @@ module.exports = cds.service.impl(async (service) => {
         for (let i = 0; i < aDates.length; i++) {
             const tema = aDates[i];
 
-            var oTemaPorCriticidade = {ID: ""};            
+            var oTemaPorCriticidade = {
+                ID: ""
+            };
             //Agrupa Temas para mês em execução
-            var aGroupMonth = aTemasEmAberto.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            var aGroupMonth = aTemasEmAberto.filter(r => {
+                return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+            });
             //Remove duplicados para o mesmo mês, considerando o Id do tema
             var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
-            index === self.findIndex((t) => (
-                t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                index === self.findIndex((t) => (
+                    t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
                 ))
-            );           
+            );
             //Agrupa por Criticidade
             var aCriticidadesMes = aGroupTemasMonth.filter((tema, index, self) =>
                 index === self.findIndex((t) => (
@@ -974,17 +1334,21 @@ module.exports = cds.service.impl(async (service) => {
             for (let z = 0; z < aCriticidadesMes.length; z++) {
                 const element = aCriticidadesMes[z];
 
-                var oItem = {ID: ""};
+                var oItem = {
+                    ID: ""
+                };
 
-                var aGroupCriticidade = aGroupTemasMonth.filter(r => { return r.criticidade_ID === element.criticidade_ID });   
-                
-                var oReg = aCriticidades.find(cr=> cr.ID === element.criticidade_ID );
+                var aGroupCriticidade = aGroupTemasMonth.filter(r => {
+                    return r.criticidade_ID === element.criticidade_ID
+                });
+
+                var oReg = aCriticidades.find(cr => cr.ID === element.criticidade_ID);
                 if (oReg) {
-                    oItem.descricao = oReg.descricao;   
-                }else{
-                    oItem.descricao = "Baixo"; 
+                    oItem.descricao = oReg.descricao;
+                } else {
+                    oItem.descricao = "Baixo";
                 }
-                
+
                 oItem.qtd = aGroupCriticidade.length;
                 aItens.push(oItem);
             }
@@ -998,41 +1362,47 @@ module.exports = cds.service.impl(async (service) => {
     });
 
     //Comparativo com Temas    
-     service.on("READ", ComparativoComTemas, async (req) => {
-        
-        const tx = service.tx(req);           
-        let  aReturn = [];        
-        let qry = req.query.SELECT.where;          
-        var vToday = dateFormat(new Date(), "isoUtcDateTime");    
+    service.on("READ", ComparativoComTemas, async (req) => {
+
+        const tx = service.tx(req);
+        let aReturn = [];
+        let qry = req.query.SELECT.where;
+        var vToday = dateFormat(new Date(), "isoUtcDateTime");
         var isMesAtual = false;
 
         let aUsers = []
-            aTemasPorPerfil = [],
+        aTemasPorPerfil = [],
             oUser = {},
             aComissoesRepresentante = await cds.read(ComissoesRepresentante);
 
-            //Busca dados Usuário logado
-            aUsers = await cds.read(Usuarios);           
-            oUser = aUsers.find(usr=> usr.ID === req.user.id);
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios);
+        oUser = aUsers.find(usr => usr.ID === req.user.id);
 
-        var aComissoesUsuario = aComissoesRepresentante.filter(cm=>{return cm.usuario_ID === oUser.ID});       
+        var aComissoesUsuario = aComissoesRepresentante.filter(cm => {
+            return cm.usuario_ID === oUser.ID
+        });
 
-        
+
         const aStatus = await cds.read(Status),
-              aTemasSemAtualizacao = await cds.read(Temas).where({status_ID: 2});        
-                    
+            aTemasSemAtualizacao = await cds.read(Temas).where({
+                status_ID: 2
+            });
+
         var aHistAux = await tx.run(SELECT.from(Historico).where(qry));
-        console.log("Comarativo com Temas Historico Recuperado:", aHistAux.length);        
+        console.log("Comarativo com Temas Historico Recuperado:", aHistAux.length);
         //console.log(aHistAux);
         for (let i = 0; i < aHistAux.length; i++) {
             var element = aHistAux[i];
             var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
-            element.ultimoRegistro.substring(5, 7) + "/02");          
+                element.ultimoRegistro.substring(5, 7) + "/02");
             //Registro será apresentado por mês. fixa dia como primeiro dia do mês             
-            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");            
+            element.ultimoRegistro = dateFormat(vDtReg, "isoUtcDateTime");
         }
         //console.log(aHistAux);
-        aHistAux = aHistAux.sort(function(a, b){return b.status_ID - a.status_ID});
+        aHistAux = aHistAux.sort(function (a, b) {
+            return b.status_ID - a.status_ID
+        });
         //console.log("Sort",aHistAux);
         //Recupera lista distinta de Temas nos registros recuperados
         var aHist = aHistAux.filter((tema, index, self) =>
@@ -1041,7 +1411,7 @@ module.exports = cds.service.impl(async (service) => {
             ))
         );
         console.log("Comarativo com Temas Historico Sem Duplicados:", aHist.length);
-        
+
         //Recupera lista distinta de datas nos registros recuperados
         var aDates = aHist.filter((tema, index, self) =>
             index === self.findIndex((t) => (
@@ -1051,20 +1421,24 @@ module.exports = cds.service.impl(async (service) => {
         //Percorre lista de Datas recuperadas
         for (let i = 0; i < aDates.length; i++) {
             const tema = aDates[i];
-           
+
             if (tema.ultimoRegistro.substring(0, 6) === vToday.substring(0, 6)) {
-                isMesAtual = true;               
+                isMesAtual = true;
             }
 
-            var oTemaPorStatus = {ID: ""};            
+            var oTemaPorStatus = {
+                ID: ""
+            };
             //Agrupa Temas para mês em execução
-            var aGroupMonth = aHist.filter(r => { return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString() });
+            var aGroupMonth = aHist.filter(r => {
+                return r.ultimoRegistro.toString() === tema.ultimoRegistro.toString()
+            });
             //Remove duplicados para o mesmo mês, considerando o Id do tema
             var aGroupTemasMonth = aGroupMonth.filter((temaMes, index, self) =>
-            index === self.findIndex((t) => (
-                t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
+                index === self.findIndex((t) => (
+                    t.idTema === temaMes.idTema && t.idTema === temaMes.idTema
                 ))
-            );           
+            );
             //Agrupa por Status
             var aStatusMes = aGroupTemasMonth.filter((tema, index, self) =>
                 index === self.findIndex((t) => (
@@ -1079,19 +1453,23 @@ module.exports = cds.service.impl(async (service) => {
             for (let z = 0; z < aStatusMes.length; z++) {
                 const element = aStatusMes[z];
 
-                var oItem = {ID: ""};
+                var oItem = {
+                    ID: ""
+                };
 
-                var aGroupStatus = aGroupTemasMonth.filter(r => { return r.status_ID === element.status_ID });   
-                
-                var oReg = aStatus.find(cr=> cr.ID === element.status_ID );
+                var aGroupStatus = aGroupTemasMonth.filter(r => {
+                    return r.status_ID === element.status_ID
+                });
+
+                var oReg = aStatus.find(cr => cr.ID === element.status_ID);
                 if (oReg) {
                     oItem.ID = oReg.ID;
-                    oItem.descricao = oReg.descricao;   
-                }else{
+                    oItem.descricao = oReg.descricao;
+                } else {
                     oItem.ID = 1;
-                    oItem.descricao = "Novo"; 
+                    oItem.descricao = "Novo";
                 }
-                
+
                 oItem.qtd = aGroupStatus.length;
                 aItens.push(oItem);
             }
@@ -1102,46 +1480,53 @@ module.exports = cds.service.impl(async (service) => {
         //Consulta no mês Atual
         //console.log("qry em branco", qry[2].val);
         if (qry[2].val.substring(0, 6) === vToday.substring(0, 6)) {
-            isMesAtual = true;  
-            aReturn.push({ID: "cf3e1cc1-a35a-4b2f-8696-0b2000000521",ultimoRegistro: qry[2].val, itens: [{ID: 2, descricao: "Sem atualização", qtd: 0}] });           
+            isMesAtual = true;
+            aReturn.push({
+                ID: "cf3e1cc1-a35a-4b2f-8696-0b2000000521",
+                ultimoRegistro: qry[2].val,
+                itens: [{
+                    ID: 2,
+                    descricao: "Sem atualização",
+                    qtd: 0
+                }]
+            });
         }
 
         if (isMesAtual) {
 
-            
+
             if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES") {
                 aTemasPorPerfil = aTemasSemAtualizacao;
-            }else if(oUser.perfil_ID === "VP_DIR" || oUser.perfil_ID === "REP" ){
+            } else if (oUser.perfil_ID === "VP_DIR" || oUser.perfil_ID === "REP") {
 
                 for (let idx = 0; idx < aTemasSemAtualizacao.length; idx++) {
                     var tema = aTemasSemAtualizacao[idx];
 
-                    tema.diretorGeral = tema.diretorGeral? tema.diretorGeral : "";
-                    tema.diretorExecutivo = tema.diretorExecutivo? tema.diretorExecutivo : "";
-                    
-                    const found = aComissoesUsuario.find(cm=> cm.comissao_ID === tema.comissao_ID);
+                    tema.diretorGeral = tema.diretorGeral ? tema.diretorGeral : "";
+                    tema.diretorExecutivo = tema.diretorExecutivo ? tema.diretorExecutivo : "";
+
+                    const found = aComissoesUsuario.find(cm => cm.comissao_ID === tema.comissao_ID);
                     if (found) {
                         aTemasPorPerfil.push(tema);
-                    }else if (tema.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
+                    } else if (tema.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
                         aTemasPorPerfil.push(tema);
-                    }
-                    else if (tema.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase()) {
+                    } else if (tema.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase()) {
                         aTemasPorPerfil.push(tema);
                     }
                 }
 
             }
-            
+
             for (let y = 0; y < aReturn.length; y++) {
                 const element = aReturn[y];
                 for (let idx = 0; idx < element.itens.length; idx++) {
                     var item = element.itens[idx];
-                    if (item.ID === 2) {//Sem atualização no mês atual não considerar data
+                    if (item.ID === 2) { //Sem atualização no mês atual não considerar data
                         item.qtd = aTemasPorPerfil.length;
-                    } 
+                    }
                 }
-            }           
-            
+            }
+
         }
 
         return aReturn;
@@ -1151,9 +1536,9 @@ module.exports = cds.service.impl(async (service) => {
 
 
     service.on("READ", UsersExtensions, async (context, next) => {
-       // console.log("USEREX", context.user.id);
+        // console.log("USEREX", context.user.id);
 
-       // console.log("Key", context.data.ID);
+        // console.log("Key", context.data.ID);
         let aUsers = [],
             aUserProfile = [],
             oUserProfile = {},
@@ -1193,7 +1578,7 @@ module.exports = cds.service.impl(async (service) => {
         });
         if (aUsers.length > 0) {
             oUser = aUsers[0];
-           // console.log("USUARIO:", oUser);
+            // console.log("USUARIO:", oUser);
             //Busca Perfil do Usuário Logado
             aUserProfile = await cds.read(Perfis).where({
                 ID: oUser.perfil_ID
@@ -1294,45 +1679,45 @@ module.exports = cds.service.impl(async (service) => {
 
         console.log("DataBase Colaboradores", matricula);
 
-            var resPromisse = new Promise(function (resolve, reject) {
-                bancoColaboradores.exec(`SELECT *
+        var resPromisse = new Promise(function (resolve, reject) {
+            bancoColaboradores.exec(`SELECT *
             FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
             WHERE Empregado."Login_Funcionario" = '${matricula}'`,
-                    function (err, result) {
-                        if (err) reject(err);
-                        resolve(result);
+                function (err, result) {
+                    if (err) reject(err);
+                    resolve(result);
+                });
+        }.bind(this));
+
+        var response = await resPromisse.then(function (result) {
+            return result
+        }).catch(function (err) {
+            //context.reject(400, err);
+            console.log("ERRO DataBase Colaboradores", err);
+        });
+        if (response) {
+            oColaborador = response[0];
+        }
+
+        /*
+                let //sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${matricula}')`,
+                try {
+                    const response = await destination({
+                        method: "get",
+                        url: sPath,
+                        headers: {
+                            "content-type": "application/json"
+                        }
                     });
-            }.bind(this));
 
-           var response = await resPromisse.then(function (result) {
-                return result
-            }).catch(function (err) {
-                //context.reject(400, err);
-                console.log("ERRO DataBase Colaboradores", err);
-            });
-            if(response){
-                oColaborador = response[0];
-            }           
+                    //console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
 
-/*
-        let //sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${matricula}')`,
-        try {
-            const response = await destination({
-                method: "get",
-                url: sPath,
-                headers: {
-                    "content-type": "application/json"
-                }
-            });
+                    oColaborador = response.data.d;
 
-            //console.log("ODATA_COLABORADORES_DESTINATION_RESPONSE", response.data);
+                } catch (error) {
 
-            oColaborador = response.data.d;
-
-        } catch (error) {
-
-            console.log("ERRO ODATA_COLABORADORES_DESTINATION", error.message);
-        }*/
+                    console.log("ERRO ODATA_COLABORADORES_DESTINATION", error.message);
+                }*/
 
         return oColaborador;
 
@@ -1352,7 +1737,7 @@ module.exports = cds.service.impl(async (service) => {
             ))
         );
 
-       // console.log("Comissoes com Representante", aComissoesComRep.length)
+        // console.log("Comissoes com Representante", aComissoesComRep.length)
 
         for (let i = 0; i < aComissoes.length; i++) {
             const element = aComissoes[i];
@@ -1364,7 +1749,7 @@ module.exports = cds.service.impl(async (service) => {
             }
         }
 
-       //console.log("Comissoes SEM Representante", aReturn.length)
+        //console.log("Comissoes SEM Representante", aReturn.length)
 
 
         return aReturn;
@@ -1375,16 +1760,18 @@ module.exports = cds.service.impl(async (service) => {
 
         let aReturn = [];
         let aUsers = [],
-        oUser = {};
+            oUser = {};
 
         //Busca Usuários
         aUsers = await cds.read(Usuarios);
         //Recupera Usuario Logado
         oUser = aUsers.find(usr => usr.ID === req.user.id);
-       
+
         const aComissoes = await cds.read(Comissoes),
             aComissoesRep = await cds.read(ComissoesRepresentante),
-            aComissoesUser = aComissoesRep.filter(cr =>{ return  cr.usuario_ID === oUser.ID} ) ;
+            aComissoesUser = aComissoesRep.filter(cr => {
+                return cr.usuario_ID === oUser.ID
+            });
 
         //Filtra somente Comissões com Representante atribuido   
         const aComissoesComRep = aComissoesRep.filter((comissao, index, self) =>
@@ -1396,50 +1783,49 @@ module.exports = cds.service.impl(async (service) => {
         console.log("Comissoes com Representante", aComissoesComRep.length)
         switch (oUser.perfil_ID) {
             case "ADM":
-            case "PRES":    
+            case "PRES":
                 for (let i = 0; i < aComissoes.length; i++) {
                     const element = aComissoes[i];
-        
+
                     const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
-        
+
                     if (find) {
                         aReturn.push(element);
                     }
                 }
-                break;  
+                break;
             case "VP_DIR":
-                    //Somente Vizualiza dados de sua responsábilidade
-                    for (let y = 0; y < aComissoes.length; y++) {
-                        const element = aComissoes[y];
-            
-                        const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
-            
-                        if (find) {
-                            var oRepresentante = aUsers.find(user => user.ID === find.usuario_ID);
-                            oRepresentante.diretorGeral = oRepresentante.diretorGeral? oRepresentante.diretorGeral : "";
-                            oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo? oRepresentante.diretorExecutivo : "";
-                            if (oRepresentante.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
-                                //console.log("diretor Geral")
+                //Somente Vizualiza dados de sua responsábilidade
+                for (let y = 0; y < aComissoes.length; y++) {
+                    const element = aComissoes[y];
+
+                    const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
+
+                    if (find) {
+                        var oRepresentante = aUsers.find(user => user.ID === find.usuario_ID);
+                        oRepresentante.diretorGeral = oRepresentante.diretorGeral ? oRepresentante.diretorGeral : "";
+                        oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo ? oRepresentante.diretorExecutivo : "";
+                        if (oRepresentante.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
+                            //console.log("diretor Geral")
+                            aReturn.push(element);
+                        } else if (oRepresentante.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase()) {
+                            //console.log("diretor executivo")
+                            aReturn.push(element);
+                        } else {
+                            //verifica se comissão esta relacionada com o Usuário logado
+                            var found = aComissoesUser.find(acr => acr.comissao_ID === element.ID);
+
+                            if (found) {
                                 aReturn.push(element);
                             }
-                            else if(oRepresentante.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase() ){
-                                //console.log("diretor executivo")
-                                aReturn.push(element);
-                            }else{                      
-                                //verifica se comissão esta relacionada com o Usuário logado
-                                var found = aComissoesUser.find(acr => acr.comissao_ID === element.ID);
 
-                                if (found) {                                   
-                                    aReturn.push(element);
-                                }                                
-                               
-                            }                           
                         }
                     }
-                    break;       
+                }
+                break;
             default:
                 break;
-        }        
+        }
 
         return aReturn;
     });
@@ -1494,18 +1880,18 @@ module.exports = cds.service.impl(async (service) => {
 
 
         return aReturn;
-    });   
+    });
 
     service.on("getRepresentacoesPorCargo", async req => {
 
         let aReturn = []
-            aRepresentacoesPorCargo = [],
+        aRepresentacoesPorCargo = [],
             oUser = {}
-            aComissUserLogado = [];
+        aComissUserLogado = [];
 
-        const aComissoesRep = await cds.read(ComissoesRepresentante),          
-              aRepresentantes = await cds.read(Usuarios),
-              aCalssifCargo = await cds.read(CargoClassificacoes);
+        const aComissoesRep = await cds.read(ComissoesRepresentante),
+            aRepresentantes = await cds.read(Usuarios),
+            aCalssifCargo = await cds.read(CargoClassificacoes);
 
         //Filtra somente Comissões com Representante atribuido   
         const aComissoesComRep = aComissoesRep.filter((comissao, index, self) =>
@@ -1514,10 +1900,12 @@ module.exports = cds.service.impl(async (service) => {
             ))
         );
         //Usuário Logado
-        oUser = aRepresentantes.find(usr=> usr.ID === req.user.id);
+        oUser = aRepresentantes.find(usr => usr.ID === req.user.id);
         //Busca Comissões Usuário Logado
         if (oUser) {
-            aComissUserLogado = aComissoesRep.filter(acr => {return acr.usuario_ID === oUser.ID});
+            aComissUserLogado = aComissoesRep.filter(acr => {
+                return acr.usuario_ID === oUser.ID
+            });
         }
 
         console.log("Comissoes com Representante", aComissoesComRep.length);
@@ -1529,44 +1917,43 @@ module.exports = cds.service.impl(async (service) => {
             var oRepPorCargo = {};
 
             oRepPorCargo.ID = element.ID;
-           
+
             var oRepresentante = aRepresentantes.find(rep => rep.ID === element.usuario_ID);
             const oClassCargo = aCalssifCargo.find(carg => carg.ID === oRepresentante.cargoClassif_ID);
             oRepPorCargo.cargo = oClassCargo ? oClassCargo.descricao : oRepresentante.cargo;
-            if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES" ) {
-                aRepresentacoesPorCargo.push(oRepPorCargo); 
-            }else if (oUser.perfil_ID === "VP_DIR") {
+            if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES") {
+                aRepresentacoesPorCargo.push(oRepPorCargo);
+            } else if (oUser.perfil_ID === "VP_DIR") {
 
-                oRepresentante.diretorGeral = oRepresentante.diretorGeral? oRepresentante.diretorGeral : "";
-                oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo? oRepresentante.diretorExecutivo : "";
-                
+                oRepresentante.diretorGeral = oRepresentante.diretorGeral ? oRepresentante.diretorGeral : "";
+                oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo ? oRepresentante.diretorExecutivo : "";
+
                 if (oRepresentante.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
                     //console.log("diretor Geral")
-                    aRepresentacoesPorCargo.push(oRepPorCargo); 
-                }
-                else if(oRepresentante.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase() ){
+                    aRepresentacoesPorCargo.push(oRepPorCargo);
+                } else if (oRepresentante.diretorExecutivo.toUpperCase() === oUser.nome.toUpperCase()) {
                     //console.log("diretor executivo")
-                    aRepresentacoesPorCargo.push(oRepPorCargo); 
-                }else{                      
+                    aRepresentacoesPorCargo.push(oRepPorCargo);
+                } else {
                     //verifica se comissão esta relacionada com o Usuário logado
                     var found = aComissUserLogado.find(acr => acr.comissao_ID === element.comissao_ID);
 
-                    if (found) {                                   
-                        aRepresentacoesPorCargo.push(oRepPorCargo); 
-                    }                                
-                   
-                }               
-                
-                
+                    if (found) {
+                        aRepresentacoesPorCargo.push(oRepPorCargo);
+                    }
+
+                }
+
+
             }
-            
+
         }
         //Agrupa por Cargos
         console.log("lista de Representacoes por Cargo", aRepresentacoesPorCargo.length);
         const aRepCargos = aRepresentacoesPorCargo.filter((cargo, index, self) =>
-        index === self.findIndex((t) => (
-            t.cargo === cargo.cargo && t.cargo === cargo.cargo
-        )));
+            index === self.findIndex((t) => (
+                t.cargo === cargo.cargo && t.cargo === cargo.cargo
+            )));
 
         console.log("Agrupa por Cargos", aRepCargos.length);
 
@@ -1576,7 +1963,9 @@ module.exports = cds.service.impl(async (service) => {
             oReturn.ID = cargo.cargo;
             oReturn.cargo = cargo.cargo;
 
-            var aQtdPorCargo = aRepresentacoesPorCargo.filter(ac=>{return ac.cargo === cargo.cargo });
+            var aQtdPorCargo = aRepresentacoesPorCargo.filter(ac => {
+                return ac.cargo === cargo.cargo
+            });
             oReturn.qtd = aQtdPorCargo.length;
 
             aReturn.push(oReturn);
@@ -1602,7 +1991,7 @@ module.exports = cds.service.impl(async (service) => {
         }
 
         if (oUser.perfil_ID === "ADM") {
-           // console.log(req.data.ids.split(";"));
+            // console.log(req.data.ids.split(";"));
             let aUsersDelete = req.data.ids.split(";");
             for (let i = 0; i < aUsersDelete.length; i++) {
                 const userDel = aUsersDelete[i];
@@ -1767,7 +2156,7 @@ module.exports = cds.service.impl(async (service) => {
         }
 
     });
-    
+
 
     service.on("replicaEventoAlerta", async req => {
 
