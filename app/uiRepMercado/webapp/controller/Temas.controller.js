@@ -706,14 +706,15 @@ sap.ui.define([
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = '/Historico';
+                sPath = '/getRepresentacoesPorCargo()';
+                //sPath = '/Historico';
 
             oModel.read(sPath, {
-                filters: [aFilter],
-                urlParameters: {
+                //filters: [aFilter],
+                /*urlParameters: {
                     "$expand": "representante($expand=cargoClassif)",
                     "$select": "idTema,ultimoRegistro"
-                },
+                },*/
 
                 success: function (oData) {
                     var oResults = oData.results,
@@ -722,36 +723,13 @@ sap.ui.define([
                     if (oData.results.length > 0) {
                         for (let i = 0; i < oResults.length; i++) {
                             const element = oResults[i];
-                            element.ultimoRegistro = new Date(element.ultimoRegistro.getFullYear(), element.ultimoRegistro.getMonth(), 1);
 
-                            if (element.representante.cargoClassif_ID) {
-                                element.representante.cargo = element.representante.cargoClassif.descricao;
-                            }
-                        }
-
-                        var aGroupTemasDistinct = oResults.filter((temaM, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.idTema === temaM.idTema && t.idTema === temaM.idTema
-                            ))
-                        );
-
-                        var aCargosMes = aGroupTemasDistinct.filter((temaCargo, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.representante.cargo === temaCargo.representante.cargo && t.representante.cargo === temaCargo.representante.cargo
-                            ))
-                        );
-
-                        for (let i = 0; i < aCargosMes.length; i++) {
-                            const cargo = aCargosMes[i];
-
-                            var aGroupTemasPorCargo = aGroupTemasDistinct.filter(r => {
-                                return r.representante.cargo === cargo.representante.cargo
-                            });
                             aMeasures.push({
-                                CARGO: cargo.representante.cargo,
-                                TOTAL: aGroupTemasPorCargo.length
+                                CARGO: element.cargo,
+                                TOTAL: element.qtd
                             });
-                        }
+                          
+                        }  
 
                         var assignedContentData = {
                             RepresentacoesPorCargo: aMeasures
