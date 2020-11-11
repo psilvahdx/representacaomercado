@@ -10,7 +10,7 @@
 						<form:Form>
 							<form:formContainers>
 								<!--Filtros Representações por Cargo-->
-								<form:FormContainer
+								<!--<form:FormContainer
 									visible="{= ${userLogModel>/userLog/userProfile_ID}? ${userLogModel>/userLog/userProfile_ID} !=='REP' : false}"
 									title="{i18n>representacoes_por_cargo_title}">
 									<form:formElements>
@@ -24,7 +24,7 @@
 											</form:fields>
 										</form:FormElement>
 									</form:formElements>
-								</form:FormContainer>
+								</form:FormContainer>-->
 								<!--Filtros temas por regulador e por Criticidade-->
 								<form:FormContainer title="{i18n>temas_por_regulador_e_criticidade}">
 									<form:formElements>
