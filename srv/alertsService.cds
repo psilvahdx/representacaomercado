@@ -32,5 +32,5 @@ service alertsService {
 
     action atualizaStatusTemas() returns Logs;
     action disparaEmailsAlerta() returns Logs;
-    action criaFechamentoMensal(bForce: Boolean) returns Logs;
+    action criaFechamentoMensal(periodo: String) returns Logs;
 }

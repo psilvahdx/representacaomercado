@@ -225,6 +225,15 @@ module.exports = cds.service.impl(async (service) => {
 
             console.log("veio algo:",context.data)
 
+        
+        let sPeriodoDe = context.data.periodo,
+            sPeriodoAte = context.data.periodo;
+            sPeriodoDe = sPeriodoDe? `${sPeriodoDe}-01` : null;
+            sPeriodoAte = sPeriodoAte? `${sPeriodoAte}-28` : null; //data de Fechamento sempre será o primeiro dia do mês
+
+        var aFechamentoPeriodo = await SELECT.from(TemasFechamentoMensal).where({dtFechamento: {between: sPeriodoDe, and: sPeriodoAte}});
+        console.log("Registros no Período:", aFechamentoPeriodo.length);
+
         //Se Execução acontece no primeiro dia do mês
         if (vToday.getDate() === 1) {
             

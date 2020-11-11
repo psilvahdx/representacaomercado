@@ -58,12 +58,12 @@ sap.ui.define([
             odtrPeriodo.setSecondDateValue(vToday);
 
             //Filtros Iniciais
-            var oDPRepPorCargo = this.byId("DPRepPorCargo"),
+            var //oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 oDPTemasPorRegCritic = this.byId("DPTemasPorRegCritic"),
                 oDPCompComTemas = this.byId("DPCompComTemas");
 
-            oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
-            oDPRepPorCargo.setDateValue(vToday);
+            //oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            //oDPRepPorCargo.setDateValue(vToday);
 
             oDPTemasPorRegCritic.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
 
@@ -562,7 +562,7 @@ sap.ui.define([
                 aComparativosTemaFilter = [],
                 odtrPeriodo = this.byId("dtrPeriodo"),
                 oDPCompComTemas = this.byId("DPCompComTemas"),
-                oDPRepPorCargo = this.byId("DPRepPorCargo"),
+                //oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 vToday = new Date();
 
             var oDashBoardFilter = ofilterModel.getProperty("/dashBoard");
@@ -618,7 +618,7 @@ sap.ui.define([
 
 
             //Filtros Representações Por Cargo
-            if (oDPRepPorCargo.getDateValue()) {
+           /* if (oDPRepPorCargo.getDateValue()) {
                 var vMinDate = new Date(oDPRepPorCargo.getDateValue().getFullYear(), oDPRepPorCargo.getDateValue().getMonth(), 1),
                     vMaxDate = new Date(oDPRepPorCargo.getDateValue().getFullYear(), oDPRepPorCargo.getDateValue().getMonth() + 1, 0);
                 aRepPorCargoFilter.push(new Filter({
@@ -639,7 +639,7 @@ sap.ui.define([
                     value2: vMaxDate
                 }));
 
-            }
+            }*/
 
             //Filtros Comparativos Com Temas
             if (oDPCompComTemas.getDateValue()) {
@@ -667,14 +667,15 @@ sap.ui.define([
 
             //Desconsidera Temas Encerrados
             aFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
-            aRepPorCargoFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
+           // aRepPorCargoFilter.push(new Filter("status_ID", FilterOperator.NE, 4));
 
             this.getTemasPorRegulador(aFilter);
             this.getTemasPorCriticidade(aFilter);
             this.getComparativoComTemas(aComparativosTemaFilter);
 
             if (oObjectUser.userLog.userProfile_ID !== "REP") {               
-                this.getRepresentacoesPorCargo(aRepPorCargoFilter);
+                //this.getRepresentacoesPorCargo(aRepPorCargoFilter);
+                this.getRepresentacoesPorCargo();
                 this.getComissoesSemRepresentantePorRegulador();
                 this.getComissoesComRepresentantePorRegulador();
             }
@@ -699,7 +700,7 @@ sap.ui.define([
 
         },
 
-        getRepresentacoesPorCargo: function (aFilter) {
+        getRepresentacoesPorCargo: function () {
 
             var oModel = this.getModel(),
                 that = this,
