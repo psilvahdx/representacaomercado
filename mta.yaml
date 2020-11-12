@@ -11,6 +11,7 @@ modules:
     VAR_BDCOLAB_SERVERNODE: "44c342a6-a692-414c-b778-2aaa97292179.hana.prod-us20.hanacloud.ondemand.com:443"
     VAR_BDCOLAB_UID: "USER_FERIAS"
     VAR_BDCOLAB_PWD: "PorT0s3g2af0g9f"
+    VAR_API_HIERARQUIA: 1
   requires:
   - name: representacaomercado-db
   - name: uaa_representacaomercado

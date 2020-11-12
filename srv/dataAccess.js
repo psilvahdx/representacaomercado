@@ -8,7 +8,7 @@ const axios = require('axios');
 const qs = require('qs');
 const dateFormat = require('dateformat');
 const hana = require('@sap/hana-client');
-//require('@sap/xsenv').loadEnv();
+require('@sap/xsenv').loadEnv();
 
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
@@ -52,7 +52,8 @@ module.exports = cds.service.impl(async (service) => {
         TemasPorCriticidade,
         ComparativoComTemas,
         Status,
-        TemasFechamentoMensal
+        TemasFechamentoMensal,
+        AppSettings
     } = service.entities;
 
 
@@ -1052,7 +1053,9 @@ module.exports = cds.service.impl(async (service) => {
         });
 
         const aReguladores = await cds.read(Reguladores);
-        var aTemas = await cds.read(Temas).where({status_ID: [1,2,3]});
+        var aTemas = await cds.read(Temas).where({
+            status_ID: [1, 2, 3]
+        });
 
         const tx = service.tx(req);
         var aHistAux = await tx.run(SELECT.from(TemasFechamentoMensal).where(qry));
@@ -1075,7 +1078,7 @@ module.exports = cds.service.impl(async (service) => {
             var sFilter = oFilter.$filter;
             var vCurrentMonth = new Date();
             var sCurrentMonth = dateFormat(vCurrentMonth, "isoUtcDateTime");
-             sCurrentMonth =  sCurrentMonth.substring(0,7);
+            sCurrentMonth = sCurrentMonth.substring(0, 7);
             console.log("Mes Atual", sCurrentMonth);
 
             if (sFilter.includes(sCurrentMonth)) {
@@ -1086,7 +1089,7 @@ module.exports = cds.service.impl(async (service) => {
                     const element = aTemas[i];
                     element.ultimoRegistro = dateFormat(vToday, "isoUtcDateTime");
                     var oTema = {
-                        ID: "4f3e1cc1-a35a-4b2f-8696-0b2000000001",//Dummy
+                        ID: "4f3e1cc1-a35a-4b2f-8696-0b2000000001", //Dummy
                         idTema: element.ID,
                         status_ID: element.status_ID,
                         criticidade_ID: element.criticidade_ID,
@@ -1101,10 +1104,10 @@ module.exports = cds.service.impl(async (service) => {
                         dtFechamento: element.ultimoRegistro
                     }
                     //Filtra por Perfil de Acesso
-                    if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES" ) {
+                    if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES") {
                         aTemasEmAberto.push(oTema);
-                    }else if (oUser.perfil_ID === "REP" || oUser.perfil_ID === "VP_DIR") {
-                     
+                    } else if (oUser.perfil_ID === "REP" || oUser.perfil_ID === "VP_DIR") {
+
                         oTema.diretorGeral = oTema.diretorGeral ? oTema.diretorGeral : "";
                         oTema.diretorExecutivo = oTema.diretorExecutivo ? oTema.diretorExecutivo : "";
                         if (oTema.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
@@ -1116,22 +1119,22 @@ module.exports = cds.service.impl(async (service) => {
                         } else {
                             //verifica se comissão esta relacionada com o Usuário logado
                             var found = aComissoesUsuario.find(acr => acr.comissao_ID === oTema.comissao_ID);
-        
+
                             if (found) {
                                 aTemasEmAberto.push(oTema);
                             }
-        
+
                         }
-        
+
                     }
-        
-                    
+
+
                 }
 
 
             }
 
-        }        
+        }
 
         //Recupera lista distinta de datas nos registros recuperados
         var aDates = aTemasEmAberto.filter((tema, index, self) =>
@@ -1196,7 +1199,7 @@ module.exports = cds.service.impl(async (service) => {
         return aReturn;
 
 
-    }); 
+    });
 
     //Temas por Criticidade 
     service.on("READ", TemasPorCriticidade, async (req) => {
@@ -1215,15 +1218,17 @@ module.exports = cds.service.impl(async (service) => {
             return cm.usuario_ID === oUser.ID
         });
 
-        const aCriticidades = await cds.read(Criticidades); 
-        var aTemas = await cds.read(Temas).where({status_ID: [1,2,3]});
-        
+        const aCriticidades = await cds.read(Criticidades);
+        var aTemas = await cds.read(Temas).where({
+            status_ID: [1, 2, 3]
+        });
+
         const tx = service.tx(req);
         var aHistAux = await tx.run(SELECT.from(TemasFechamentoMensal).where(qry));
         console.log("TemasFechamentoMensal:", aHistAux.length);
 
         //Registro será apresentado por mês. fixa dia como primeiro dia do mês  
-          for (let i = 0; i < aHistAux.length; i++) {
+        for (let i = 0; i < aHistAux.length; i++) {
             const element = aHistAux[i];
             var vDtReg = new Date(element.ultimoRegistro.substring(0, 4) + "/" +
                 element.ultimoRegistro.substring(5, 7) + "/02");
@@ -1239,7 +1244,7 @@ module.exports = cds.service.impl(async (service) => {
             var sFilter = oFilter.$filter;
             var vCurrentMonth = new Date();
             var sCurrentMonth = dateFormat(vCurrentMonth, "isoUtcDateTime");
-             sCurrentMonth =  sCurrentMonth.substring(0,7);
+            sCurrentMonth = sCurrentMonth.substring(0, 7);
             console.log("Mes Atual", sCurrentMonth);
 
             if (sFilter.includes(sCurrentMonth)) {
@@ -1250,7 +1255,7 @@ module.exports = cds.service.impl(async (service) => {
                     const element = aTemas[i];
                     element.ultimoRegistro = dateFormat(vToday, "isoUtcDateTime");
                     var oTema = {
-                        ID: "3f3e1cc1-a35a-4b2f-8696-0b2000000001",//Dummy
+                        ID: "3f3e1cc1-a35a-4b2f-8696-0b2000000001", //Dummy
                         idTema: element.ID,
                         status_ID: element.status_ID,
                         criticidade_ID: element.criticidade_ID,
@@ -1265,10 +1270,10 @@ module.exports = cds.service.impl(async (service) => {
                         dtFechamento: element.ultimoRegistro
                     }
                     //Filtra por Perfil de Acesso
-                    if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES" ) {
+                    if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES") {
                         aTemasEmAberto.push(oTema);
-                    }else if (oUser.perfil_ID === "REP" || oUser.perfil_ID === "VP_DIR") {
-                     
+                    } else if (oUser.perfil_ID === "REP" || oUser.perfil_ID === "VP_DIR") {
+
                         oTema.diretorGeral = oTema.diretorGeral ? oTema.diretorGeral : "";
                         oTema.diretorExecutivo = oTema.diretorExecutivo ? oTema.diretorExecutivo : "";
                         if (oTema.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
@@ -1280,22 +1285,22 @@ module.exports = cds.service.impl(async (service) => {
                         } else {
                             //verifica se comissão esta relacionada com o Usuário logado
                             var found = aComissoesUsuario.find(acr => acr.comissao_ID === oTema.comissao_ID);
-        
+
                             if (found) {
                                 aTemasEmAberto.push(oTema);
                             }
-        
+
                         }
-        
+
                     }
-        
-                    
+
+
                 }
 
 
             }
 
-        } 
+        }
 
         //Recupera lista distinta de datas nos registros recuperados
         var aDates = aTemasEmAberto.filter((tema, index, self) =>
@@ -1675,28 +1680,91 @@ module.exports = cds.service.impl(async (service) => {
 
     async function getColaborador(matricula) {
 
-        let oColaborador = {};
+        let oColaborador = {},
+            oAppSettings = {},
+            vApi = 1;
 
         console.log("DataBase Colaboradores", matricula);
 
-        var resPromisse = new Promise(function (resolve, reject) {
-            bancoColaboradores.exec(`SELECT *
+        try {
+            vApi = process.env.VAR_API_HIERARQUIA;
+            if (!vApi) {
+                vApi = 1; 
+            }
+        } catch (error) {
+            vApi = 1;
+            console.log("Erro na Leitura VAR_API_HIERARQUIA");
+        }
+
+        if (vApi === 1) {
+
+            console.log("Busca Colaborador Base Hana EmpregadoDoSenior");
+
+            var resPromisse = new Promise(function (resolve, reject) {
+                bancoColaboradores.exec(`SELECT *
             FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
             WHERE Empregado."Login_Funcionario" = '${matricula}'`,
-                function (err, result) {
-                    if (err) reject(err);
-                    resolve(result);
-                });
-        }.bind(this));
+                    function (err, result) {
+                        if (err) reject(err);
+                        resolve(result);
+                    });
+            }.bind(this));
 
-        var response = await resPromisse.then(function (result) {
-            return result
-        }).catch(function (err) {
-            //context.reject(400, err);
-            console.log("ERRO DataBase Colaboradores", err);
-        });
-        if (response) {
-            oColaborador = response[0];
+            var response = await resPromisse.then(function (result) {
+                return result
+            }).catch(function (err) {
+                //context.reject(400, err);
+                console.log("ERRO DataBase Colaboradores", err);
+            });
+            if (response) {
+                oColaborador = response[0];
+            }
+
+        } else {
+
+            console.log("Busca dados Colaborador API Hierarquia - REST");
+
+            //Busca dados Colaborador API Hierarquia - REST
+            const aAppSettings = await cds.read(AppSettings).where({
+                ID: 1
+            });
+            if (aAppSettings.length > 0) {
+                oAppSettings = aAppSettings[0];
+            }
+
+            var token = await getBarerToken(oAppSettings).then((token) => {
+                return token;
+            });
+            console.log("token recuperado:", token);
+
+            const ret_api_hierarquia = await
+            axios({
+                method: 'get',
+                url: `${oAppSettings.urlApi}?login=${matricula}`,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(function (response) {
+                console.log("Chamou API de Hierarquia com Token?: ", response.data);
+                return response.data;
+            }).catch(function (error) {
+                console.log("Erro na Busca de Hierarquia:", error);
+            });
+
+            //Complementa dados Usuário com retorno Api de Hierarquia
+            if (ret_api_hierarquia && ret_api_hierarquia.nomeColaborador) {
+                oColaborador.Nome_Funcionario = ret_api_hierarquia.nomeColaborador;
+                oColaborador.Nome_Cargo_Funcionario = ret_api_hierarquia.cargo;
+                oColaborador.Email_Funcionario = ret_api_hierarquia.emailFuncionario;
+                oColaborador.Nome_Vice_Presidente = ret_api_hierarquia.diretor;
+                oColaborador.Nome_Gerente = ret_api_hierarquia.gerencia;
+                oColaborador.Nome_Superintendente = ret_api_hierarquia.superintendencia;
+                oColaborador.Cadastro_Coordenador = ret_api_hierarquia.matriculaCoordenador;
+                oColaborador.Nome_Coordenador = ret_api_hierarquia.coordenador;
+                oColaborador.Nome_Area_Funcionario = ret_api_hierarquia.departamento;
+            }
+
+
         }
 
         /*
@@ -1721,6 +1789,31 @@ module.exports = cds.service.impl(async (service) => {
 
         return oColaborador;
 
+    }
+
+    async function getBarerToken(oAppSettings) {
+        try {
+
+            var ret_token = await axios({
+                method: 'post',
+                url: oAppSettings.urlToken,
+                headers: {
+                    'Content-Type': "application/x-www-form-urlencoded"
+                },
+                data: qs.stringify({
+                    client_id: oAppSettings.clientID,
+                    client_secret: oAppSettings.clientSecret,
+                    grant_type: "client_credentials"
+                })
+            }).then(function (response) {
+                return response.data.access_token;
+            }).catch(function (error) {
+                console.log("Erro ao Buscar Token");
+            });
+        } catch (e) {
+            console.log("Erro ao Buscar Token")
+        }
+        return ret_token;
     }
 
     service.on("comissoesSemRepresentante", async req => {
@@ -1919,6 +2012,7 @@ module.exports = cds.service.impl(async (service) => {
             oRepPorCargo.ID = element.ID;
 
             var oRepresentante = aRepresentantes.find(rep => rep.ID === element.usuario_ID);
+
             const oClassCargo = aCalssifCargo.find(carg => carg.ID === oRepresentante.cargoClassif_ID);
             oRepPorCargo.cargo = oClassCargo ? oClassCargo.descricao : oRepresentante.cargo;
             if (oUser.perfil_ID === "ADM" || oUser.perfil_ID === "PRES") {
@@ -1927,6 +2021,12 @@ module.exports = cds.service.impl(async (service) => {
 
                 oRepresentante.diretorGeral = oRepresentante.diretorGeral ? oRepresentante.diretorGeral : "";
                 oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo ? oRepresentante.diretorExecutivo : "";
+
+                //Busca Diretor Geral e Diretor Executivo
+                /* const oColaborador = await getColaborador(oRepresentante.ID).then(ret_api_hierarquia => {return ret_api_hierarquia});
+                 if (oColaborador) {
+                     console.log("Retorno:", oColaborador.Nome_Vice_Presidente);
+                 }*/
 
                 if (oRepresentante.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
                     //console.log("diretor Geral")

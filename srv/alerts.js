@@ -6,6 +6,7 @@ const axios = require('axios');
 const qs = require('qs');
 const hana = require('@sap/hana-client');
 const SequenceHelper = require("./lib/SequenceHelper");
+require('@sap/xsenv').loadEnv();
 module.exports = cds.service.impl(async (service) => {
     const bancoColaboradores = hana.createConnection();
     const conn_parms_tcp_test = {
@@ -221,9 +222,10 @@ module.exports = cds.service.impl(async (service) => {
         var aFechamentoMes = [],
             aTemas = await cds.read(Temas);
         var vToday = new Date()
-            vDtFechamento = new Date();
+            vDtFechamento = new Date(),
+            isFechamentoManual = false;
 
-            console.log("veio algo:",context.data)
+            //console.log("body:",context.data)
 
         
         let sPeriodoDe = context.data.periodo,
@@ -231,14 +233,24 @@ module.exports = cds.service.impl(async (service) => {
             sPeriodoDe = sPeriodoDe? `${sPeriodoDe}-01` : null;
             sPeriodoAte = sPeriodoAte? `${sPeriodoAte}-28` : null; //data de Fechamento sempre será o primeiro dia do mês
 
-        var aFechamentoPeriodo = await SELECT.from(TemasFechamentoMensal).where({dtFechamento: {between: sPeriodoDe, and: sPeriodoAte}});
-        console.log("Registros no Período:", aFechamentoPeriodo.length);
+
+        if (sPeriodoDe) {
+            var aFechamentoPeriodo = await SELECT.from(TemasFechamentoMensal).where({dtFechamento: {between: sPeriodoDe, and: sPeriodoAte}});
+            console.log("Registros no Período:", aFechamentoPeriodo.length); 
+            isFechamentoManual = true;
+            vDtFechamento = dateFormat(sPeriodoDe, "isoUtcDateTime");
+            console.log("Data Fechamento Manual", vDtFechamento);
+        }
+        
 
         //Se Execução acontece no primeiro dia do mês
-        if (vToday.getDate() === 1) {
+        if (vToday.getDate() === 1 || isFechamentoManual) {
             
-            vDtFechamento.setDate(2);//Começo do Mês
-            vDtFechamento.setMonth(vDtFechamento.getMonth()-1);//Mês anterior
+            if(!isFechamentoManual){
+                //Seta Inicio do Mês anterior ao mês atual, caso executado via job no primeiro dia do mês
+                vDtFechamento.setDate(2);//Começo do Mês
+                vDtFechamento.setMonth(vDtFechamento.getMonth()-1);//Mês anterior
+            }           
 
 
             for (let i = 0; i < aTemas.length; i++) {
@@ -278,7 +290,7 @@ module.exports = cds.service.impl(async (service) => {
                 //console.log("Fechamento Mensal", aRows);
     
             }
-            oLog.message = `Fechamento Realizado para: ${vDtFechamento.toLocaleDateString()}`;
+            oLog.message = `Fechamento Realizado para: ${vDtFechamento}`;
         }else{
             oLog.message = `Não há Registros para atualizar`;
         }
@@ -354,30 +366,87 @@ module.exports = cds.service.impl(async (service) => {
 
     async function getEmailColaborador(sMatricula) {
 
-        let oColaborador = {};
+        let oColaborador = {},
+            oAppSettings = {},
+            vApi = 1;
 
         console.log("DataBase Colaboradores", matricula);
 
-        var resPromisse = new Promise(function (resolve, reject) {
-            bancoColaboradores.exec(`SELECT *
-        FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
-        WHERE Empregado."Login_Funcionario" = '${matricula}'`,
-                function (err, result) {
-                    if (err) reject(err);
-                    resolve(result);
-                });
-        }.bind(this));
+        try {
+            vApi = process.env.VAR_API_HIERARQUIA;
+            if (!vApi) {
+                vApi = 1; 
+            }
+        } catch (error) {
+            vApi = 1;
+            console.log("Erro na Leitura VAR_API_HIERARQUIA");
+        }
 
-       var response = await resPromisse.then(function (result) {
-            return result
-        }).catch(function (err) {
-            //context.reject(400, err);
-            console.log("ERRO DataBase Colaboradores", err);
-        });
-        
-        if(response){
-             oColaborador = response[0];
-        }       
+        if (vApi === 1) {
+
+            var resPromisse = new Promise(function (resolve, reject) {
+                bancoColaboradores.exec(`SELECT *
+            FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
+            WHERE Empregado."Login_Funcionario" = '${matricula}'`,
+                    function (err, result) {
+                        if (err) reject(err);
+                        resolve(result);
+                    });
+            }.bind(this));
+    
+           var response = await resPromisse.then(function (result) {
+                return result
+            }).catch(function (err) {
+                //context.reject(400, err);
+                console.log("ERRO DataBase Colaboradores", err);
+            });
+            
+            if(response){
+                 oColaborador = response[0];
+            }   
+        }else{
+
+             //Busca dados Colaborador API Hierarquia - REST
+             const aAppSettings = await cds.read(AppSettings).where({
+                ID: 1
+            });
+            if (aAppSettings.length > 0) {
+                oAppSettings = aAppSettings[0];
+            }
+
+            var token = await getBarerToken(oAppSettings).then((token) => {
+                return token;
+            });
+            console.log("token recuperado:", token);
+
+            const ret_api_hierarquia = await
+            axios({
+                method: 'get',
+                url: `${oAppSettings.urlApi}?login=${matricula}`,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(function (response) {
+                console.log("Chamou API de Hierarquia com Token?: ", response.data);
+                return response.data;
+            }).catch(function (error) {
+                console.log("Erro na Busca de Hierarquia:", error);
+            });
+
+            //Complementa dados Usuário com retorno Api de Hierarquia
+            if (ret_api_hierarquia && ret_api_hierarquia.nomeColaborador) {
+                oColaborador.Nome_Funcionario = ret_api_hierarquia.nomeColaborador;
+                oColaborador.Nome_Cargo_Funcionario = ret_api_hierarquia.cargo;
+                oColaborador.Email_Funcionario = ret_api_hierarquia.emailFuncionario;
+                oColaborador.Nome_Vice_Presidente = ret_api_hierarquia.diretor;
+                oColaborador.Nome_Gerente = ret_api_hierarquia.gerencia;
+                oColaborador.Nome_Superintendente = ret_api_hierarquia.superintendencia;
+                oColaborador.Cadastro_Coordenador = ret_api_hierarquia.matriculaCoordenador;
+                oColaborador.Nome_Coordenador = ret_api_hierarquia.coordenador;
+                oColaborador.Nome_Area_Funcionario = ret_api_hierarquia.departamento;
+            }
+
+        }            
 
         /*let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${sMatricula}')`,
             oColaborador = {};
