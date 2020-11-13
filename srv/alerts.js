@@ -6,15 +6,15 @@ const axios = require('axios');
 const qs = require('qs');
 const hana = require('@sap/hana-client');
 const SequenceHelper = require("./lib/SequenceHelper");
-require('@sap/xsenv').loadEnv();
+//require('@sap/xsenv').loadEnv();
 module.exports = cds.service.impl(async (service) => {
     const bancoColaboradores = hana.createConnection();
     const conn_parms_tcp_test = {
-        serverNode: "44c342a6-a692-414c-b778-2aaa97292179.hana.prod-us20.hanacloud.ondemand.com:443",
+        serverNode: process.env.VAR_BDCOLAB_SERVERNODE, 
         encrypt: true,
         sslValidateCertificate: false,
-        uid: "USER_FERIAS",
-        pwd: "PorT0s3g2af0g9f"
+        uid: process.env.VAR_BDCOLAB_UID,
+        pwd: process.env.VAR_BDCOLAB_PWD
     };
 
     await bancoColaboradores.connect(conn_parms_tcp_test, function (err) {
@@ -28,7 +28,8 @@ module.exports = cds.service.impl(async (service) => {
         AlertasUsuario,
         EventosAlerta,
         AppSettings,
-        TemasFechamentoMensal
+        TemasFechamentoMensal,
+        Usuarios
     } = service.entities;
 
     service.on("atualizaStatusTemas", async (context) => {
@@ -100,10 +101,10 @@ module.exports = cds.service.impl(async (service) => {
         oLog.message = `Quantidade de temas atualizados: ${nTemasAtualizados}`;
 
         context.reply(oLog);
-    }); 
+    });
 
     //disparaEmailsAlerta
-   service.on("disparaEmailsAlerta", async (context) => {
+    service.on("disparaEmailsAlerta", async (context) => {
         let oLog = {
             ID: 0,
             status: "",
@@ -177,21 +178,21 @@ module.exports = cds.service.impl(async (service) => {
                         try {
                             //Dispara Email do evento para o Usuário
                             if (evento.conteudo) {
-                                
-                            const emailEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
 
-                            if (emailEnviado) {
-                                nTotalEnvios++;
-                                //Atualiza Evento para Concluído
-                                console.log("Atualiza Evento para Concluido ID:", evento.ID);
-                                const evnt = await cds.update(EventosAlerta).set({
-                                    concluido: true
-                                }).where({
-                                    ID: evento.ID
-                                });
-                                console.log("Evento Atualizado com Sucesso:", evento.ID);
+                                const emailEnviado = await enviaEmailEvento(evento, oCalendarioUser.usuario_ID);
+
+                                if (emailEnviado) {
+                                    nTotalEnvios++;
+                                    //Atualiza Evento para Concluído
+                                    console.log("Atualiza Evento para Concluido ID:", evento.ID);
+                                    const evnt = await cds.update(EventosAlerta).set({
+                                        concluido: true
+                                    }).where({
+                                        ID: evento.ID
+                                    });
+                                    console.log("Evento Atualizado com Sucesso:", evento.ID);
+                                }
                             }
-                        }
 
                         } catch (error) {
                             console.log("Erro Envio Email ID Evento:", evento.ID);
@@ -221,42 +222,47 @@ module.exports = cds.service.impl(async (service) => {
         };
         var aFechamentoMes = [],
             aTemas = await cds.read(Temas);
-        var vToday = new Date()
+        var vToday = new Date(),
             vDtFechamento = new Date(),
             isFechamentoManual = false;
 
-            //console.log("body:",context.data)
+        //console.log("body:",context.data)
 
-        
+
         let sPeriodoDe = context.data.periodo,
             sPeriodoAte = context.data.periodo;
-            sPeriodoDe = sPeriodoDe? `${sPeriodoDe}-01` : null;
-            sPeriodoAte = sPeriodoAte? `${sPeriodoAte}-28` : null; //data de Fechamento sempre será o primeiro dia do mês
+        sPeriodoDe = sPeriodoDe ? `${sPeriodoDe}-01` : null;
+        sPeriodoAte = sPeriodoAte ? `${sPeriodoAte}-28` : null; //data de Fechamento sempre será o primeiro dia do mês
 
 
         if (sPeriodoDe) {
-            var aFechamentoPeriodo = await SELECT.from(TemasFechamentoMensal).where({dtFechamento: {between: sPeriodoDe, and: sPeriodoAte}});
-            console.log("Registros no Período:", aFechamentoPeriodo.length); 
+            var aFechamentoPeriodo = await SELECT.from(TemasFechamentoMensal).where({
+                dtFechamento: {
+                    between: sPeriodoDe,
+                    and: sPeriodoAte
+                }
+            });
+            console.log("Registros no Período:", aFechamentoPeriodo.length);
             isFechamentoManual = true;
             vDtFechamento = dateFormat(sPeriodoDe, "isoUtcDateTime");
             console.log("Data Fechamento Manual", vDtFechamento);
         }
-        
+
 
         //Se Execução acontece no primeiro dia do mês
         if (vToday.getDate() === 1 || isFechamentoManual) {
-            
-            if(!isFechamentoManual){
+
+            if (!isFechamentoManual) {
                 //Seta Inicio do Mês anterior ao mês atual, caso executado via job no primeiro dia do mês
-                vDtFechamento.setDate(2);//Começo do Mês
-                vDtFechamento.setMonth(vDtFechamento.getMonth()-1);//Mês anterior
-            }           
+                vDtFechamento.setDate(2); //Começo do Mês
+                vDtFechamento.setMonth(vDtFechamento.getMonth() - 1); //Mês anterior
+            }
 
 
             for (let i = 0; i < aTemas.length; i++) {
                 const element = aTemas[i];
                 element.ultimoRegistro = dateFormat(vDtFechamento, "isoUtcDateTime");
-                var oTema = {                
+                var oTema = {
                     idTema: element.ID,
                     status_ID: element.status_ID,
                     criticidade_ID: element.criticidade_ID,
@@ -270,35 +276,88 @@ module.exports = cds.service.impl(async (service) => {
                     diretorExecutivo: element.diretorExecutivo,
                     dtFechamento: dateFormat(vDtFechamento, "isoUtcDateTime")
                 }
-                
+
                 aFechamentoMes.push(oTema);
 
                 if (aFechamentoMes.length >= 500) {
-                
+
                     console.log("Atualizando Fechamento Mensal");
                     const aRows = await service.create(TemasFechamentoMensal).entries(aFechamentoMes);
                     //console.log("Fechamento Mensal", aRows);
                     aFechamentoMes = [];
                 }
-    
+
             }
-    
+
             if (aFechamentoMes.length > 0) {
-                
+
                 console.log("Atualizando Fechamento Mensal");
                 const aRows = await service.create(TemasFechamentoMensal).entries(aFechamentoMes);
                 //console.log("Fechamento Mensal", aRows);
-    
+
             }
             oLog.message = `Fechamento Realizado para: ${vDtFechamento}`;
-        }else{
+        } else {
             oLog.message = `Não há Registros para atualizar`;
         }
 
-       
+
         context.reply(oLog);
 
-        
+
+
+    });
+
+    service.on("atualizaUsuarios", async (context) => {
+
+        let oLog = {
+            ID: 0,
+            status: "",
+            message: ""
+        },
+            nAttSucesso = 0,
+            nErroAtt = 0;
+
+        const aUsers = await cds.read(Usuarios);
+
+        for (let i = 0; i < aUsers.length; i++) {
+            const usuario = aUsers[i];
+
+
+            let oColab = await getColaborador(usuario.ID).then(colaborador => {
+
+                return colaborador;
+
+            });
+
+            if (oColab) {
+                try {
+
+                    console.log("Atualiza Dados Colaborador:", usuario.ID);
+                    const evnt = await cds.update(Usuarios).set({
+                        diretorGeral: oColab.Nome_Vice_Presidente,
+                        diretorExecutivo: oColab.Nome_Superintendente,
+                        cargo: oColab.Nome_Cargo_Funcionario
+                    }).where({
+                        ID: usuario.ID
+                    });
+                    console.log("Colaborador Atualizado com Sucesso:", usuario.ID);
+                    nAttSucesso++;
+
+                } catch (error) {
+                    console.log("Erro ao Atualizar Colaborador:", usuario.ID);
+                    console.log("Erro:", error);
+                    nErroAtt++;
+                }
+
+            }
+
+        }
+
+        oLog.message = `Registros Atualizados:(${nAttSucesso}) Registros com Erro:(${nErroAtt})`
+
+        context.reply(oLog);
+
 
     });
 
@@ -323,91 +382,91 @@ module.exports = cds.service.impl(async (service) => {
             oEmailContent = oEvento.conteudo.replace("\"", "'");
         }
 
-        let response = await getEmailColaborador(sMatricula).then(colaborador => {
-            
-            if (colaborador && colaborador.Email_Funcionario) {                
-           
-            //colaborador.Email_Funcionario
-            let aEmails = ["paulosantos.silva@portoseguro.com.br"]; //colaborador.Email_Funcionario
-            if (colaborador.Login_Funcionario === "F0121544") {
-                aEmails.push("odair.matos@portoseguro.com.br");
-            }
-            //Evia Email
-            console.log("Colaborador:", colaborador);
-            return axios({
-                method: 'post',
-                url: `${oAppSettings.urlApi}`,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    from: "noreplay@portoseguro.com.br",
-                    to: aEmails,
-                    subject: oEvento.descricao,
-                    htmlMessage: oEmailContent
+        let response = await getColaborador(sMatricula).then(colaborador => {
 
+            if (colaborador && colaborador.Email_Funcionario) {
+
+                //colaborador.Email_Funcionario
+                let aEmails = ["paulosantos.silva@portoseguro.com.br"]; //colaborador.Email_Funcionario
+                if (colaborador.Login_Funcionario === "F0121544") {
+                    aEmails.push("odair.matos@portoseguro.com.br");
                 }
+                //Evia Email
+                console.log("Colaborador:", colaborador);
+                return axios({
+                    method: 'post',
+                    url: `${oAppSettings.urlApi}`,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    data: {
+                        from: "noreplay@portoseguro.com.br",
+                        to: aEmails,
+                        subject: oEvento.descricao,
+                        htmlMessage: oEmailContent
 
-            }).then(function (response) {
-                console.log("email enviado com sucesso");
-                return true;
-            }).catch(function (error) {
-                console.log("Erro no envio de email:", error.message);
-            });
-         }else{
-             return false;
-         }
+                    }
+
+                }).then(function (response) {
+                    console.log("email enviado com sucesso");
+                    return true;
+                }).catch(function (error) {
+                    console.log("Erro no envio de email:", error.message);
+                });
+            } else {
+                return false;
+            }
 
         });
 
         return response;
-    };
+    }
 
-    async function getEmailColaborador(sMatricula) {
+    async function getColaborador(sMatricula) {
 
         let oColaborador = {},
             oAppSettings = {},
-            vApi = 1;
+            vApi = "1";
 
-        console.log("DataBase Colaboradores", matricula);
+        console.log("DataBase Colaboradores", sMatricula);
 
         try {
             vApi = process.env.VAR_API_HIERARQUIA;
             if (!vApi) {
-                vApi = 1; 
+                vApi = "1";
             }
         } catch (error) {
-            vApi = 1;
+            vApi = "1";
             console.log("Erro na Leitura VAR_API_HIERARQUIA");
         }
 
-        if (vApi === 1) {
+        if (vApi === "1") {
 
             var resPromisse = new Promise(function (resolve, reject) {
                 bancoColaboradores.exec(`SELECT *
             FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
-            WHERE Empregado."Login_Funcionario" = '${matricula}'`,
+            WHERE Empregado."Login_Funcionario" = '${sMatricula}'`,
                     function (err, result) {
                         if (err) reject(err);
                         resolve(result);
                     });
             }.bind(this));
-    
-           var response = await resPromisse.then(function (result) {
+
+            var response = await resPromisse.then(function (result) {
                 return result
             }).catch(function (err) {
                 //context.reject(400, err);
                 console.log("ERRO DataBase Colaboradores", err);
             });
-            
-            if(response){
-                 oColaborador = response[0];
-            }   
-        }else{
 
-             //Busca dados Colaborador API Hierarquia - REST
-             const aAppSettings = await cds.read(AppSettings).where({
+            if (response) {
+                oColaborador = response[0];
+            }
+        } else {
+
+            //Busca dados Colaborador API Hierarquia - REST
+            const aAppSettings = await cds.read(AppSettings).where({
                 ID: 1
             });
             if (aAppSettings.length > 0) {
@@ -420,18 +479,18 @@ module.exports = cds.service.impl(async (service) => {
             console.log("token recuperado:", token);
 
             const ret_api_hierarquia = await
-            axios({
-                method: 'get',
-                url: `${oAppSettings.urlApi}?login=${matricula}`,
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            }).then(function (response) {
-                console.log("Chamou API de Hierarquia com Token?: ", response.data);
-                return response.data;
-            }).catch(function (error) {
-                console.log("Erro na Busca de Hierarquia:", error);
-            });
+                axios({
+                    method: 'get',
+                    url: `${oAppSettings.urlApi}?login=${sMatricula}`,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }).then(function (response) {
+                    console.log("Chamou API de Hierarquia com Token?: ", response.data);
+                    return response.data;
+                }).catch(function (error) {
+                    console.log("Erro na Busca de Hierarquia:", error);
+                });
 
             //Complementa dados Usuário com retorno Api de Hierarquia
             if (ret_api_hierarquia && ret_api_hierarquia.nomeColaborador) {
@@ -446,7 +505,7 @@ module.exports = cds.service.impl(async (service) => {
                 oColaborador.Nome_Area_Funcionario = ret_api_hierarquia.departamento;
             }
 
-        }            
+        }
 
         /*let sPath = `/xsodata/workflows.xsodata/EmpregadosSet('${sMatricula}')`,
             oColaborador = {};
@@ -474,7 +533,7 @@ module.exports = cds.service.impl(async (service) => {
 
         return oColaborador;
 
-    };
+    }
 
     async function getBarerToken(oAppSettings) {
         try {
@@ -499,7 +558,7 @@ module.exports = cds.service.impl(async (service) => {
             console.log("Erro ao Buscar Token")
         }
         return ret_token;
-    };
+    }
 
 
 });

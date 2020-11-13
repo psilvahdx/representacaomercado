@@ -398,7 +398,7 @@ sap.ui.define([
 
             var odtrPeriodo = this.byId("dtrPeriodo"),
                 oDPCompComTemas = this.byId("DPCompComTemas"),
-                oDPRepPorCargo = this.byId("DPRepPorCargo"),
+               // oDPRepPorCargo = this.byId("DPRepPorCargo"),
                 vToday = new Date();
 
             var ofilterModel = this.getModel("filterModel"),
@@ -411,8 +411,8 @@ sap.ui.define([
             odtrPeriodo.setDateValue(new Date(vToday.getFullYear() - 1, vToday.getMonth(), vToday.getDate()));
             odtrPeriodo.setSecondDateValue(vToday);            
 
-            oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
-            oDPRepPorCargo.setDateValue(vToday);
+            /*oDPRepPorCargo.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
+            oDPRepPorCargo.setDateValue(vToday);*/
 
             oDPCompComTemas.setMaxDate(new Date(vToday.getFullYear(), vToday.getMonth(), vToday.getDate()));
             oDPCompComTemas.setDateValue(vToday);
@@ -1131,15 +1131,13 @@ sap.ui.define([
                 aMeasures = [],
                 aDimensions = [],
                 aMeasuresConfig = [],
-                sPath = "/ComparativoComTemas";
-                //sPath = '/Historico';
+                sPath = "/ComparativoComTemas";                
 
             oModel.read(sPath, {
                 filters: [aFilter],
                 urlParameters: {
                     "$expand": "itens",
-                    "$orderby": "ultimoRegistro desc"//,
-                    //"$select": "idTema,ultimoRegistro,status_ID"
+                    "$orderby": "ultimoRegistro desc"
                 },
                 success: function (oData) {
                     var oResults = oData.results,
@@ -1155,40 +1153,12 @@ sap.ui.define([
                                 const item = aItens[i];
                                 aMeasures.push({
                                     STATUS: item.descricao,
-                                    TOTAL: item.qtd
+                                    TOTAL: item.qtd,
+                                    SORTER: item.sorter
                                 });
                             }                         
                             
-                        }                        
-                      
-                        /*
-                        var aGroupTemasDistinct = oResults.filter((temaM, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.idTema === temaM.idTema && t.idTema === temaM.idTema
-                            ))
-                        );
-
-
-                        var aStatus = aGroupTemasDistinct.filter((tema, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.status_ID === tema.status_ID && t.status_ID === tema.status_ID
-                            ))
-                        );
-
-                        for (let i = 0; i < aStatus.length; i++) {
-                            const tema = aStatus[i];
-
-                            var aGroupStatus = aGroupTemasDistinct.filter(r => {
-                                return r.status.ID === tema.status.ID
-                            });
-
-                            var vTotal = aGroupStatus.length;
-                            aMeasures.push({
-                                STATUS: tema.status.descricao,
-                                TOTAL: vTotal
-                            });
-
-                        }*/
+                        }  
 
                         var assignedContentData = {
                             ComparativosComTemas: aMeasures
@@ -1209,7 +1179,7 @@ sap.ui.define([
                         oVizFrame.destroyDataset();
                         oVizFrame.destroyFeeds();
 
-                        var oSorter = new sap.ui.model.Sorter("STATUS", false);
+                        var oSorter = new sap.ui.model.Sorter("SORTER", false);
 
                         //New dataset
                         oVizFrame.setDataset(new sap.viz.ui5.data.FlattenedDataset({
@@ -1220,6 +1190,16 @@ sap.ui.define([
                                 sorter: oSorter
                             }
                         }));
+
+                        oVizFrame.setVizProperties({ categoryAxis: {
+                            title: {
+                                visible: false
+                            },
+                            label:{
+                                angle: 0,
+                                linesOfWrap: 3
+                            }
+                        }});
 
                         //Add feeds
                         oVizFrame.addFeed(new sap.viz.ui5.controls.common.feeds.FeedItem({

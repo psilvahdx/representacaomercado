@@ -8,25 +8,19 @@ const axios = require('axios');
 const qs = require('qs');
 const dateFormat = require('dateformat');
 const hana = require('@sap/hana-client');
-require('@sap/xsenv').loadEnv();
+//require('@sap/xsenv').loadEnv();
 
 const SequenceHelper = require("./lib/SequenceHelper");
 module.exports = cds.service.impl(async (service) => {
 
     const bancoColaboradores = hana.createConnection();
     const conn_parms_tcp_test = {
-        serverNode: "44c342a6-a692-414c-b778-2aaa97292179.hana.prod-us20.hanacloud.ondemand.com:443",
+        serverNode: process.env.VAR_BDCOLAB_SERVERNODE, 
         encrypt: true,
         sslValidateCertificate: false,
-        uid: "USER_FERIAS",
-        pwd: "PorT0s3g2af0g9f"
-
-        /*serverNode: process.env.VAR_BDCOLAB_SERVERNODE, //"44c342a6-a692-414c-b778-2aaa97292179.hana.prod-us20.hanacloud.ondemand.com:443",
-        encrypt: true,
-        sslValidateCertificate: false,
-        uid: process.env.VAR_BDCOLAB_UID,//"USER_FERIAS",
-        pwd: process.env.VAR_BDCOLAB_PWD //"PorT0s3g2af0g9f"*/
-    };
+        uid: process.env.VAR_BDCOLAB_UID,
+        pwd: process.env.VAR_BDCOLAB_PWD
+    };   
 
     await bancoColaboradores.connect(conn_parms_tcp_test, function (err) {
         if (err) throw err;
@@ -1469,10 +1463,29 @@ module.exports = cds.service.impl(async (service) => {
                 var oReg = aStatus.find(cr => cr.ID === element.status_ID);
                 if (oReg) {
                     oItem.ID = oReg.ID;
-                    oItem.descricao = oReg.descricao;
+                    oItem.descricao = oReg.descricao;  
+                    switch (oReg.ID) {
+                        case 1://Novo
+                            oItem.sorter = 3;
+                            break;
+                        case 2://Sem Atualização
+                             oItem.descricao = "Estoque de temas sem atualização nos últimos 90 dias"
+                             oItem.sorter = 4;
+                            break;
+                        case 3://Atualizado
+                            oItem.sorter = 1;
+                            break;
+                        case 4://Encerrado
+                            oItem.sorter = 2;
+                            break;
+                        default:
+                            break;
+                    }                   
+                    
                 } else {
                     oItem.ID = 1;
                     oItem.descricao = "Novo";
+                    oItem.sorter = 3;
                 }
 
                 oItem.qtd = aGroupStatus.length;
@@ -1491,7 +1504,8 @@ module.exports = cds.service.impl(async (service) => {
                 ultimoRegistro: qry[2].val,
                 itens: [{
                     ID: 2,
-                    descricao: "Sem atualização",
+                    descricao: "Estoque de temas sem atualização nos últimos 90 dias",//Sem atualização
+                    sorter: 4,
                     qtd: 0
                 }]
             });
@@ -1682,21 +1696,21 @@ module.exports = cds.service.impl(async (service) => {
 
         let oColaborador = {},
             oAppSettings = {},
-            vApi = 1;
+            vApi = "1";
 
         console.log("DataBase Colaboradores", matricula);
 
         try {
             vApi = process.env.VAR_API_HIERARQUIA;
             if (!vApi) {
-                vApi = 1; 
+                vApi = "1"; 
             }
         } catch (error) {
-            vApi = 1;
+            vApi = "1";
             console.log("Erro na Leitura VAR_API_HIERARQUIA");
         }
 
-        if (vApi === 1) {
+        if (vApi === "1") {
 
             console.log("Busca Colaborador Base Hana EmpregadoDoSenior");
 
