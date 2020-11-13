@@ -194,6 +194,7 @@ entity TemasPorStautsItem {
      key ID: Integer;
         descricao      : String;
         qtd : Integer;
+        sorter: Integer;
         item: Association to ComparativoComTemas;
 }
 
