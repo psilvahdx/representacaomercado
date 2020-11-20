@@ -1,0 +1,3 @@
+ID;urlApi;urlToken;clientID;clientSecret
+1;https://apihml.portoseguro.com.br/rh/v1/recuperar/hierarquia;https://apihml.portoseguro.com.br/rh/autenticacao/v1/login;a726557a-43af-458a-9b9c-3c015be7c2fe;188a83ce-ec96-49fd-bded-ba67d22ca314
+2;https://apihml.portoseguro.com.br/rh/v1/email-rh;https://apihml.portoseguro.com.br/rh/autenticacao/v1/login;cea244a0-a8b9-495c-a155-2b3dacd175af;2cc465e9-d9a0-460e-8a01-73ad3eaa8880
