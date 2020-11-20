@@ -494,6 +494,7 @@ module.exports = cds.service.impl(async (service) => {
 
             //Complementa dados Usuário com retorno Api de Hierarquia
             if (ret_api_hierarquia && ret_api_hierarquia.nomeColaborador) {
+                oColaborador.Login_Funcionario = sMatricula;
                 oColaborador.Nome_Funcionario = ret_api_hierarquia.nomeColaborador;
                 oColaborador.Nome_Cargo_Funcionario = ret_api_hierarquia.cargo;
                 oColaborador.Email_Funcionario = ret_api_hierarquia.emailFuncionario;
