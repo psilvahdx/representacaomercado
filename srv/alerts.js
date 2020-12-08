@@ -17,10 +17,7 @@ module.exports = cds.service.impl(async (service) => {
         pwd: process.env.VAR_BDCOLAB_PWD
     };
 
-    await bancoColaboradores.connect(conn_parms_tcp_test, function (err) {
-        if (err) throw err;
-        console.log("CONNECTOU")
-    });
+    await bancoColaboradores.connect(conn_parms_tcp_test);
     const db = await cds.connect.to("db");
     const {
         Temas,

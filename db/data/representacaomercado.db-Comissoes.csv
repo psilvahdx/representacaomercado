@@ -1,102 +1,107 @@
-ID;descricao;regulador_ID
-1;Comissão Contábil - CCON (FENASAÚDE);2
-2;Comissão de Assuntos Assistenciais - CAAS (FENASAÚDE);2
-3;Comissão de Assuntos Jurídicos - CJUR (FENASAÚDE);2
-4;Comissão de Comunicação - CCOM (FENASAÚDE);2
-5;Comissão de Ética - CETI (FENASAÚDE);2
-6;Comissão de Odontologia - CODONT (FENASAÚDE);2
-7;Comissão de Relacionamento com Prestadores - CRP (FENASAÚDE);2
-8;Comissão de Solvência – CSOLV (FENASAÚDE);2
-9;Diretoria SINOG;2
-10;Lab Odonto - ANS - Projeto Sorrir;2
-11;Comissão de Assuntos Jurídicos (ACREFI);3
-12;Comissão de Assuntos Trabalhistas (ACREFI);3
-13;Comissão de Compliance e PLD-FT da Acrefi;3
-14;Comissão de Crédito e Cobrança (ACREFI);3
-15;Comissão de Ética da Associação Brasileira das Administradoras de Consórcio (ABAC);3
-16;Comissão de Inovação e Tecnologia (ACREFI);3
-17;Comissão de Pessoas (ACREFI);3
-18;Comissão de PLD-FT (ACREFI);3
-19;Comissão de Prevenção à Fraude e Formalização (ACREFI);3
-20;Comissão de Relacionamento com Clientes e Ouvidoria (ACREFI);3
-21;Comissão de Varejo (ACREFI);3
-22;Comissão de Veículos (ACREFI);3
-23;Comitê de Análises Jurídicas (ABECS);3
-24;Comitê de Bandeiras (ABECS);3
-25;Comitê de Comunicação (ABECS);3
-26;Comitê de Credenciadoras (ABECS);3
-27;Comitê de Emissores da Abecs (ABECS);3
-28;Comitê de Melhores Práticas Comerciais (ABECS);3
-29;Comitê de Pagamento Automático em Veículos (ABECS);3
-30;Comitê de Relações Institucionais da Abecs (ABECS);3
-31;Comitê de Segurança e Prevenção à Fraude (ABECS);3
-32;Comitê de Vouchers/Benefícios (ABECS);3
-33;Negociação Convenção/Acordo Coletivo  (SINDICATO DOS EMPREGADORES);7
-34;Sub-comitê de Compliance (ANBIMA);6
-35;Comissão Temática de Assuntos Jurídicos (ABRAPP);5
-36;Comissão Temática de Atuária (ABRAPP);5
-37;Comissão Temática de Comunicação e Marketing (ABRAPP);5
-38;Comissão Temática de Contabilidade (ABRAPP);5
-39;Comissão Temática de Educação (ABRAPP);5
-40;Comissão Temática de Governança (ABRAPP);5
-41;Comissão Temática de Investimentos (ABRAPP);5
-42;Comissão Temática de Investimentos Imobiliários (ABRAPP);5
-43;Comissão Temática de Recursos Humanos (ABRAPP);5
-44;Comissão Temática de Relacionamento com o Participante (ABRAPP);5
-45;Comissão Temática de Seguridade (ABRAPP);5
-46;Comissão Temática de Sustentabilidade (ABRAPP);5
-47;Comissão Temática de Tecnologia da Informação? (ABRAPP);5
-48;Comissão Atuarial - CAT  (FENAPREVI);1
-49;Comissão Atuarial - CAT (CNSeg);1
-50;Comissão Atuarial de Capitalização - CAT (FENACAP);1
-51;Comissão das Comissões - CC (FENACAP);1
-52;Comissão de Administração e Finanças - CAF (CNSeg);1
-53;Comissão de Administração e Finanças de Capitalização - CAF (FENACAP);1
-54;Comissão de Assuntos Contábeis e Fiscais - CCF  (FENAPREVI);1
-55;Comissão de Assuntos Contábeis e Fiscais e do GT e-financeira Módulo de Previdência Privada (Fenaprevi);1
-56;Comissão de Assuntos Fiscais - CAFIS (CNSeg);1
-57;Comissão de Assuntos Jurídicos - CAJ (CNSeg);1
-58;Comissão de Assuntos Jurídicos - CAJ (FENAPREVI);1
-59;Comissão de Assuntos Jurídicos - CAJ (FENSEG);1
-60;Comissão de Automóvel - CA (FENSEG);1
-61;Comissão de Comunicação - CCOM (FENACAP);1
-62;Comissão de Comunicação e Marketing - CCM (CNSeg);1
-63;Comissão de Comunicação, Marketing, Eventos - CMarketing (FENAPREVI);1
-64;Comissão de controles Internos (CNSeg);1
-65;Comissão de controles Internos (FENACAP);1
-66;Comissão de Digitalização - CDIG (CNSeg);1
-67;Comissão de Gestão de Risco - CGR (CNSeg);1
-68;Comissão de Inteligência de Mercado - CIM (CNSeg);1
-69;Comissão de Investimentos - CINV (CNSeg);1
-70;Comissão de Investimentos - CINVEST  (FENAPREVI);1
-71;Comissão de Ouvidoria - COUV (CNSeg);1
-72;Comissão de Prevenção e Combate à Fraude - CPCF (CNSeg);1
-73;Comissão de Processos e Tecnologia da Informação - CPTI (CNSeg);1
-74;Comissão de Produto por Sobrevivência - CPS  (FENAPREVI);1
-75;Comissão de Produtos de Risco - CPR  (FENAPREVI);1
-76;Comissão de Produtos e Coordenação - CPC (FENACAP);1
-77;Comissão de Recursos Humanos - CRH (CNSeg);1
-78;Comissão de Relações de Consumo - CRC (CNSeg);1
-79;Comissão de Responsabilidade Civil Geral - CRCG (FENSEG);1
-80;Comissão de Resseguro - CR (CNSeg);1
-81;Comissão de Riscos de Crédito e Garantia - CRC FenSeg (CNSeg);1
-82;Comissão de Riscos de Engenharia - CRE (FENSEG);1
-83;Comissão de Riscos Patrimoniais Grandes Riscos - CRP Grandes Riscos (FENSEG);1
-84;Comissão de Riscos Patrimoniais Massificados - CRP Massificados (FENSEG);1
-85;Comissão de Seguro Garantia Estendida e Afinidades - CGE (FENSEG);1
-86;Comissão de Seguro Habitacional - CSH (FENSEG);1
-87;Comissão de Seguro Rural - CSR (FENSEG);1
-88;Comissão de Seguros Inclusivos - CS Inclusivos (CNSeg);1
-89;Comissão de Serviços da Fenseg (FENSEG);1
-90;Comissão de Sustentabilidade e Inovação - CSI (CNSeg);1
-91;Comissão de Tecnologia da Informação de Capitalização - CTI (FENACAP);1
-92;Comissão de Transportes - CT (FENSEG);1
-93;Comissão Gestora do SIDE - CGSIDE  (FENAPREVI);1
-94;Comissão Jurídica de Capitalização - CAJ (CNseg);1
-95;Comissão Jurídica de Capitalização - CAJ (FENACAP);1
-96;Comissão Permanente de Assuntos Governamentais - CPAG (CNSeg);1
-97;Comissão Técnica de Saúde - CTEC (FENASAÚDE);1
-98;Diretoria da FENSEG;1
-99;Espaço Tecnologia e Inovação  - SindsegSP;1
-100;Reunião Diretoria Estatutária;1
-101;Subcomissão Jurídica - Automóvel;1
+ID;descricao;comIndicacao;regulador_ID
+1;Comissão Contábil - CCON (FENASAÚDE);;2
+2;Comissão de Assuntos Assistenciais - CAAS (FENASAÚDE);;2
+3;Comissão de Assuntos Jurídicos - CJUR (FENASAÚDE);;2
+4;Comissão de Comunicação - CCOM (FENASAÚDE);;2
+5;Comissão de Ética - CETI (FENASAÚDE);;2
+6;Comissão de Odontologia - CODONT (FENASAÚDE);;2
+7;Comissão de Relacionamento com Prestadores - CRP (FENASAÚDE);;2
+8;Comissão de Solvência – CSOLV (FENASAÚDE);;2
+9;Diretoria SINOG;;2
+10;Lab Odonto - ANS - Projeto Sorrir;;2
+11;Comissão de Assuntos Jurídicos (ACREFI);;3
+12;Comissão de Assuntos Trabalhistas (ACREFI);;3
+13;Comissão de Compliance e PLD-FT da Acrefi;;3
+14;Comissão de Crédito e Cobrança (ACREFI);;3
+15;Comissão de Ética da Associação Brasileira das Administradoras de Consórcio (ABAC);;3
+16;Comissão de Inovação e Tecnologia (ACREFI);;3
+17;Comissão de Pessoas (ACREFI);;3
+18;Comissão de PLD-FT (ACREFI);;3
+19;Comissão de Prevenção à Fraude e Formalização (ACREFI);;3
+20;Comissão de Relacionamento com Clientes e Ouvidoria (ACREFI);;3
+21;Comissão de Varejo (ACREFI);;3
+22;Comissão de Veículos (ACREFI);;3
+23;Comitê de Análises Jurídicas (ABECS);;3
+24;Comitê de Bandeiras (ABECS);;3
+25;Comitê de Comunicação (ABECS);;3
+26;Comitê de Credenciadoras (ABECS);;3
+27;Comitê de Emissores da Abecs (ABECS);;3
+28;Comitê de Melhores Práticas Comerciais (ABECS);;3
+29;Comitê de Pagamento Automático em Veículos (ABECS);;3
+30;Comitê de Relações Institucionais da Abecs (ABECS);;3
+31;Comitê de Segurança e Prevenção à Fraude (ABECS);;3
+32;Comitê de Vouchers/Benefícios (ABECS);;3
+33;Comissão Técnica ( IBRI - Instituto Brasileiro de Relações com Investidores);;4
+34;Negociação Convenção/Acordo Coletivo  (SINDICATO DOS EMPREGADORES);;4
+35;Sub-comitê de Compliance (ANBIMA);;6
+36;Comissão Temática de Gestão de Riscos - ANBIMA;;6
+37;Comissão Temática de Assuntos Jurídicos (ABRAPP);;5
+38;Comissão Temática de Atuária (ABRAPP);;5
+39;Comissão Temática de Comunicação e Marketing (ABRAPP);;5
+40;Comissão Temática de Contabilidade (ABRAPP);;5
+41;Comissão Temática de Educação (ABRAPP);;5
+42;Comissão Temática de Governança (ABRAPP);;5
+43;Comissão Temática de Investimentos (ABRAPP);;5
+44;Comissão Temática de Investimentos Imobiliários (ABRAPP);;5
+45;Comissão Temática de Recursos Humanos (ABRAPP);;5
+46;Comissão Temática de Relacionamento com o Participante (ABRAPP);;5
+47;Comissão Temática de Seguridade (ABRAPP);;5
+48;Comissão Temática de Sustentabilidade (ABRAPP);;5
+49;Comissão Temática de Tecnologia da Informação? (ABRAPP);;5
+50;Comissão Atuarial - CAT  (FENAPREVI);;1
+51;Comissão Atuarial - CAT (CNSeg);;1
+52;Comissão Atuarial de Capitalização - CAT (FENACAP);;1
+53;Comissão das Comissões - CC (FENACAP);;1
+54;Comissão de Administração e Finanças - CAF (CNSeg);;1
+55;Comissão de Administração e Finanças de Capitalização - CAF (FENACAP);;1
+56;Comissão de Assuntos Contábeis e Fiscais - CCF  (FENAPREVI);;1
+57;Comissão de Assuntos Contábeis e Fiscais e do GT e-financeira Módulo de Previdência Privada (Fenaprevi);;1
+58;Comissão de Assuntos Fiscais - CAFIS (CNSeg);;1
+59;Comissão de Assuntos Jurídicos - CAJ (CNSeg);;1
+60;Comissão de Assuntos Jurídicos - CAJ (FENAPREVI);;1
+61;Comissão de Assuntos Jurídicos - CAJ (FENSEG);;1
+62;Comissão de Automóvel - CA (FENSEG);;1
+63;Comissão de Comunicação - CCOM (FENACAP);;1
+64;Comissão de Comunicação e Marketing - CCM (CNSeg);;1
+65;Comissão de Comunicação, Marketing, Eventos - CMarketing (FENAPREVI);;1
+66;Comissão de controles Internos (CNSeg);;1
+67;Comissão de controles Internos (FENACAP);;1
+68;Comissão de Digitalização - CDIG (CNSeg);;1
+69;Comissão de Gestão de Risco - CGR (CNSeg);;1
+70;Comissão de Inteligência de Mercado - CIM (CNSeg);;1
+71;Comissão de Investimentos - CINV (CNSeg);;1
+72;Comissão de Investimentos - CINVEST  (FENAPREVI);;1
+73;Comissão de Ouvidoria - COUV (CNSeg);;1
+74;Comissão de Prevenção e Combate à Fraude - CPCF (CNSeg);;1
+75;Comissão de Processos e Tecnologia da Informação - CPTI (CNSeg);;1
+76;Comissão de Produto por Sobrevivência - CPS  (FENAPREVI);;1
+77;Comissão de Produtos de Risco - CPR  (FENAPREVI);;1
+78;Comissão de Produtos e Coordenação - CPC (FENACAP);;1
+79;Comissão de Recursos Humanos - CRH (CNSeg);;1
+80;Comissão de Relações de Consumo - CRC (CNSeg);;1
+81;Comissão de Responsabilidade Civil Geral - CRCG (FENSEG);;1
+82;Comissão de Resseguro - CR (CNSeg);;1
+83;Comissão de Riscos de Crédito e Garantia - CRC FenSeg (CNSeg);;1
+84;Comissão de Riscos de Engenharia - CRE (FENSEG);;1
+85;Comissão de Riscos Patrimoniais Grandes Riscos - CRP Grandes Riscos (FENSEG);;1
+86;Comissão de Riscos Patrimoniais Massificados - CRP Massificados (FENSEG);;1
+87;Comissão de Seguro Garantia Estendida e Afinidades - CGE (FENSEG);;1
+88;Comissão de Seguro Habitacional - CSH (FENSEG);;1
+89;Comissão de Seguro Rural - CSR (FENSEG);;1
+90;Comissão de Seguros Inclusivos - CS Inclusivos (CNSeg);;1
+91;Comissão de Sustentabilidade e Inovação - CSI (CNSeg);;1
+92;Comissão de Tecnologia da Informação de Capitalização - CTI (FENACAP);;1
+93;Comissão de Transportes - CT (FENSEG);;1
+94;Comissão Gestora do SIDE - CGSIDE  (FENAPREVI);;1
+95;Comissão Jurídica de Capitalização - CAJ (CNseg);;1
+96;Comissão Jurídica de Capitalização - CAJ (FENACAP);;1
+97;Comissão Permanente de Assuntos Governamentais - CPAG (CNSeg);;1
+98;Comissão Técnica de Saúde - CTEC (FENASAÚDE);;1
+99;Diretoria da FENSEG;;1
+100;Espaço Tecnologia e Inovação  - SindsegSP;;1
+101;Subcomissão Jurídica - Automóvel;;1
+102;Comissão de Governança e Compiance - CGC ;;1
+103;Comissão Estratégica de Seguros Corpotativos - CESC (fenseg);;1
+104;Comissão Prev. à Fraude nos Segm. Pes. Previ. Aberta Compl - CPrevFraude (Fenaprevi);;1
+105;Comissão de Relações com Clientes - CRC FenaSaúde ;;2
+106;Comisssão de Bens de Capital (Acrefi);;1
