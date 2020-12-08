@@ -420,7 +420,7 @@ sap.ui.define([
             this._bindChart();
         },
 
-        setVizProperties: function (oVizControl, sTitle, sTitleFontSize, bSingleColor, isLegendVisible) {
+        setVizProperties: function (oVizControl, sTitle, sTitleFontSize, bSingleColor, isLegendVisible, categoryAxisTitleVisible, categoryAxisTitle) {
             sap.viz.ui5.api.env.Format.numericFormatter(ChartFormatter.getInstance());
             var formatPattern = ChartFormatter.DefaultPattern;
             var aPrimaryAxisColum = ["bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar", "bar"],
@@ -464,7 +464,7 @@ sap.ui.define([
                 legendGroup: {
                     layout: {
                         position: "bottom",
-                        alignment: "center"
+                        alignment: "center"                        
                     }
                 },
                 legend: {
@@ -488,7 +488,8 @@ sap.ui.define([
                 },
                 categoryAxis: {
                     title: {
-                        visible: false
+                        text: categoryAxisTitle,
+                        visible: categoryAxisTitleVisible
                     }
                 },
                 title: {
@@ -514,20 +515,20 @@ sap.ui.define([
                 oVizFrameRepPorCargo = this.getView().byId("idVizFrameRepPorCargo"),
                 ofilterModel = this.getModel("filterModel");
 
-
+            var sCargoLegenda = this.getResourceBundle().getText("representacoes_por_cargo_legenda");
             this.showBusy();
             //Comissoes sem Representante
-            this.setVizProperties(oVizFrameComissSemRep, this.getResourceBundle().getText("comissoes_sem_representante_title"), sTitleFontSize, false, true);
+            this.setVizProperties(oVizFrameComissSemRep, this.getResourceBundle().getText("comissoes_sem_representante_title"), sTitleFontSize, false, true,false,"");
             //Comissoes Com Representante
-            this.setVizProperties(oVizFrameComissComRep, this.getResourceBundle().getText("comissoes_com_representante_title"), sTitleFontSize, false, true);
+            this.setVizProperties(oVizFrameComissComRep, this.getResourceBundle().getText("comissoes_com_representante_title"), sTitleFontSize, false, true,false,"");
             //Indicações/representantes por Cargo
-            this.setVizProperties(oVizFrameRepPorCargo, this.getResourceBundle().getText("representacoes_por_cargo_title"), sTitleFontSize, false, false);
+            this.setVizProperties(oVizFrameRepPorCargo, this.getResourceBundle().getText("representacoes_por_cargo_title"), sTitleFontSize, false, false,false, sCargoLegenda);
             //Temas Por Regulador
-            this.setVizProperties(oVizFrame, this.getResourceBundle().getText("temas_por_reguladores_title"), sTitleFontSize, false, true);
+            this.setVizProperties(oVizFrame, this.getResourceBundle().getText("temas_por_reguladores_title"), sTitleFontSize, false, true,false,"");
             //Temas por Criticidade
-            this.setVizProperties(oVizFrameTemasPorCriticidade, this.getResourceBundle().getText("temas_por_criticidade_title"), sTitleFontSize, false, true);
+            this.setVizProperties(oVizFrameTemasPorCriticidade, this.getResourceBundle().getText("temas_por_criticidade_title"), sTitleFontSize, false, true,false,"");
             //Comparativo com Temas 
-            this.setVizProperties(oVizFrameCompComTemas, this.getResourceBundle().getText("comparativos_com_temas_title"), sTitleFontSize, true, false);
+            this.setVizProperties(oVizFrameCompComTemas, this.getResourceBundle().getText("comparativos_com_temas_title"), sTitleFontSize, true, false,false,"");
 
 
             var oPopOver = this.getView().byId("idPopOver"),
@@ -1555,6 +1556,9 @@ sap.ui.define([
             var oCanvasHTMLTemasPorCriticidade = document.createElement("canvas");
             var oCanvasHTMLCompComTemas = document.createElement("canvas");
 
+            //Titulos
+            oPDF.setFontSize(16);
+
             //Temas Por regulador
             sSVG = oVizFrame.exportToSVGString({
                 width: 600,
@@ -1617,8 +1621,11 @@ sap.ui.define([
                 oPDF.addPage();
                 oPDF.text(55, 20, oRb.getText("representacoes_por_cargo_title"));  
                 oPDF.addImage(sImageData3, "PNG", 15, 25, 180, 100);
-                oPDF.text(55, 125, oRb.getText("temas_por_reguladores_title"));  
-                oPDF.addImage(sImageData4, "PNG", 15, 130, 180, 150);
+                oPDF.setFontSize(9);                
+                oPDF.text(oRb.getText("representacoes_por_cargo_legenda"),10, 122, {maxWidth: 190});
+                oPDF.setFontSize(16);
+                oPDF.text(55, 140, oRb.getText("temas_por_reguladores_title"));  
+                oPDF.addImage(sImageData4, "PNG", 15, 145, 180, 125);
                 oPDF.addPage();
                 oPDF.text(55, 20, oRb.getText("temas_por_criticidade_title")); 
                 oPDF.addImage(sImageData5, "PNG", 15, 25, 180, 150);

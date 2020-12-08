@@ -655,7 +655,7 @@ sap.ui.define([
 
             if (!this._validateField("txtPrincImpact")) {
                 isValid = false;
-            }
+            }            
 
 
             if (oUserLog.getProperty("/userLog/userProfile_ID") === "ADM") {

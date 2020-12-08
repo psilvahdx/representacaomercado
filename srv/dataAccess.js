@@ -22,10 +22,7 @@ module.exports = cds.service.impl(async (service) => {
         pwd: process.env.VAR_BDCOLAB_PWD
     };   
 
-    await bancoColaboradores.connect(conn_parms_tcp_test, function (err) {
-        if (err) throw err;
-        console.log("CONNECTOU")
-    });
+    await bancoColaboradores.connect(conn_parms_tcp_test);
     const db = await cds.connect.to("db");
     const {
         Temas,
@@ -2001,7 +1998,7 @@ module.exports = cds.service.impl(async (service) => {
             aCalssifCargo = await cds.read(CargoClassificacoes);
 
         //Filtra somente Comissões com Representante atribuido   
-        const aComissoesComRep = aComissoesRep.filter((comissao, index, self) =>
+        const aComissoesComRep =  aComissoesRep.filter((comissao, index, self) =>
             index === self.findIndex((t) => (
                 t.comissao_ID === comissao.comissao_ID && t.comissao_ID === comissao.comissao_ID
             ))
