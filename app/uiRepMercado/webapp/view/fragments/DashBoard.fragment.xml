@@ -184,7 +184,11 @@
 							<viz:VizFrame width="100%" id="idVizFrameRepPorCargo" uiConfig="{applicationSet:'fiori'}"
 								vizType='column'>								
 							</viz:VizFrame>	
-							<Text id="txtRepPorCargoLegenda" text="{i18n>representacoes_por_cargo_legenda}"  textAlign="Center" />						
+							<Text id="txtRepPorCargoLegenda" text="{i18n>representacoes_por_cargo_legenda}"  textAlign="Center">
+							<layoutData>
+									<FlexItemData alignSelf="Center" />
+								</layoutData>		
+							</Text>			
 						</VBox>
 
 					</form:content>
