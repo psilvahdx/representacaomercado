@@ -8,7 +8,7 @@ using {
 entity Comissoes : cuid {
     key ID        : Integer;
         descricao : String;
-        regulador : Association to Reguladores;
+        regulador : Association to Reguladores @assert.integrity:false;
         comIndicacao: Boolean;
 }
 
@@ -62,14 +62,14 @@ entity Temas : cuid {
         descricao          : String;
         status             : Association to Status;
         criticidade        : Association to Criticidades;
-        regulador          : Association to Reguladores;
+        regulador          : Association to Reguladores @assert.integrity:false;
         detalheDiscussao   : LargeString;
         principaisImpactos : LargeString;
         primeiroRegistro   : DateTime null;
         ultimoRegistro     : DateTime null;
         dataUltimaReuniao  : DateTime null;
-        representante      : Association to Usuarios;
-        comissao           : Association to Comissoes;
+        representante      : Association to Usuarios @assert.integrity:false;
+        comissao           : Association to Comissoes @assert.integrity:false;
         diretorGeral       : String;
         diretorExecutivo   : String;
 
@@ -81,17 +81,17 @@ entity Historico : cuid {
         descricao               : String;
         status                  : Association to Status;
         criticidade             : Association to Criticidades;
-        regulador               : Association to Reguladores;
+        regulador               : Association to Reguladores @assert.integrity:false;
         detalheDiscussao        : LargeString;
         principaisImpactos      : LargeString;
         primeiroRegistro        : DateTime null;
         ultimoRegistro          : DateTime null;
         dataUltimaReuniao       : DateTime null;
-        representante           : Association to Usuarios;
-        comissao                : Association to Comissoes;
+        representante           : Association to Usuarios @assert.integrity:false;
+        comissao                : Association to Comissoes @assert.integrity:false;
         diretorGeral            : String;
         diretorExecutivo        : String;
-        userAlteracao           : Association to Usuarios;
+        userAlteracao           : Association to Usuarios @assert.integrity:false;
         descAlterda             : String;
         statusAlterado          : String;
         detalheAlterado         : String;
@@ -202,14 +202,14 @@ entity TemasPorStautsItem {
 entity TemasFechamentoMensal : cuid {
     key ID                      : UUID;
         idTema                  : Integer;
-        status                  : Association to Status;
-        criticidade             : Association to Criticidades;
-        regulador               : Association to Reguladores;        
+        status                  : Association to Status @assert.integrity:false;
+        criticidade             : Association to Criticidades @assert.integrity:false;
+        regulador               : Association to Reguladores @assert.integrity:false;       
         primeiroRegistro        : DateTime null;
         ultimoRegistro          : DateTime null;
         dataUltimaReuniao       : DateTime null;
-        representante           : Association to Usuarios;
-        comissao                : Association to Comissoes;
+        representante           : Association to Usuarios @assert.integrity:false;
+        comissao                : Association to Comissoes @assert.integrity:false;
         diretorGeral            : String;
         diretorExecutivo        : String;
         dtFechamento            : DateTime;

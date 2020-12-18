@@ -384,10 +384,7 @@ module.exports = cds.service.impl(async (service) => {
             if (colaborador && colaborador.Email_Funcionario) {
 
                 //colaborador.Email_Funcionario
-                let aEmails = ["paulosantos.silva@portoseguro.com.br"]; //colaborador.Email_Funcionario
-                if (colaborador.Login_Funcionario === "F0121544") {
-                    aEmails.push("odair.matos@portoseguro.com.br");
-                }
+                let aEmails = [colaborador.Email_Funcionario];              
                 //Evia Email
                 console.log("Colaborador:", colaborador);
                 return axios({
