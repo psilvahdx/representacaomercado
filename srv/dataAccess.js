@@ -2205,6 +2205,18 @@ module.exports = cds.service.impl(async (service) => {
                 const comissaoDel = aComissoesDelete[i];
                 if (comissaoDel !== "") {
 
+
+                    try {
+                        //console.log(comissaoDel);
+                        const delComissaoUsuario = await service.delete(ComissoesRepresentante).where({
+                            comissao_ID: comissaoDel
+                        })
+                        console.log("Comissao Usuario deletada", delComissaoUsuario);
+                    } catch (error) {
+                        console.log("Errro ao excluir Comissao Usuario", error);
+                        //req.reject(400, error);
+                    }
+
                     try {
                         //console.log(comissaoDel);
                         const delComissao = await service.delete(Comissoes).where({
