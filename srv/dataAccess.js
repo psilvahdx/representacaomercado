@@ -15,12 +15,12 @@ module.exports = cds.service.impl(async (service) => {
 
     const bancoColaboradores = hana.createConnection();
     const conn_parms_tcp_test = {
-        serverNode: process.env.VAR_BDCOLAB_SERVERNODE, 
+        serverNode: process.env.VAR_BDCOLAB_SERVERNODE,
         encrypt: true,
         sslValidateCertificate: false,
         uid: process.env.VAR_BDCOLAB_UID,
         pwd: process.env.VAR_BDCOLAB_PWD
-    };   
+    };
 
     await bancoColaboradores.connect(conn_parms_tcp_test);
     const db = await cds.connect.to("db");
@@ -101,12 +101,12 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Representante somente visualiza Temas para as comissões que esta relacionado
                         SELECT.where = [{
-                                ref: ['status_ID']
-                            },
+                            ref: ['status_ID']
+                        },
                             '<>',
-                            {
-                                val: 4
-                            }, 'and', '(', xprComissoesIds, ')'
+                        {
+                            val: 4
+                        }, 'and', '(', xprComissoesIds, ')'
                         ];
 
                     } else {
@@ -159,11 +159,11 @@ module.exports = cds.service.impl(async (service) => {
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where.push(...['and', '(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
                             {
                                 func: 'concat',
@@ -196,51 +196,51 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
                         SELECT.where = [{
-                                ref: ['status_ID']
-                            },
+                            ref: ['status_ID']
+                        },
                             '<>',
-                            {
-                                val: 4
-                            }, 'and', '(', xprComissoesIds,
+                        {
+                            val: 4
+                        }, 'and', '(', xprComissoesIds,
                             'or',
                             '(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
-                            {
-                                func: 'concat',
-                                args: ['\'%\'', {
-                                    val: usuario.nome.toUpperCase()
-                                }, '\'%\'']
-                            },
+                        {
+                            func: 'concat',
+                            args: ['\'%\'', {
+                                val: usuario.nome.toUpperCase()
+                            }, '\'%\'']
+                        },
                             'or',
-                            {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorExecutivo']
-                                }]
-                            },
+                        {
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorExecutivo']
+                            }]
+                        },
                             'like',
-                            {
-                                func: 'concat',
-                                args: ['\'%\'', {
-                                    val: usuario.nome.toUpperCase()
-                                }, '\'%\'']
-                            },
+                        {
+                            func: 'concat',
+                            args: ['\'%\'', {
+                                val: usuario.nome.toUpperCase()
+                            }, '\'%\'']
+                        },
                             ')', ')'
                         ];
 
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where = ['(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
                             {
                                 func: 'concat',
@@ -344,12 +344,12 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Representante somente visualiza Temas para as comissões que esta relacionado
                         SELECT.where = [{
-                                ref: ['status_ID']
-                            },
+                            ref: ['status_ID']
+                        },
                             '<>',
-                            {
-                                val: 4
-                            }, 'and', '(', xprComissoesIds, ')'
+                        {
+                            val: 4
+                        }, 'and', '(', xprComissoesIds, ')'
                         ];
 
                     } else {
@@ -402,11 +402,11 @@ module.exports = cds.service.impl(async (service) => {
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where.push(...['and', '(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
                             {
                                 func: 'concat',
@@ -439,51 +439,51 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
                         SELECT.where = [{
-                                ref: ['status_ID']
-                            },
+                            ref: ['status_ID']
+                        },
                             '<>',
-                            {
-                                val: 4
-                            }, 'and', '(', xprComissoesIds,
+                        {
+                            val: 4
+                        }, 'and', '(', xprComissoesIds,
                             'or',
                             '(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
-                            {
-                                func: 'concat',
-                                args: ['\'%\'', {
-                                    val: usuario.nome.toUpperCase()
-                                }, '\'%\'']
-                            },
+                        {
+                            func: 'concat',
+                            args: ['\'%\'', {
+                                val: usuario.nome.toUpperCase()
+                            }, '\'%\'']
+                        },
                             'or',
-                            {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorExecutivo']
-                                }]
-                            },
+                        {
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorExecutivo']
+                            }]
+                        },
                             'like',
-                            {
-                                func: 'concat',
-                                args: ['\'%\'', {
-                                    val: usuario.nome.toUpperCase()
-                                }, '\'%\'']
-                            },
+                        {
+                            func: 'concat',
+                            args: ['\'%\'', {
+                                val: usuario.nome.toUpperCase()
+                            }, '\'%\'']
+                        },
                             ')', ')'
                         ];
 
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where = ['(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
                             {
                                 func: 'concat',
@@ -587,12 +587,12 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Representante somente visualiza Temas para as comissões que esta relacionado
                         SELECT.where = [{
-                                ref: ['status_ID']
-                            },
+                            ref: ['status_ID']
+                        },
                             '<>',
-                            {
-                                val: 4
-                            }, 'and', '(', xprComissoesIds, ')'
+                        {
+                            val: 4
+                        }, 'and', '(', xprComissoesIds, ')'
                         ];
 
                     } else {
@@ -645,11 +645,11 @@ module.exports = cds.service.impl(async (service) => {
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where.push(...['and', '(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
                             {
                                 func: 'concat',
@@ -682,51 +682,51 @@ module.exports = cds.service.impl(async (service) => {
                     if (acomissoesIds.length > 0) {
                         //Busca por Temas onde o Diretor esta relacionado com alguma Comissão  
                         SELECT.where = [{
-                                ref: ['status_ID']
-                            },
+                            ref: ['status_ID']
+                        },
                             '<>',
-                            {
-                                val: 4
-                            }, 'and', '(', xprComissoesIds,
+                        {
+                            val: 4
+                        }, 'and', '(', xprComissoesIds,
                             'or',
                             '(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
-                            {
-                                func: 'concat',
-                                args: ['\'%\'', {
-                                    val: usuario.nome.toUpperCase()
-                                }, '\'%\'']
-                            },
+                        {
+                            func: 'concat',
+                            args: ['\'%\'', {
+                                val: usuario.nome.toUpperCase()
+                            }, '\'%\'']
+                        },
                             'or',
-                            {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorExecutivo']
-                                }]
-                            },
+                        {
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorExecutivo']
+                            }]
+                        },
                             'like',
-                            {
-                                func: 'concat',
-                                args: ['\'%\'', {
-                                    val: usuario.nome.toUpperCase()
-                                }, '\'%\'']
-                            },
+                        {
+                            func: 'concat',
+                            args: ['\'%\'', {
+                                val: usuario.nome.toUpperCase()
+                            }, '\'%\'']
+                        },
                             ')', ')'
                         ];
 
                     } else {
                         //Diretor não esta em nenhuma comissão, busca por Temas onde esta como Diretor/Diretor Executivo
                         SELECT.where = ['(', {
-                                func: 'upper',
-                                args: [{
-                                    ref: ['diretorGeral']
-                                }]
-                            },
+                            func: 'upper',
+                            args: [{
+                                ref: ['diretorGeral']
+                            }]
+                        },
                             'like',
                             {
                                 func: 'concat',
@@ -793,12 +793,12 @@ module.exports = cds.service.impl(async (service) => {
 
         if (!SELECT.where) {
             SELECT.where = [{
-                    ref: ['usuario_ID']
-                },
+                ref: ['usuario_ID']
+            },
                 '=',
-                {
-                    val: usuario.ID
-                }
+            {
+                val: usuario.ID
+            }
             ];
         }
 
@@ -960,8 +960,8 @@ module.exports = cds.service.impl(async (service) => {
                         }
                     }
                 }
-                default:
-                    break;
+            default:
+                break;
         }
 
 
@@ -1460,14 +1460,14 @@ module.exports = cds.service.impl(async (service) => {
                 var oReg = aStatus.find(cr => cr.ID === element.status_ID);
                 if (oReg) {
                     oItem.ID = oReg.ID;
-                    oItem.descricao = oReg.descricao;  
+                    oItem.descricao = oReg.descricao;
                     switch (oReg.ID) {
                         case 1://Novo
                             oItem.sorter = 3;
                             break;
                         case 2://Sem Atualização
-                             oItem.descricao = "Estoque de temas sem atualização nos últimos 90 dias"
-                             oItem.sorter = 4;
+                            oItem.descricao = "Estoque de temas sem atualização nos últimos 90 dias"
+                            oItem.sorter = 4;
                             break;
                         case 3://Atualizado
                             oItem.sorter = 1;
@@ -1477,8 +1477,8 @@ module.exports = cds.service.impl(async (service) => {
                             break;
                         default:
                             break;
-                    }                   
-                    
+                    }
+
                 } else {
                     oItem.ID = 1;
                     oItem.descricao = "Novo";
@@ -1700,7 +1700,7 @@ module.exports = cds.service.impl(async (service) => {
         try {
             vApi = process.env.VAR_API_HIERARQUIA;
             if (!vApi) {
-                vApi = "1"; 
+                vApi = "1";
             }
         } catch (error) {
             vApi = "1";
@@ -1749,18 +1749,18 @@ module.exports = cds.service.impl(async (service) => {
             console.log("token recuperado:", token);
 
             const ret_api_hierarquia = await
-            axios({
-                method: 'get',
-                url: `${oAppSettings.urlApi}?login=${matricula}`,
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            }).then(function (response) {
-                console.log("Chamou API de Hierarquia com Token?: ", response.data);
-                return response.data;
-            }).catch(function (error) {
-                console.log("Erro na Busca de Hierarquia:", error);
-            });
+                axios({
+                    method: 'get',
+                    url: `${oAppSettings.urlApi}?login=${matricula}`,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }).then(function (response) {
+                    console.log("Chamou API de Hierarquia com Token?: ", response.data);
+                    return response.data;
+                }).catch(function (error) {
+                    console.log("Erro na Busca de Hierarquia:", error);
+                });
 
             //Complementa dados Usuário com retorno Api de Hierarquia
             if (ret_api_hierarquia && ret_api_hierarquia.nomeColaborador) {
@@ -1829,32 +1829,45 @@ module.exports = cds.service.impl(async (service) => {
 
     service.on("comissoesSemRepresentante", async req => {
 
-        let aReturn = [];
+        let aReturn = [],
+            aUsers = [],
+            oUser = null;
+
+        //Busca dados Usuário logado
+        aUsers = await cds.read(Usuarios).where({
+            ID: req.user.id
+        });
+        if (aUsers.length > 0) {
+            oUser = aUsers[0];
+        }
 
         const aComissoes = await cds.read(Comissoes),
             aComissoesRep = await cds.read(ComissoesRepresentante);
 
-        //Filtra somente Comissões com Representante atribuido   
-        const aComissoesComRep = aComissoesRep.filter((comissao, index, self) =>
-            index === self.findIndex((t) => (
-                t.comissao_ID === comissao.comissao_ID && t.comissao_ID === comissao.comissao_ID
-            ))
-        );
+        if (oUser.perfil_ID === "ADM") {
 
-        // console.log("Comissoes com Representante", aComissoesComRep.length)
 
-        for (let i = 0; i < aComissoes.length; i++) {
-            const element = aComissoes[i];
+            //Filtra somente Comissões com Representante atribuido   
+            const aComissoesComRep = aComissoesRep.filter((comissao, index, self) =>
+                index === self.findIndex((t) => (
+                    t.comissao_ID === comissao.comissao_ID && t.comissao_ID === comissao.comissao_ID
+                ))
+            );
 
-            const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
+            // console.log("Comissoes com Representante", aComissoesComRep.length)
 
-            if (!find) {
-                aReturn.push(element);
+            for (let i = 0; i < aComissoes.length; i++) {
+                const element = aComissoes[i];
+
+                const find = aComissoesComRep.find(f => f.comissao_ID === element.ID);
+
+                if (!find) {
+                    aReturn.push(element);
+                }
             }
+
+            //console.log("Comissoes SEM Representante", aReturn.length)
         }
-
-        //console.log("Comissoes SEM Representante", aReturn.length)
-
 
         return aReturn;
     });
@@ -1997,12 +2010,16 @@ module.exports = cds.service.impl(async (service) => {
             aRepresentantes = await cds.read(Usuarios),
             aCalssifCargo = await cds.read(CargoClassificacoes);
 
-        //Filtra somente Comissões com Representante atribuido   
-        const aComissoesComRep =  aComissoesRep.filter((comissao, index, self) =>
+        //Filtra somente Comissões com Representante distintas  
+        /*const aComissoesComRep =  aComissoesRep.filter((comissao, index, self) =>
             index === self.findIndex((t) => (
-                t.comissao_ID === comissao.comissao_ID && t.comissao_ID === comissao.comissao_ID
+                //t.comissao_ID === comissao.comissao_ID && t.comissao_ID === comissao.comissao_ID
+                t.usuario_ID === comissao.usuario_ID && t.usuario_ID === comissao.usuario_ID
+
             ))
-        );
+        );*/
+        const aComissoesComRep = aComissoesRep;
+
         //Usuário Logado
         oUser = aRepresentantes.find(usr => usr.ID === req.user.id);
         //Busca Comissões Usuário Logado
@@ -2032,12 +2049,6 @@ module.exports = cds.service.impl(async (service) => {
 
                 oRepresentante.diretorGeral = oRepresentante.diretorGeral ? oRepresentante.diretorGeral : "";
                 oRepresentante.diretorExecutivo = oRepresentante.diretorExecutivo ? oRepresentante.diretorExecutivo : "";
-
-                //Busca Diretor Geral e Diretor Executivo
-                /* const oColaborador = await getColaborador(oRepresentante.ID).then(ret_api_hierarquia => {return ret_api_hierarquia});
-                 if (oColaborador) {
-                     console.log("Retorno:", oColaborador.Nome_Vice_Presidente);
-                 }*/
 
                 if (oRepresentante.diretorGeral.toUpperCase() === oUser.nome.toUpperCase()) {
                     //console.log("diretor Geral")
