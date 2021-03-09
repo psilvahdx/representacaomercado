@@ -169,13 +169,7 @@ sap.ui.define([
             var oContext = oEvent.getSource().getBindingContext(),
                 oViewModel = this.getView().getModel("objectView"),
                 lstHistorico = this.byId("lstHistorico"),
-                oObject = this.getModel().getObject(oContext.getPath());            
-
-           /* oViewModel.setProperty("/isEditMode", false);
-            if (lstHistorico.getItems()[0]._active) {
-                oViewModel.setProperty("/isEditMode", true);
-            }
-            oViewModel.refresh();*/
+                oObject = this.getModel().getObject(oContext.getPath());
 
             if (!lstHistorico.getItems()[0]._active) {
                 this._bindView("/Historico(" + oObject.ID + ")",true);
@@ -467,6 +461,8 @@ sap.ui.define([
             editData.representante.nome = oRepresentante.nome;
             editData.representante.cargo = oRepresentante.cargo;
             editData.representante.telefone = oRepresentante.telefone;
+            editData.diretorExecutivo = oRepresentante.diretorExecutivo;
+            editData.diretorGeral = oRepresentante.diretorGeral;
             this.getComissoesRepresentante();
             editModel.refresh();
         },
@@ -622,7 +618,17 @@ sap.ui.define([
                     sap.m.MessageToast.show(this.geti18nText("campo_obrigatorio_msg"));
                     return false;
                 }
-            } else {
+            } 
+            else if (fieldName.substring(0, 2) === "dt") {
+                value = oControl.getDateValue();
+                if (!value) {
+                    oControl.setValueState("Error");
+                    oControl.setValueStateText(this.geti18nText("campo_obrigatorio_txt"));
+                    sap.m.MessageToast.show(this.geti18nText("campo_obrigatorio_msg"));
+                    return false;
+                }
+            }
+            else {
                 value = oControl.getValue();
                 if (value === "") {
                     oControl.setValueState("Error");
@@ -654,6 +660,10 @@ sap.ui.define([
 
 
             if (!this._validateField("txtPrincImpact")) {
+                isValid = false;
+            } 
+            
+            if (!this._validateField("dtUltimaReuniao")) {
                 isValid = false;
             }            
 

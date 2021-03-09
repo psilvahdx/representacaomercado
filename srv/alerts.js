@@ -44,7 +44,7 @@ module.exports = cds.service.impl(async (service) => {
         for (let i = 0; i < aTemas.length; i++) {
             const tema = aTemas[i];
 
-            if (tema.status !== 4) {
+            if (tema.status_ID !== 4) {
                 //Tema em aberto, verifica data da ultima atualização
                 if (tema.ultimoRegistro) {
                     const dToday = new Date();
@@ -333,7 +333,7 @@ module.exports = cds.service.impl(async (service) => {
                     console.log("Atualiza Dados Colaborador:", usuario.ID);
                     const evnt = await cds.update(Usuarios).set({
                         diretorGeral: oColab.Nome_Vice_Presidente,
-                        diretorExecutivo: oColab.Nome_Superintendente,
+                        diretorExecutivo: oColab.Nome_Diretor,
                         cargo: oColab.Nome_Cargo_Funcionario
                     }).where({
                         ID: usuario.ID
@@ -439,7 +439,7 @@ module.exports = cds.service.impl(async (service) => {
 
             var resPromisse = new Promise(function (resolve, reject) {
                 bancoColaboradores.exec(`SELECT *
-            FROM DDCE7AB5E0FC4A0BB7674B92177066FB."EmpregadoDoSenior.Empregado" as Empregado
+            FROM ${process.env.VAR_BDCOLAB_SCHEMA}."EmpregadoDoSenior.Empregado" as Empregado
             WHERE Empregado."Login_Funcionario" = '${sMatricula}'`,
                     function (err, result) {
                         if (err) reject(err);
@@ -495,6 +495,7 @@ module.exports = cds.service.impl(async (service) => {
                 oColaborador.Nome_Vice_Presidente = ret_api_hierarquia.diretor;
                 oColaborador.Nome_Gerente = ret_api_hierarquia.gerencia;
                 oColaborador.Nome_Superintendente = ret_api_hierarquia.superintendencia;
+                oColaborador.Nome_Diretor = ret_api_hierarquia.superintendencia;
                 oColaborador.Cadastro_Coordenador = ret_api_hierarquia.matriculaCoordenador;
                 oColaborador.Nome_Coordenador = ret_api_hierarquia.coordenador;
                 oColaborador.Nome_Area_Funcionario = ret_api_hierarquia.departamento;

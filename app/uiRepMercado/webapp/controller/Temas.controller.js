@@ -1296,7 +1296,7 @@ sap.ui.define([
                         oVizFrame = that.getView().byId("idVizFrameComissSemRep");
                     
 
-                    if (oData.results.length > 0 && oUser.userLog.userProfile_ID === "ADM") {
+                    if (oData.results.length > 0 ) {
                         var aReguladores = oResults.filter((comissao, index, self) =>
                             index === self.findIndex((t) => (
                                 t.regulador.ID === comissao.regulador.ID  && t.regulador.ID  === comissao.regulador.ID 

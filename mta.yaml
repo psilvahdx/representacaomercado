@@ -12,6 +12,7 @@ modules:
     VAR_BDCOLAB_UID: "USER_FERIAS"
     VAR_BDCOLAB_PWD: "PorT0s3g2af0g9f"
     VAR_API_HIERARQUIA: 1
+    VAR_BDCOLAB_SCHEMA: "DDCE7AB5E0FC4A0BB7674B92177066FB"
   requires:
   - name: representacaomercado-db
   - name: uaa_representacaomercado
