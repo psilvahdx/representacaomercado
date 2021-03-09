@@ -19,7 +19,7 @@ module.exports = cds.service.impl(async (service) => {
         sslValidateCertificate: false,
         uid: process.env.VAR_BDCOLAB_UID,
         pwd: process.env.VAR_BDCOLAB_PWD
-    };    
+    };
 
     await bancoColaboradores.connect(conn_parms_tcp_test);
     const db = await cds.connect.to("db");
@@ -1720,8 +1720,8 @@ module.exports = cds.service.impl(async (service) => {
                     });
             }.bind(this));
 
-            var response = await resPromisse.then(function (result) {                               
-                return result                
+            var response = await resPromisse.then(function (result) {
+                return result
             }).catch(function (err) {
                 //context.reject(400, err);
                 console.log("ERRO DataBase Colaboradores", err);
