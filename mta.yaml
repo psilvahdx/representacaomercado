@@ -17,6 +17,7 @@ modules:
   - name: representacaomercado-db
   - name: uaa_representacaomercado
   - name: dest_representacaomercado
+  - name: Jobs_representacao-mercado_srv
   provides:
   - name: srv_api
     properties:
@@ -113,6 +114,11 @@ resources:
   parameters:
     service: portal
     service-plan: standard
+- name: Jobs_representacao-mercado_srv
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service-plan: standard
+    service: jobscheduler    
 parameters:
   enable-parallel-deployments: true
 build-parameters:
